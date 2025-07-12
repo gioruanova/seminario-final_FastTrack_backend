@@ -149,18 +149,18 @@ const authSuperadmin = require("../middlewares/authSuperadmin");
 
 const router = express.Router();
 
-router.post("/super/login", authSuperController.login);
-router.post("/super/refresh", authSuperController.refreshToken);
+router.post("/login", authSuperController.login);
+router.post("/refresh", authSuperController.refreshToken);
 
 // Users
-router.get("/super/users", authSuperadmin, userController.getAll);
-router.post("/super/users",authSuperadmin, userController.createUser);
-router.post("/super/users/:user_id", authSuperadmin, userController.restoreUser);
+router.get("/users", authSuperadmin, userController.getAll);
+router.post("/users",authSuperadmin, userController.createUser);
+router.post("/users/:user_id", authSuperadmin, userController.restoreUser);
 
 // Companies
-router.get("/super/companies", authSuperadmin, CompanyController.getAllCompanies); 
-router.post("/super/companies", authSuperadmin, CompanyController.createCompany);
-router.post("/super/companies/:company_id", authSuperadmin, CompanyController.getCompanyById);
-router.put("/super/companies/:company_id", authSuperadmin, CompanyController.updateCompany);
+router.get("/companies", authSuperadmin, CompanyController.getAllCompanies); 
+router.post("/companies", authSuperadmin, CompanyController.createCompany);
+router.post("/companies/:company_id", authSuperadmin, CompanyController.getCompanyById);
+router.put("/companies/:company_id", authSuperadmin, CompanyController.updateCompany);
 
 module.exports = router;

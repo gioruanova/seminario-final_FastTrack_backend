@@ -20,7 +20,7 @@ app.use(bodyParser.json());
 
 app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(swaggerSpec));
 
-app.use(require("./src/routes/superRoutes"));
+app.use("/super",require("./src/routes/superRoutes"));
 app.use(require("./src/routes/userRoutes"));
 
 // 404 fallback

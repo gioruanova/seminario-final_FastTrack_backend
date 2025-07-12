@@ -52,7 +52,7 @@ exports.seed = function (knex) {
           user_email: "profesional-2@gmail.com",
           user_dni: "5555",
           user_phone: "123456789",
-          user_role: "operador",
+          user_role: "profesional",
           user_password: bcrypt.hashSync("123456", saltRounds),
           user_status: true,
           company_id: 1000,

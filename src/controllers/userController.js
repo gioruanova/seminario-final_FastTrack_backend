@@ -1,7 +1,9 @@
-const User = require("../models/Users");
+const User = require("../models/User");
+const UserLog = require("../models/UserLog");
+const UserLogController = require("../controllers/UserLogController");
 const ProfesionaleSespecialidad = require("../models/ProfesionalesEspecialidad");
 const bcrypt = require("bcrypt");
-const { transaction } = require("objection");
+// const { transaction } = require("objection");
 const saltRounds = 10;
 
 async function getAll(req, res) {
@@ -30,7 +32,7 @@ async function getAll(req, res) {
 
     return res.json(users);
   } catch (error) {
-    console.error("Error al obtener usuarios:", error);
+    // console.error("Error al obtener usuarios:", error);
     return res.status(500).json({ error: "Error interno del servidor" });
   }
 }
@@ -64,7 +66,7 @@ async function getUsersByCompany(req, res) {
 
     res.json(users);
   } catch (error) {
-    console.error("Error al obtener usuarios por empresa:", error);
+    // console.error("Error al obtener usuarios por empresa:", error);
     res.status(500).json({ error: "Error interno del servidor" });
   }
 }
@@ -134,7 +136,7 @@ async function createUser(req, res) {
       .json({ success: true, message: "Usuario creado correctamente" });
   } catch (error) {
     await trx.rollback();
-    console.error("Error al crear usuario con especialidad:", error);
+    // console.error("Error al crear usuario con especialidad:", error);
     return res
       .status(500)
       .json({ error: error.message || "Error interno del servidor" });
@@ -159,7 +161,7 @@ async function asignarEspecialidadManual(req, res) {
       .status(200)
       .json({ message: "Especialidad asignada correctamente" });
   } catch (error) {
-    console.error("Error al asignar especialidad:", error);
+    // console.error("Error al asignar especialidad:", error);
     return res.status(500).json({ error: "Error interno del servidor" });
   }
 }
@@ -170,7 +172,7 @@ async function asignarEspecialidad(
   id_especialidad,
   company_id
 ) {
-  const especialidadExiste = await trx("especialidades_creadas")
+  const especialidadExiste = await trx("especialidades")
     .where({ id_especialidad: id_especialidad, company_id })
     .first();
 
@@ -185,9 +187,84 @@ async function asignarEspecialidad(
   });
 }
 
+async function updateUser(req, res) {
+  try {
+    const { user_id } = req.params;
+    const {
+      user_complete_name,
+      user_dni,
+      user_phone,
+      user_email,
+      user_role,
+      user_status,
+      company_id,
+    } = req.body;
+
+    if (
+      user_complete_name == "" ||
+      user_dni == "" ||
+      user_phone == "" ||
+      user_email == "" ||
+      user_role == "" ||
+      user_status == "" ||
+      company_id == ""
+    ) {
+      return res.status(400).json({ error: "Todos los campos son requeridos" });
+    }
+
+    if (User.query().findOne({ user_email })) {
+      return res.status(409).json({ error: "El email ya está en uso" });
+    }
+
+    const user = await User.query().patchAndFetchById(user_id, {
+      user_complete_name,
+      user_dni,
+      user_phone,
+      user_email,
+      user_role,
+      user_status,
+      company_id,
+    });
+
+    return res
+      .status(200)
+      .json({ success: true, message: "Usuario actualizado correctamente" });
+  } catch (error) {
+    // console.error("Error al actualizar usuario:", error);
+    return res.status(500).json({ error: "Error interno del servidor" });
+  }
+}
+
+async function bloquearUsuarioPorId(user_id) {
+  return await User.query().patchAndFetchById(user_id, { user_status: false });
+}
+
+async function habilitarUsuarioPorId(user_id) {
+  await UserLogController.deleteLogByYserid(user_id);
+  return await User.query().patchAndFetchById(user_id, { user_status: true });
+}
+
+async function restoreUser(req, res) {
+  try {
+    const { user_id } = req.params;
+
+    habilitarUsuarioPorId(user_id);
+    return res
+      .status(200)
+      .json({ success: true, message: "Usuario restaurado correctamente" });
+  } catch (error) {
+    // console.error("Error al restaurar usuario:", error);
+    return res.status(500).json({ error: "Error interno del servidor" });
+  }
+}
+
 module.exports = {
   getAll,
   getUsersByCompany,
   createUser,
   asignarEspecialidadManual,
+  updateUser,
+  bloquearUsuarioPorId,
+  habilitarUsuarioPorId,
+  restoreUser,
 };

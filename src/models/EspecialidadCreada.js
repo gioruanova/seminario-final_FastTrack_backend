@@ -2,7 +2,7 @@ const BaseModel = require("../db/BaseModel");
 
 class EspecialidadCreada extends BaseModel {
   static get tableName() {
-    return "especialidades_creadas";
+    return "especialidades";
   }
 
   static get idColumn() {
@@ -29,7 +29,7 @@ class EspecialidadCreada extends BaseModel {
         relation: BaseModel.BelongsToOneRelation,
         modelClass: Company,
         join: {
-          from: "especialidades_creadas.company_id",
+          from: "especialidades.company_id",
           to: "companies.company_id",
         },
       },

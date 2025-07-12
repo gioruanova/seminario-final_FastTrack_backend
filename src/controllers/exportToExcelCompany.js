@@ -1,5 +1,5 @@
 const ExcelJS = require("exceljs");
-const User = require("../models/Users");
+const User = require("../models/User");
 
 async function exportUsersByCompany(req, res) {
   try {

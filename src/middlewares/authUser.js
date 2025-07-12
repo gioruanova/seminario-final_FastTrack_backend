@@ -1,23 +1,31 @@
 const jwt = require("jsonwebtoken");
 const { ACCESS_TOKEN_SECRET } = process.env;
 
-function authUser(req, res, next) {
-  const authHeader = req.headers.authorization;
+function authUser(...allowedRoles) {
+  return function (req, res, next) {
+    const authHeader = req.headers.authorization;
 
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res.status(401).json({ error: "Token no provisto" });
-  }
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ error: "Token no provisto" });
+    }
 
-  const token = authHeader.split(" ")[1];
+    const token = authHeader.split(" ")[1];
 
-  try {
-    const decoded = jwt.verify(token, ACCESS_TOKEN_SECRET);
-    req.user = decoded;
+    try {
+      const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+      req.user = decoded;
 
-    next();
-  } catch (err) {
-    return res.status(401).json({ error: "Token inválido o expirado" });
-  }
+      if (allowedRoles.length > 0 && !allowedRoles.includes(req.user.role)) {
+        return res
+          .status(403)
+          .json({ error: "No autorizado para este recurso" });
+      }
+
+      next();
+    } catch (err) {
+      return res.status(401).json({ error: "Token inválido o expirado" });
+    }
+  };
 }
 
 module.exports = authUser;

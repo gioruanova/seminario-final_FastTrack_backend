@@ -1,5 +1,5 @@
 const Company = require("../models/Company");
-const User = require("../models/Users");
+const User = require("../models/User");
 
 async function validateCompanyAndUserStatus(req, res, next) {
   try {

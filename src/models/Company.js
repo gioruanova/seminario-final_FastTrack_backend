@@ -39,7 +39,7 @@ class Company extends BaseModel {
     };
   }
   static get relationMappings() {
-    const User = require("./Users");
+    const User = require("./User");
     const ProfesionalesEspecialidad = require("./ProfesionalesEspecialidad");
 
     return {

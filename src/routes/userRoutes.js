@@ -1,7 +1,7 @@
 /**
  * @swagger
  * tags:
- *   - name: Users
+ *   - name: Clientes
  *     description: Endpoints para usuarios de empresa
  */
 
@@ -10,7 +10,7 @@
  * /login:
  *   post:
  *     summary: Login de usuario
- *     tags: [Users]
+ *     tags: [Clientes]
  *     requestBody:
  *       required: true
  *     responses:
@@ -28,7 +28,7 @@
  * /refresh:
  *   post:
  *     summary: Refresca el token de usuario
- *     tags: [Users]
+ *     tags: [Clientes]
  *     responses:
  *       200:
  *         description: Token refrescado
@@ -44,7 +44,8 @@
  * /users:
  *   get:
  *     summary: Lista usuarios de la empresa
- *     tags: [Users]
+ *     tags: [Clientes]
+ *     description: Solo Owners y operadores pueden visualizar esta ruta
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -54,7 +55,8 @@
  *         description: Error interno del servidor
  *   post:
  *     summary: Crea un usuario en la empresa
- *     tags: [Users]
+ *     tags: [Clientes]
+ *     description: Owners solo pueden crear Operadores y Profesionales, mientras que Operadores, solo pueden crear Profesionales
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -74,7 +76,8 @@
  * /especialidades:
  *   post:
  *     summary: Crea una especialidad
- *     tags: [Users]
+ *     tags: [Clientes]
+ *     description: Solo Owners pueden crear especialidades
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -94,7 +97,8 @@
  * /especialidades/{especialidadId}:
  *   put:
  *     summary: Actualiza una especialidad
- *     tags: [Users]
+ *     description: Solo Owners pueden editar especialidades
+ *     tags: [Clientes]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -122,7 +126,8 @@
  * /especialidades/{id_usuario}:
  *   post:
  *     summary: Asigna especialidad manualmente a un usuario (cuando hubo algun error o problema)
- *     tags: [Users]
+ *     tags: [Clientes]
+ *     description: Solo Owners pueden asignar una especialidad
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -156,46 +161,14 @@ const assignCompanyIdAndValidateRole = require("../middlewares/assignCompanyIdAn
 router.post("/login", authUserController.login);
 router.post("/refresh", authUserController.refreshToken);
 
+router.get("/users", authUser("owner", "operador"), validateCompanyAndUserStatus,userController.getUsersByCompany);
+router.post("/users", authUser("owner", "operador"), validateCompanyAndUserStatus,assignCompanyIdAndValidateRole,userController.createUser);
+router.post("/users/:user_id", authUser("owner", "operador"), validateCompanyAndUserStatus,userController.restoreUser);
 
-// router.get(
-//   "/usersReport",
-//   authUser,
-//   validateCompanyAndUserStatus,
-//   exportCompanyExcel.exportUsersByCompany
-// );
+router.post("/especialidades", authUser("owner"), validateCompanyAndUserStatus,especialidadController.createEspecialidad);
+router.put("/especialidades/:especialidadId", authUser("owner"), validateCompanyAndUserStatus,especialidadController.updateEspecialidad);
+router.post("/especialidades/:id_usuario", authUser("owner"), validateCompanyAndUserStatus,userController.asignarEspecialidadManual);
 
-
-router.get(
-  "/users",
-  authUser,
-  validateCompanyAndUserStatus,
-  userController.getUsersByCompany
-);
-router.post(
-  "/users",
-  authUser,
-  validateCompanyAndUserStatus,
-  assignCompanyIdAndValidateRole,
-  userController.createUser
-);
-
-router.post(
-  "/especialidades",
-  authUser,
-  validateCompanyAndUserStatus,
-  especialidadController.createEspecialidad
-);
-router.put(
-  "/especialidades/:especialidadId",
-  authUser,
-  validateCompanyAndUserStatus,
-  especialidadController.updateEspecialidad
-);
-router.post(
-  "/especialidades/:id_usuario",
-  authUser,
-  validateCompanyAndUserStatus,
-  userController.asignarEspecialidadManual
-);
+// router.get("/usersReport", authUser(), validateCompanyAndUserStatus, exportCompanyExcel.exportUsersByCompany);
 
 module.exports = router;

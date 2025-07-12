@@ -10,6 +10,10 @@ async function login(req, res) {
     if (!result)
       return res.status(401).json({ error: "Credenciales inválidas" });
 
+    if (result.error === "blocked") {
+      return res.status(403).json({ error: "Contacte a su administrador" });
+    }
+
     return res.json(result);
   } catch (error) {
     console.error("Error login user:", error);

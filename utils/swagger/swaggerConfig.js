@@ -9,7 +9,7 @@ const options = {
       version: "1.0.1",
       description: "Fast Track - API docs",
     },
-    tags: [{ name: "Super Admin" }, { name: "Users" }],
+    tags: [{ name: "Super Admin" }, { name: "Clientes" }],
     servers: [
       {
         url: process.env.BACK_TEST_SITE,

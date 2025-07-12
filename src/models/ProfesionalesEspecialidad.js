@@ -23,7 +23,7 @@ class ProfesionalEspecialidad extends BaseModel {
   }
 
   static get relationMappings() {
-    const User = require("./Users");
+    const User = require("./User");
     const Company = require("./Company");
     const EspecialidadCreada = require("./EspecialidadCreada");
 
@@ -49,7 +49,7 @@ class ProfesionalEspecialidad extends BaseModel {
         modelClass: EspecialidadCreada,
         join: {
           from: "profesionales_especialidad.id_especialidad_creada",
-          to: "especialidades_creadas.id_especialidad",
+          to: "especialidades.id_especialidad",
         },
       },
     };

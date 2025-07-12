@@ -26,7 +26,7 @@ exports.up = function(knex) {
       .unsigned()
       .notNullable()
       .references("id_especialidad")
-      .inTable("especialidades_creadas")
+      .inTable("especialidades")
       .onDelete("CASCADE")
       .onUpdate("CASCADE");
   });

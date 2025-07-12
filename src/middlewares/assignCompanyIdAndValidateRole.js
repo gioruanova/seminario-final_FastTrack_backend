@@ -1,5 +1,7 @@
 function assignCompanyIdAndValidateRole(req, res, next) {
-  const allowedRoles = ["profesional", "operador"];
+  const logedUser = req.user.role;
+  const allowedRoles = logedUser == "owner" ? ["profesional", "operador"] : ["profesional"]; 
+
 
   const companyIdFromToken = req.user?.company_id;
   if (!companyIdFromToken) {
@@ -15,6 +17,5 @@ function assignCompanyIdAndValidateRole(req, res, next) {
 
   next();
 }
-
 
 module.exports = assignCompanyIdAndValidateRole;

@@ -155,6 +155,7 @@ router.post("/super/refresh", authSuperController.refreshToken);
 // Users
 router.get("/super/users", authSuperadmin, userController.getAll);
 router.post("/super/users",authSuperadmin, userController.createUser);
+router.post("/super/users/:user_id", authSuperadmin, userController.restoreUser);
 
 // Companies
 router.get("/super/companies", authSuperadmin, CompanyController.getAllCompanies); 

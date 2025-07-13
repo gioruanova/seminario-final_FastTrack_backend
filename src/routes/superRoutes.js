@@ -29,6 +29,9 @@ router.get("/especialidades",authSuperadmin,especialidadController.getAllEspecia
 router.get("/especialidades/:company_id",authSuperadmin,especialidadController.getAllEspecialidadesByCompanyAsAdmin); // TRAE TODAS LAS ESPECIALIDADES POR EMPRESA
 router.post("/especialidades", authSuperadmin, especialidadController.createEspecialidadAsAdmin); // CREA ESPECIALIDAD SIN RESTRICCIONES
 router.put("/especialidades/:especialidadId",authSuperadmin,especialidadController.updateEspecialidadAsAdmin); // ATUALIZA CUALQUIER ESPECIALIDAD
+router.put("/especialidades/block/:especialidadId",authSuperadmin,especialidadController.disableEspecialidadAsAdmin); // ATUALIZA CUALQUIER ESPECIALIDAD
+router.put("/especialidades/unblock/:especialidadId",authSuperadmin,especialidadController.enableEspecialidadAsAdmin); // ATUALIZA CUALQUIER ESPECIALIDAD
+
 
 
 

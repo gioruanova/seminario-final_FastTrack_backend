@@ -12,6 +12,9 @@ exports.seed = async function (knex) {
       company_telegram: "123456789",
       company_email: "contacto@empresauno.com",
       company_estado: true,
+      limite_operadores: 1,
+      limite_profesionales: 1,
+      reminder_manual: 1
     },
     {
       company_unique_id: "789456123",

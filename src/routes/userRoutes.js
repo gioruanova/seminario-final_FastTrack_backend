@@ -22,7 +22,7 @@ router.post("/login", authUserController.login);
 router.post("/refresh", authUserController.refreshToken);
 
 // rutas para manejo de users
-router.post("/users",authUser("owner", "operador"),validateAccessStatus,userController.createUser); // CREATE >>> company condition in controller
+router.post("/users",authUser("owner", "operador"),validateAccessStatus,userController.createUserAsUser); // CREATE >>> company condition in controller
 router.get("/users",authUser("owner", "operador"),validateAccessStatus,userController.getUsersByCompany);
 router.post("/users/:user_id",authUser("owner", "operador"),validateAccessStatus,userController.restoreUser);
 

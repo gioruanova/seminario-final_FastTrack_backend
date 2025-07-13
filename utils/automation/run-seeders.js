@@ -17,6 +17,7 @@ const knex = require("knex")({
 const seeders = [
   "seed_companies.js",
   "seed_users.js",
+  "seed_especialidades.js",
 
   
   

@@ -20,8 +20,7 @@ router.get("/users", authSuperadmin, userController.getUsersAsAdmin); // OBTENER
 router.get("/users/:company_id", authSuperadmin, userController.getUsersByCompanyAsAdmin); // OBTENER USUARIOS DE UNA EMPRESA
 router.post("/users/block/:user_id", authSuperadmin, userController.blockUserAsAdmin); // BLOQUEAR USUARIO POR ID
 router.post("/users/unblock/:user_id", authSuperadmin, userController.unblockUserAsAdmin); // DESBLOQUEAR USUARIO POR ID
-
-router.post("/users/:user_id", authSuperadmin, userController.restoreUser);
+router.put("/users/restore/:user_id", authSuperadmin, userController.restoreUserAsAdmin); // RESTAURAR USUARIO CON RESETEO
 
 // rutas para manejo de empresas
 router.get("/companies", authSuperadmin, companyController.getAllCompanies); 

@@ -71,11 +71,13 @@ async function getUsersAsAdmin(req, res) {
 
     return res.json(users);
   } catch (error) {
-    // console.error("Error al obtener usuarios:", error);
     return res.status(500).json({ error: "Error interno del servidor" });
   }
 }
 
+// ---------------------------------------------------------
+// Obtener todos lo suaurios
+// ---------------------------------------------------------
 async function getUsersByCompanyAsAdmin(req, res) {
   const companyId = req.params.company_id;
 
@@ -87,6 +89,9 @@ async function getUsersByCompanyAsAdmin(req, res) {
   }
 }
 
+// ---------------------------------------------------------
+// Bloquear usuario
+// ---------------------------------------------------------
 async function blockUserAsAdmin(req, res) {
   const { user_id } = req.params;
   try {
@@ -106,6 +111,10 @@ async function blockUserAsAdmin(req, res) {
     return res.status(500).json({ error: "Error interno del servidor" });
   }
 }
+
+// ---------------------------------------------------------
+// Desbloquear usuario
+// ---------------------------------------------------------
 async function unblockUserAsAdmin(req, res) {
   const { user_id } = req.params;
   try {
@@ -126,11 +135,51 @@ async function unblockUserAsAdmin(req, res) {
   }
 }
 
+// ---------------------------------------------------------
+// Restaurar usuario (post reseto contraseña)
+// ---------------------------------------------------------
+async function restoreUserAsAdmin(req, res) {
+  try {
+    const { user_id } = req.params;
+    const userToRestore = await User.query().findById(user_id);
+    const { new_password } = req.body;
+    if (!new_password) {
+      return res
+        .status(400)
+        .json({ error: "Debes ingresar una nueva contraseña" });
+    }
+    if (!userToRestore) {
+      return res.status(400).json({ error: "No existe usuario bajo ese ID" });
+    }
+    if (userToRestore.user_status === 1) {
+      return res
+        .status(400)
+        .json({ error: "El usuario ya se encuentra habilitado" });
+    }
+
+    await resetPassword(user_id, new_password);
+    habilitarUsuarioPorId(user_id);
+    return res
+      .status(200)
+      .json({ success: true, message: "Usuario restaurado correctamente" });
+  } catch (error) {
+    return res.status(500).json({ error: "Error interno del servidor" });
+  }
+}
+
+// ==========================================================
+// ==========================================================
+// ==========================================================
+// ==========================================================
+// ==========================================================
+// ==========================================================
+// ==========================================================
+
 // CONTROLADORES PARA USER
 // ---------------------------------------------------------
 // Crear usuario como usuario
 // ---------------------------------------------------------
-async function createUserAsUser(req, res) {
+async function createUserAsClient(req, res) {
   const creator = req.user;
   let limiteOperadores;
   let currentTotalOperadores;
@@ -207,7 +256,7 @@ async function createUserAsUser(req, res) {
 // ---------------------------------------------------------
 // Obtener todos lo suaurios
 // ---------------------------------------------------------
-async function getUsersByCompany(req, res) {
+async function getUsersAsClient(req, res) {
   const companyId = req.user.company_id;
 
   try {
@@ -234,8 +283,133 @@ async function getUsersByCompany(req, res) {
 
     res.json(users);
   } catch (error) {
-    // console.error("Error al obtener usuarios por empresa:", error);
     res.status(500).json({ error: "Error interno del servidor" });
+  }
+}
+
+// ---------------------------------------------------------
+// Bloquear usuario
+// ---------------------------------------------------------
+async function blockUserAsClient(req, res) {
+  const companyId = req.user.company_id;
+  const { user_id } = req.params;
+
+  try {
+    const userToBlock = await User.query()
+      .findById(user_id)
+      .where("company_id", companyId);
+
+    if (!canManageAccess(req.user.user_role, userToBlock.user_role)) {
+      return res
+        .status(403)
+        .json({ error: "No tenés permiso para gestionar este usuario" });
+    }
+
+    if (!userToBlock) {
+      return res.status(400).json({ error: "No existe usuario bajo ese ID" });
+    }
+
+    if (userToBlock.user_id === req.user.user_id)
+      return res
+        .status(400)
+        .json({ error: "No puedes bloquear tu propio usuario" });
+
+    if (userToBlock.user_status === 0)
+      return res.status(400).json({ error: "El usuario ya estaba bloqueado" });
+
+    await bloquearUsuarioPorId(user_id);
+
+    return res
+      .status(200)
+      .json({ success: true, message: "Usuario bloqueado correctamente" });
+  } catch (error) {
+    return res.status(500).json({ error: "Error interno del servidor" });
+  }
+}
+
+// ---------------------------------------------------------
+// Desbloquear usuario
+// ---------------------------------------------------------
+async function unblockUserAsClient(req, res) {
+  const companyId = req.user.company_id;
+  const { user_id } = req.params;
+
+  try {
+    const userToBlock = await User.query()
+      .findById(user_id)
+      .where("company_id", companyId);
+
+    if (!canManageAccess(req.user.user_role, userToBlock.user_role)) {
+      return res
+        .status(403)
+        .json({ error: "No tenés permiso para gestionar este usuario" });
+    }
+
+    if (!userToBlock) {
+      return res.status(400).json({ error: "No existe usuario bajo ese ID" });
+    }
+
+    if (userToBlock.user_id === req.user.user_id)
+      return res
+        .status(400)
+        .json({ error: "No puedes desbloquear tu propio usuario" });
+
+    if (userToBlock.user_status === 1)
+      return res
+        .status(400)
+        .json({ error: "El usuario ya estaba desbloqueado" });
+
+    await desbloquearUsuarioPorId(user_id);
+
+    return res
+      .status(200)
+      .json({ success: true, message: "Usuario desbloqueado correctamente" });
+  } catch (error) {
+    return res.status(500).json({ error: "Error interno del servidor" });
+  }
+}
+
+// ---------------------------------------------------------
+// Restaurar usuario (post reseteo)
+// ---------------------------------------------------------
+async function restoreUserAsClient(req, res) {
+  try {
+    const companyId = req.user.company_id;
+    const { user_id } = req.params;
+    const { new_password } = req.body;
+
+    if (!new_password) {
+      return res
+        .status(400)
+        .json({ error: "Debes ingresar una nueva contraseña" });
+    }
+
+    const userToRestore = await User.query()
+      .findById(user_id)
+      .where("company_id", companyId);
+    if (!userToRestore) {
+      return res.status(400).json({ error: "No existe usuario bajo ese ID" });
+    }
+    if (userToRestore.user_status === 1) {
+      return res
+        .status(400)
+        .json({ error: "El usuario ya se encuentra habilitado" });
+    }
+
+    if (!canManageAccess(req.user.user_role, userToRestore.user_role)) {
+      return res
+        .status(403)
+        .json({ error: "No tenés permiso para gestionar este usuario" });
+    }
+
+    await resetPassword(user_id, new_password);
+    habilitarUsuarioPorId(user_id);
+
+    return res
+      .status(200)
+      .json({ success: true, message: "Usuario restaurado correctamente" });
+  } catch (error) {
+    return res.status(500).json({ error: "Error interno del servidor" });
   }
 }
 
@@ -250,6 +424,16 @@ function canCreateRole(creatorRole, newUserRole) {
     profesional: [""],
   };
   return permissions[creatorRole]?.includes(newUserRole);
+}
+
+function canManageAccess(actorRole, targetRole) {
+  const permissions = {
+    owner: ["operador", "profesional"],
+    operador: ["profesional"],
+    profesional: [],
+  };
+
+  return permissions[actorRole]?.includes(targetRole);
 }
 
 // Obtener total de operadores actual por empresa
@@ -291,31 +475,30 @@ async function habilitarUsuarioPorId(user_id) {
   return await User.query().patchAndFetchById(user_id, { user_status: true });
 }
 
-async function restoreUser(req, res) {
-  try {
-    const { user_id } = req.params;
-
-    habilitarUsuarioPorId(user_id);
-    return res
-      .status(200)
-      .json({ success: true, message: "Usuario restaurado correctamente" });
-  } catch (error) {
-    // console.error("Error al restaurar usuario:", error);
-    return res.status(500).json({ error: "Error interno del servidor" });
-  }
+// ---------------------------------------------------------
+// Reset passoword
+// ---------------------------------------------------------
+async function resetPassword(user_id, newPassword) {
+  const passWordToUpdate = bcrypt.hashSync(newPassword, saltRounds);
+  await User.query()
+    .findById(user_id)
+    .patch({ user_password: passWordToUpdate });
 }
 
 module.exports = {
-  createUserAsAdmin,
   getUsersAsAdmin,
   getUsersByCompanyAsAdmin,
+  createUserAsAdmin,
   blockUserAsAdmin,
   unblockUserAsAdmin,
+  restoreUserAsAdmin,
 
-  getUsersByCompany,
+  getUsersAsClient,
+  createUserAsClient,
+  blockUserAsClient,
+  unblockUserAsClient,
+  restoreUserAsClient,
+
+  // metodos auxiliares
   bloquearUsuarioPorId,
-  habilitarUsuarioPorId,
-  restoreUser,
-
-  createUserAsUser,
 };

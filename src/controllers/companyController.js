@@ -121,12 +121,25 @@ async function getLimitProfesionales(company_id) {
   }
 }
 
+async function getLimitEspecialidades(company_id) {
+  try {
+    const company = await Company.query().findById(company_id);
+    return company?.limite_especialidades || 0;
+  } catch (error) {
+    console.error("Error al obtener el límite de especialidades:", error);
+    throw error;
+  }
+}
+
 
 module.exports = {
   getAllCompanies,
   getCompanyById,
   updateCompany,
   createCompany,
+
+  // Helpers
   getLimitProfesionales,
   getLimitOperator,
+  getLimitEspecialidades
 };

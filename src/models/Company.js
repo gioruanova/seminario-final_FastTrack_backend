@@ -19,7 +19,7 @@ class Company extends BaseModel {
         "company_email",
         "limite_operadores",
         "limite_profesionales",
-        "limite_categorias",
+        "limite_especialidades",
         "reminder_manual",
       ],
       properties: {
@@ -33,7 +33,7 @@ class Company extends BaseModel {
         company_estado: { type: "boolean", default: true },
         limite_operadores: { type: "integer", minimum: 0 },
         limite_profesionales: { type: "integer", minimum: 0 },
-        limite_categorias: { type: "integer", minimum: 0 },
+        limite_especialidades: { type: "integer", minimum: 0 },
         reminder_manual: { type: "boolean", default: true },
         created_at: { type: "string", format: "date-time" },
         updated_at: { type: "string", format: "date-time" },

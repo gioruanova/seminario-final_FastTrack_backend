@@ -8,5 +8,13 @@ exports.seed = async function (knex) {
       company_id: 1000,
       nombre_especialidad: "Gasista",
     },
+    {
+      company_id: 1000,
+      nombre_especialidad: "Plomeria",
+    },
+        {
+      company_id: 1000,
+      nombre_especialidad: "Electricidad",
+    },
   ]);
 };

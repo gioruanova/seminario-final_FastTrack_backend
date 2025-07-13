@@ -32,9 +32,9 @@ router.put("/users/restore/:user_id", authUser("owner"), userController.restoreU
 
 
 // rutas para manejo de especialidaes
+router.post("/especialidades",authUser("owner"),validateAccessStatus,especialidadController.createEspecialidadAsClient);
+router.put("/especialidades/:especialidadId",authUser("owner"),validateAccessStatus,especialidadController.updateEspecialidadAsClient);
 router.get("/especialidades",authUser("owner", "operador"),validateAccessStatus,especialidadController.getAllEspecialidades);
-router.post("/especialidades",authUser("owner"),validateAccessStatus,especialidadController.createEspecialidad);
-router.put("/especialidades/:especialidadId",authUser("owner"),validateAccessStatus,especialidadController.updateEspecialidad);
 
 // // FEATURES
 // router.get("/usersReport", authUser(), validateAccessStatus, exportCompanyExcel.exportUsersByCompany);

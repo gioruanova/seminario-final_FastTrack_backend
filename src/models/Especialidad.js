@@ -12,11 +12,12 @@ class Especialidad extends BaseModel {
   static get jsonSchema() {
     return {
       type: "object",
-      required: ["company_id", "nombre_especialidad"],
+      required: ["company_id", "nombre_especialidad", "estado_especialidad"],
       properties: {
         id_especialidad: { type: "integer" },
         company_id: { type: "integer" },
         nombre_especialidad: { type: "string", maxLength: 255 },
+        estado_especialidad: { type: "boolean", default: true },
       },
     };
   }

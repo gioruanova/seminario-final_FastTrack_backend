@@ -11,6 +11,7 @@ exports.up = function(knex) {
       .onDelete("CASCADE")
       .onUpdate("CASCADE");
     table.string("nombre_especialidad").notNullable();
+    table.boolean("estado_especialidad").notNullable().defaultTo(true);
   });
 };
 

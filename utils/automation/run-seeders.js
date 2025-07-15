@@ -16,12 +16,10 @@ const knex = require("knex")({
 
 const seeders = [
   "seed_companies.js",
+  "seed_companies_config.js",
   "seed_users.js",
   "seed_especialidades.js",
   "seed_messages_categories.js",
-
-  
-  
 ];
 
 async function runSeeders() {

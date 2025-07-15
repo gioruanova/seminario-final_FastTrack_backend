@@ -1,0 +1,40 @@
+// seeds/01_companies_config.js
+exports.seed = async function (knex) {
+  await knex("companies_config").del();
+
+  await knex("companies_config").insert([
+    {
+      company_id: "1000",
+      sing_heading_profesional: "Especialista",
+      string_inicio_reclamo_solicitante:
+        "Hemos generado una gestión en base a su pedido. Adjunta encontrará la información pertinente al mismo:",
+      string_recordatorio_reclamo_solicitante:
+        "La fecha de gestión de su pedido se acerca. Adjunta encontrará la información pertinente al mismo:",
+      string_cierre_reclamo_solicitante:
+        "Su gestión ha finalizado. Adjunta encontrará la información pertinente al mismo:",
+
+      string_inicio_reclamo_profesional:
+        "Se ha generado una nueva asignación para su actividad. Adjunta encontrará la información pertinente al mismo:",
+      string_recordatorio_reclamo_profesional:
+        "La fecha de gestión de su actividad se acerca. Adjunta encontrará la información pertinente al mismo:",
+      string_cierre_reclamo_profesional:
+        "Se ha finalizado la gestión asignada. Adjunta encontrará la información pertinente al mismo:",
+    },
+    {
+      company_id: "1001",
+      string_inicio_reclamo_solicitante:
+        "Hemos generado una gestión en base a su pedido. Adjunta encontrará la información pertinente al mismo:",
+      string_recordatorio_reclamo_solicitante:
+        "La fecha de gestión de su pedido se acerca. Adjunta encontrará la información pertinente al mismo:",
+      string_cierre_reclamo_solicitante:
+        "Su gestión ha finalizado. Adjunta encontrará la información pertinente al mismo:",
+
+      string_inicio_reclamo_profesional:
+        "Se ha generado una nueva asignación para su actividad. Adjunta encontrará la información pertinente al mismo:",
+      string_recordatorio_reclamo_profesional:
+        "La fecha de gestión de su actividad se acerca. Adjunta encontrará la información pertinente al mismo:",
+      string_cierre_reclamo_profesional:
+        "Se ha finalizado la gestión asignada. Adjunta encontrará la información pertinente al mismo:",
+    },
+  ]);
+};

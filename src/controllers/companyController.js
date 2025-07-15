@@ -1,4 +1,5 @@
 const Company = require("../models/Company");
+const companyConfigController = require("./companyConfigController");
 
 const { registrarNuevoLog } = require("../controllers/globalLogController");
 
@@ -95,12 +96,23 @@ async function createCompany(req, res) {
       limite_profesionales === undefined ||
       reminder_manual === undefined
     ) {
-      return res.status(400).json({ error: "Todos los campos son requeridos" });
+      return res
+        .status(400)
+        .json({ success: false, error: "Todos los campos son requeridos" });
     }
 
-    const existing = await Company.query().findOne({ company_unique_id });
-    if (existing) {
-      return res.status(409).json({ error: "El company_unique_id ya existe" });
+    const existingById = await Company.query().findOne({ company_unique_id });
+    if (existingById) {
+      return res
+        .status(409)
+        .json({ success: false, error: "El company_unique_id ya existe" });
+    }
+
+    const existingByEmail = await Company.query().findOne({ company_email });
+    if (existingByEmail) {
+      return res
+        .status(409)
+        .json({ success: false, error: "El email ya está registrado" });
     }
 
     const newCompany = await Company.query().insert({
@@ -113,6 +125,12 @@ async function createCompany(req, res) {
       reminder_manual: false, // funcionalidad a evaluar si se cobra o no
       company_estado: false, // inactiva por defecto
     });
+
+    const newConfigData = {
+      company_id: newCompany.company_id,
+    };
+
+    await companyConfigController.createCompanyConfigAsAdmin(newConfigData);
 
     /*LOGGER*/ await registrarNuevoLog(
       newCompany.id_company,

@@ -83,7 +83,7 @@ router.get("/companies", companyController.getAllCompanies);
 router.post("/companies/:company_id", companyController.getCompanyById);
 
 router.post("/companies", companyController.createCompany);
-router.put("/companies/:company_id", companyController.updateCompany);
+router.put("/companies/:company_id", companyController.updateCompanyAsAdmin);
 
 
 

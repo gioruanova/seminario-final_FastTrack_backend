@@ -2,6 +2,10 @@ const Company = require("../models/Company");
 
 const { registrarNuevoLog } = require("../controllers/globalLogController");
 
+// CONTROLADORES PARA ADMIN:
+// ---------------------------------------------------------
+// Get all companies
+// ---------------------------------------------------------
 async function getAllCompanies(req, res) {
   try {
     const companies = await Company.query()
@@ -13,7 +17,9 @@ async function getAllCompanies(req, res) {
     return res.status(500).json({ error: "Error interno del servidor" });
   }
 }
-
+// ---------------------------------------------------------
+// Get company by id
+// ---------------------------------------------------------
 async function getCompanyById(req, res) {
   try {
     const { company_id } = req.params;
@@ -32,7 +38,10 @@ async function getCompanyById(req, res) {
   }
 }
 
-async function updateCompany(req, res) {
+// ---------------------------------------------------------
+// Update Company
+// ---------------------------------------------------------
+async function updateCompanyAsAdmin(req, res) {
   try {
     const { company_id } = req.params;
     const updateData = req.body;
@@ -62,6 +71,9 @@ async function updateCompany(req, res) {
   }
 }
 
+// ---------------------------------------------------------
+// Create Company
+// ---------------------------------------------------------
 async function createCompany(req, res) {
   try {
     const {
@@ -119,6 +131,72 @@ async function createCompany(req, res) {
   }
 }
 
+// CONTROLADORES PARA CLIENT:
+// ---------------------------------------------------------
+// Update Company
+// ---------------------------------------------------------
+async function updateCompanyAsClient(req, res) {
+  try {
+    const company_id = req.user.company_id;
+    const allowedFields = [
+      "company_phone",
+      "company_email",
+      "company_whatsapp",
+      "company_telegram",
+    ];
+
+    const updateData = {};
+    for (const field of allowedFields) {
+      if (req.body.hasOwnProperty(field)) {
+        const value = req.body[field];
+
+        if (value === null || value === undefined || value === "") {
+          return res.status(400).json({
+            error: `El campo ${field} no puede estar vacío`,
+          });
+        }
+
+        updateData[field] = value;
+      }
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      return res.status(400).json({
+        error: "No se proporcionó ningún campo válido para actualizar",
+      });
+    }
+
+    const company = await Company.query().findById(company_id);
+    if (!company) {
+      return res.status(404).json({ error: "Empresa no encontrada" });
+    }
+
+    const updatedCompany = await Company.query().patchAndFetchById(
+      company_id,
+      updateData
+    );
+
+    /*LOGGER*/ await registrarNuevoLog(
+      updatedCompany.company_id,
+      "La empresa " +
+        updatedCompany.company_nombre +
+        " se ha editado con éxito. " +
+        ` (Ejecutado por ${req.user.user_name}).`
+    );
+
+    return res.json({
+      success: true,
+      message: "Empresa actualizada exitosamente",
+    });
+  } catch (error) {
+    console.error("Error al actualizar empresa:", error);
+    return res.status(500).json({ error: "Error interno del servidor" });
+  }
+}
+
+// ---------------------------------------------------------
+// HELPERS
+// ---------------------------------------------------------
 async function getLimitOperator(company_id) {
   try {
     const company = await Company.query().findById(company_id);
@@ -152,8 +230,10 @@ async function getLimitEspecialidades(company_id) {
 module.exports = {
   getAllCompanies,
   getCompanyById,
-  updateCompany,
+  updateCompanyAsAdmin,
   createCompany,
+
+  updateCompanyAsClient,
 
   // Helpers
   getLimitProfesionales,

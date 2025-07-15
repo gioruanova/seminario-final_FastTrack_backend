@@ -4,10 +4,6 @@ exports.up = function (knex) {
     table.string("platform_message_title").notNullable();
     table.text("platform_message_content", "longtext").notNullable();
 
-
-
-
-    
     table.timestamps(true, true);
   });
 };

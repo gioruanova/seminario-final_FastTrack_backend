@@ -39,7 +39,10 @@ async function assignEspecialidadAsAdmin(req, res) {
       return res.status(404).json({ error: "Especialidad no encontrada" });
     }
 
-    if(!permitirAsignacionInactiva && especialidadExiste.estado_especialidad === 0) {
+    if (
+      !permitirAsignacionInactiva &&
+      especialidadExiste.estado_especialidad === 0
+    ) {
       return res.status(400).json({ error: "Especialidad inactiva" });
     }
 
@@ -150,10 +153,12 @@ async function editAsignacionEspecialidadAsAdmin(req, res) {
       return res.status(404).json({ error: "Especialidad no encontrada" });
     }
 
-    if(!permitirAsignacionInactiva && validacionEspecialidad.estado_especialidad === 0) {
+    if (
+      !permitirAsignacionInactiva &&
+      validacionEspecialidad.estado_especialidad === 0
+    ) {
       return res.status(400).json({ error: "Especialidad inactiva" });
     }
-
 
     const validacionAsignacion = await ProfesionalEspecialidad.query()
       .where({
@@ -213,7 +218,10 @@ async function assignEspecialidadAsClient(req, res) {
       return res.status(404).json({ error: "Especialidad no encontrada" });
     }
 
-    if(!permitirAsignacionInactiva && validacionEspecialidad.estado_especialidad === 0) {
+    if (
+      !permitirAsignacionInactiva &&
+      validacionEspecialidad.estado_especialidad === 0
+    ) {
       return res.status(400).json({ error: "Especialidad inactiva" });
     }
 
@@ -254,7 +262,10 @@ async function assignEspecialidadAsClient(req, res) {
       "Se ha asignado la especialidad: " +
         especialidad_id +
         " al profesional: " +
-        profesional_id
+        profesional_id +
+        ". (Ejecutado por " +
+        req.user.user_name +
+        ")."
     );
     return res
       .status(201)
@@ -289,7 +300,10 @@ async function deleteEspecialidadAsClient(req, res) {
       "Se ha eliminado la especialidad: " +
         profesionalEspecialidadExiste.id_especialidad +
         " del profesional: " +
-        profesionalEspecialidadExiste.id_usuario
+        profesionalEspecialidadExiste.id_usuario +
+        ". (Ejecutado por " +
+        req.user.user_name +
+        ")."
     );
     return res
       .status(201)
@@ -330,7 +344,10 @@ async function editAsignacionEspecialidadAsClient(req, res) {
       return res.status(404).json({ error: "Especialidad no encontrada" });
     }
 
-    if(!permitirAsignacionInactiva && validacionEspecialidad.estado_especialidad === 0) {
+    if (
+      !permitirAsignacionInactiva &&
+      validacionEspecialidad.estado_especialidad === 0
+    ) {
       return res.status(400).json({ error: "Especialidad inactiva" });
     }
 
@@ -357,7 +374,10 @@ async function editAsignacionEspecialidadAsClient(req, res) {
       "Se ha editado la especialidad: " +
         profesionalEspecialidadExiste.id_especialidad +
         " del profesional: " +
-        profesionalEspecialidadExiste.id_usuario
+        profesionalEspecialidadExiste.id_usuario +
+        ". (Ejecutado por " +
+        req.user.user_name +
+        ")."
     );
     return res.status(201).json({
       message: "Asignacion editada correctamente",

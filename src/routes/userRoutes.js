@@ -60,9 +60,9 @@ router.put("/profesionalEspecialidad/:id_asignacion",authUserWithStatus("owner",
 
 // --------------------------------------------------------------------------------------------------------------
 // Manejo de Logs
-router.get("/globalLogs",authUserWithStatus("owner", "operador"), globalLogController.getAllLogsAsClient);
-router.put("/globalLogs/read",authUserWithStatus("owner", "operador"), globalLogController.markAllLogsAsReadAsClient);
-router.put("/globalLogs/unread",authUserWithStatus("owner", "operador"), globalLogController.markAllLogsAsUnreadAsClient);
+router.get("/globalLogs",authUserWithStatus("owner"), globalLogController.getAllLogsAsClient);
+router.put("/globalLogs/read",authUserWithStatus("owner"), globalLogController.markAllLogsAsReadAsClient);
+router.put("/globalLogs/unread",authUserWithStatus("owner"), globalLogController.markAllLogsAsUnreadAsClient);
 router.delete("/globalLogs",authUserWithStatus("owner"), globalLogController.deleteLogsAsClient);
 
 module.exports = router;

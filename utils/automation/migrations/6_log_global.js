@@ -12,7 +12,7 @@ exports.up = function (knex) {
     table.string("log_detalle").notNullable();
     table.boolean("log_leido").notNullable().defaultTo(false);
 
-    table.timestamp("created_at").defaultTo(knex.fn.now());
+    table.timestamps(true, true);
   });
 };
 

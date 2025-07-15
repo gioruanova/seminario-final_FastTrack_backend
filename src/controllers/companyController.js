@@ -47,6 +47,14 @@ async function updateCompany(req, res) {
       updateData
     );
 
+    /*LOGGER*/ await registrarNuevoLog(
+      updatedCompany.id_company,
+      "La empresa " +
+        updatedCompany.company_nombre +
+        " se ha editado con exito. " +
+        " (Ejecutado por Sistema)."
+    );
+
     return res.json(updatedCompany);
   } catch (error) {
     console.error("Error al actualizar empresa:", error);
@@ -96,7 +104,10 @@ async function createCompany(req, res) {
 
     /*LOGGER*/ await registrarNuevoLog(
       newCompany.id_company,
-      "La empresa " + newCompany.company_nombre + " se ha creado con exito. "
+      "La empresa " +
+        newCompany.company_nombre +
+        " se ha creado con exito. " +
+        " (Ejecutado por Sistema)."
     );
 
     return res

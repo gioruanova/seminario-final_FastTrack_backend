@@ -4,12 +4,11 @@ exports.up = function (knex) {
     table.string("message_email").notNullable();
     table.string("message_phone").notNullable();
     table.text("message_content", "longtext").notNullable();
-
-    // Ya no tiene FOREIGN KEY ni restricciones
     table.integer("category_id").unsigned().notNullable();
     table.string("category_original").notNullable();
 
     table.boolean("message_read").notNullable().defaultTo(false);
+    table.timestamps(true, true);
   });
 };
 

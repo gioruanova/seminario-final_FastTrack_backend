@@ -48,7 +48,10 @@ async function createUserAsAdmin(req, res) {
 
     /*LOGGER*/ await registrarNuevoLog(
       newUser.company_id,
-      "El usuario " + newUser.user_complete_name + " ha sido creado"
+      "El usuario " +
+        newUser.user_complete_name +
+        " ha sido creado" +
+        " (Ejecutado por Sistema)"
     );
 
     return res
@@ -113,7 +116,7 @@ async function blockUserAsAdmin(req, res) {
 
     /*LOGGER*/ await registrarNuevoLog(
       userToBlock.company_id,
-      "El usuario " + userToBlock.user_complete_name + " ha sido bloqueado."
+      "El usuario " + userToBlock.user_complete_name + " ha sido bloqueado."  + " (Ejecutado por Sistema)"
     );
 
     return res
@@ -144,7 +147,7 @@ async function unblockUserAsAdmin(req, res) {
       userToUnblock.company_id,
       "El usuario " +
         userToUnblock.user_complete_name +
-        " ha sido desbloqueado."
+        " ha sido desbloqueado."  + " (Ejecutado por Sistema)"
     );
 
     return res
@@ -184,7 +187,7 @@ async function restoreUserAsAdmin(req, res) {
       userToRestore.company_id,
       "El usuario " +
         userToRestore.user_complete_name +
-        " ha sido desbloqueado y la contraseña ha sido reestablecida."
+        " ha sido desbloqueado y la contraseña ha sido reestablecida."  + " (Ejecutado por Sistema)"
     );
 
     return res
@@ -275,7 +278,7 @@ async function createUserAsClient(req, res) {
 
     /*LOGGER*/ await registrarNuevoLog(
       newUser.company_id,
-      "El usuario " + newUser.user_complete_name + " ha sido creado"
+      "El usuario " + newUser.user_complete_name + " ha sido creado"+ ". (Ejecutado por " + req.user.user_name + ")."
     );
 
     return res
@@ -354,7 +357,7 @@ async function blockUserAsClient(req, res) {
 
     /*LOGGER*/ await registrarNuevoLog(
       userToBlock.company_id,
-      "El usuario " + userToBlock.user_complete_name + " ha sido bloqueado."
+      "El usuario " + userToBlock.user_complete_name + " ha sido bloqueado."+ ". (Ejecutado por " + req.user.user_name + ")."
     );
 
     return res
@@ -401,7 +404,7 @@ async function unblockUserAsClient(req, res) {
 
     /*LOGGER*/ await registrarNuevoLog(
       userToUnblock.company_id,
-      "El usuario " + userToUnblock.user_complete_name + " ha sido bloqueado."
+      "El usuario " + userToUnblock.user_complete_name + " ha sido bloqueado."+ ". (Ejecutado por " + req.user.user_name + ")."
     );
 
     return res
@@ -452,7 +455,7 @@ async function restoreUserAsClient(req, res) {
       userToRestore.company_id,
       "El usuario " +
         userToRestore.user_complete_name +
-        " ha sido desbloqueado y la contraseña ha sido reestablecida."
+        " ha sido desbloqueado y la contraseña ha sido reestablecida."+ ". (Ejecutado por " + req.user.user_name + ")."
     );
 
     return res

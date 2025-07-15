@@ -5,6 +5,8 @@ exports.up = function (knex) {
       table.increments("category_id").primary();
       table.string("category_name").notNullable();
       table.boolean("category_status").notNullable().defaultTo(true);
+
+      table.timestamps(true, true);
     }
   );
 };

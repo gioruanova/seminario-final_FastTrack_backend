@@ -27,6 +27,7 @@ async function createPublicMessage(req, res) {
     await PublicMessage.query().insert({
       message_email,
       message_phone,
+      message_source: "WEB",
       message_content,
       category_id,
       category_original: categoria.category_name,
@@ -42,6 +43,40 @@ async function createPublicMessage(req, res) {
 }
 
 // CONTROLADORES ADMIN:
+// ---------------------------------------------------------
+// ---------------------------------------------------------
+// Traer todos los mensajes
+// ---------------------------------------------------------
+async function createFeedbackMessage(req, res) {
+  try {
+    const { message_content } =
+      req.body;
+
+    if (!message_content) {
+      return res
+        .status(400)
+        .json({ error: "Todos los campos son obligatorios" });
+    }
+
+
+
+    await PublicMessage.query().insert({
+      message_email:req.user.user_email,
+      message_source:"PLATFORM",
+      message_phone:"N/A",
+      message_content : `EMPRESA | ${req.user.company_name} ${message_content}`,
+      category_id:0,
+      category_original: "Feedback",
+    });
+
+    return res
+      .status(201)
+      .json({ success: true, message: "Feedback correctamente" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Error al crear el mensaje" });
+  }
+}
 // ---------------------------------------------------------
 // Traer todos los mensajes
 // ---------------------------------------------------------
@@ -153,4 +188,5 @@ module.exports = {
   markMessageAsReadAsAdmin,
   markMessageAsUnreadAsAdmin,
   deleteMessageAsAdmin,
+  createFeedbackMessage
 };

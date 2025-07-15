@@ -57,6 +57,15 @@ class User extends BaseModel {
           to: "profesionales_especialidad.id_usuario",
         },
       },
+
+      platformMessageUsers: {
+        relation: BaseModel.HasManyRelation,
+        modelClass: PlatformMessageUser,
+        join: {
+          from: "users.user_id",
+          to: "platform_messages_users.user_id",
+        },
+      },
     };
   }
 }

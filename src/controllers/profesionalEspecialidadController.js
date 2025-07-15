@@ -1,6 +1,4 @@
 const ProfesionalEspecialidad = require("../models/ProfesionalesEspecialidad");
-const Company = require("../models/Company");
-const companyController = require("./companyController");
 
 const Especialidad = require("../models/Especialidad");
 

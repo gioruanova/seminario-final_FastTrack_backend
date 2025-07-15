@@ -15,6 +15,7 @@ const publicMessagesController = require("../controllers/cfv/publicMessagesContr
 const publicMessageCategoryController = require("../controllers/cfv/publicMessageCategoryController");
 
 const globalLogController = require("../controllers/globalLogController");
+const messageController = require("../controllers/messageController");
 
 // =======================
 // Rutas publicas
@@ -92,6 +93,12 @@ router.put("/companies/:company_id", companyController.updateCompanyAsAdmin);
 router.get("/globalLogs", globalLogController.getAllLogsAsAdmin);
 router.get("/globalLogs/:company_id", globalLogController.getAllLogsByCompanyAsAdmin);
 
+
+// Mensajes globales
+router.post("/platform/messages", messageController.createMessageForAllAsAdmin);
+router.post("/platform/messages/company/:company_id", messageController.createMessageForCompanyAsAdmin);
+router.post("/platform/messages/user/:user_id", messageController.createMessageForUserAsAdmin);
+router.delete("/platform/messages/:platform_message_id", messageController.deleteMessageAsAdmin);
 
 
 

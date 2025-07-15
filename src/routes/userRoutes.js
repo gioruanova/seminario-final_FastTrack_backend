@@ -12,6 +12,8 @@ const especialidadController = require("../controllers/especialidadController");
 const profesionalEspecialidadController = require("../controllers/profesionalEspecialidadController");
 
 const globalLogController = require("../controllers/globalLogController");
+const publicMEssageController = require("../controllers/cfv/publicMessagesController");
+const messageController = require("../controllers/messageController");
 
 
 
@@ -68,6 +70,22 @@ router.get("/globalLogs",authUserWithStatus("owner"), globalLogController.getAll
 router.put("/globalLogs/read",authUserWithStatus("owner"), globalLogController.markAllLogsAsReadAsClient);
 router.put("/globalLogs/unread",authUserWithStatus("owner"), globalLogController.markAllLogsAsUnreadAsClient);
 router.delete("/globalLogs",authUserWithStatus("owner"), globalLogController.deleteLogsAsClient);
+
+
+// Feedback
+router.post("/platform/feedback",authUserWithStatus("owner", "operador", "profesional"), publicMEssageController.createFeedbackMessage);
+
+
+// Mensajes globales
+router.get("/platform/messages",authUserWithStatus("owner", "operador", "profesional"), messageController.getAllMesagesAsClient);
+router.post("/platform/messages",authUserWithStatus("owner", "operador"), messageController.createMessageForCompanyAsClient);
+router.post("/platform/messages/user/:user_id",authUserWithStatus("owner", "operador"), messageController.createMessageForUserAsClient);
+router.delete("/platform/messages/:platform_message_id",authUserWithStatus("owner"), messageController.deleteCompanyMessagesAsClient);
+router.delete("/platform/single-message/:specific_message_id",authUserWithStatus("owner", "operador", "profesional"), messageController.deleteSpecificMessagesAsClient);
+
+router.put('/platform/message/read/:specific_message_id',authUserWithStatus("owner", "operador", "profesional"), messageController.marAsReadMessageAsClient);
+router.put('/platform/message/unread/:specific_message_id',authUserWithStatus("owner", "operador", "profesional"), messageController.marAsUnreadMessageAsClient);
+
 
 module.exports = router;
 

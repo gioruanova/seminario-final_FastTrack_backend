@@ -3,6 +3,7 @@ exports.up = function (knex) {
     table.increments("message_id").primary();
     table.string("message_email").notNullable();
     table.string("message_phone").notNullable();
+    table.text("message_source", "longtext").notNullable();
     table.text("message_content", "longtext").notNullable();
     table.integer("category_id").unsigned().notNullable();
     table.string("category_original").notNullable();

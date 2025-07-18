@@ -1,9 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-
 const bodyParser = require("body-parser");
-
 const swaggerUI = require("swagger-ui-express");
 const swaggerSpec = require("./utils/swagger/swaggerConfig");
 
@@ -17,11 +15,13 @@ const corsOptions = {
 };
 
 // =====================================================================
-// routes
+// Middleware
 app.use(cors(corsOptions));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
+// =====================================================================
+// Routes
 app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(swaggerSpec));
 app.use("/public", require("./src/routes/publicRoutes"));
 app.use("/super", require("./src/routes/superRoutes"));
@@ -43,9 +43,9 @@ app.use((req, res) => {
 });
 
 // =====================================================================
+// Running
+console.log("✅ About to start server...");
 
-// running
 app.listen(port, "0.0.0.0", () => {
-  console.log(`Server up: \nhttp://localhost:${port}`);
-
+  console.log(`✅ Server running on http://localhost:${port}`);
 });

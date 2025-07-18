@@ -1,7 +1,5 @@
 require("dotenv").config();
 
-const isLocalhost = process.env.DB_HOST === "localhost";
-
 module.exports = {
   database: process.env.DB_NAME,
   username: process.env.DB_USER,
@@ -10,9 +8,5 @@ module.exports = {
   port: process.env.DB_PORT,
   dialect: "mysql",
   logging: false,
-  dialectOptions: isLocalhost ? {} : {
-    ssl: {
-      rejectUnauthorized: false,
-    },
-  }
+  dialectOptions: {} // <-- sin ssl
 };

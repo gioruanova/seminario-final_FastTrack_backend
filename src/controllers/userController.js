@@ -3,9 +3,9 @@ const saltRounds = 10;
 
 const User = require("../models/User");
 const userLogController = require("./UserLogController");
-
 const Company = require("../models/Company");
 const companyController = require("./companyController");
+const companyConfigController = require("./companyConfigController");
 
 const { registrarNuevoLog } = require("../controllers/globalLogController");
 
@@ -528,9 +528,6 @@ async function editUserAsClient(req, res) {
 // ---------------------------------------------------------
 async function getUsersAsClient(req, res) {
   const companyId = req.user.company_id;
-  
-  
-  
 
   try {
     const users = await User.query()
@@ -788,6 +785,47 @@ async function resetPassword(user_id, newPassword) {
     .patch({ user_password: passWordToUpdate });
 }
 
+// ---------------------------------------------------------
+// VISTAS
+// ---------------------------------------------------------
+async function fetchProfesionalesDetail(companyId) {
+  const configCompany =
+    await companyConfigController.fetchCompanySettingsByCompanyId(companyId);
+
+  const users = await User.query()
+    .select("*")
+    .where("company_id", companyId)
+    .withGraphFetched("especialidades.Especialidad(selectNombreEspecialidad)")
+    .modifiers({
+      selectNombreEspecialidad(builder) {
+        builder.select("nombre_especialidad");
+      },
+    });
+
+  return users.map((user) => ({
+    ID: user.user_id,
+    DNI: user.user_dni,
+    [`Nombre - ${configCompany.sing_heading_profesional}`]:
+      user.user_complete_name,
+    Telefono: user.user_phone,
+    Email: user.user_email,
+    [`${configCompany.sing_heading_especialidad}(s)`]:
+      user.especialidades.map((e) => e.Especialidad.nombre_especialidad).join(", "),
+  }));
+}
+
+async function getProfesionalesDetailAsClient(req, res) {
+  try {
+    const companyId = req.user.company_id;
+    const data = await fetchProfesionalesDetail(companyId);
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
+}
+
+
+
 module.exports = {
   getUsersAsAdmin,
   getUsersByCompanyAsAdmin,
@@ -806,4 +844,8 @@ module.exports = {
 
   // metodos auxiliares
   bloquearUsuarioPorId,
+
+  // VISTAS
+  fetchProfesionalesDetail,
+  getProfesionalesDetailAsClient,
 };

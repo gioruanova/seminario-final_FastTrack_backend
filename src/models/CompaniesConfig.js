@@ -35,6 +35,9 @@ class CompaniesConfig extends BaseModel {
         sing_heading_reclamos: { type: "string", default: "Reclamo" },
         plu_heading_reclamos: { type: "string", default: "Reclamos" },
 
+        sing_heading_especialidad: { type: "string", default: "Especialidad" },
+        plu_heading_especialidad: { type: "string", default: "Especialidades" },
+
         string_inicio_reclamo_solicitante: {
           type: "string",
           default:

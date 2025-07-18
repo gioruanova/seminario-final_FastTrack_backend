@@ -22,7 +22,10 @@ async function getCompanySettingsByClientForOwner(req, res) {
   const company_id = req.user.company_id;
 
   try {
-    const companyConfig = await CompaniesConfig.query().findOne({ company_id }).withGraphFetched("company");
+    // const companyConfig = await CompaniesConfig.query()
+    //   .findOne({ company_id })
+    // .withGraphFetched("company");
+    const companyConfig = await fetchCompanySettingsByCompanyId(company_id);
 
     if (!companyConfig) {
       return res
@@ -43,7 +46,8 @@ async function getCompanySettingsByClient(req, res) {
   const company_id = req.user.company_id;
 
   try {
-    const companyConfig = await CompaniesConfig.query().findOne({ company_id });
+    // const companyConfig = await CompaniesConfig.query().findOne({ company_id });
+    const companyConfig = await fetchCompanySettingsByCompanyId(company_id);
 
     if (!companyConfig) {
       return res
@@ -67,6 +71,7 @@ async function updateCompanySettingsByClient(req, res) {
     "sing_heading_operador",
     "sing_heading_solicitante",
     "sing_heading_reclamos",
+    "sing_heading_especialidad",
   ];
 
   const requiredNonEmptyFields = [
@@ -137,6 +142,12 @@ async function updateCompanySettingsByClient(req, res) {
 // ---------------------------------------------------------
 // HELPERS
 // ---------------------------------------------------------
+// Metodo reutilizable para obtener
+async function fetchCompanySettingsByCompanyId(company_id) {
+  return CompaniesConfig.query()
+    .findOne({ company_id })
+    .withGraphFetched("company");
+}
 
 // metodo para pluralizar
 // TODO: Revisar bien esto y hacer muchos experimentos
@@ -157,4 +168,7 @@ module.exports = {
   getCompanySettingsByClient,
   getCompanySettingsByClientForOwner,
   updateCompanySettingsByClient,
+
+  // helpers
+  fetchCompanySettingsByCompanyId,
 };

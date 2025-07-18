@@ -17,10 +17,8 @@ const globalLogController = require("../controllers/globalLogController");
 const publicMEssageController = require("../controllers/cfv/publicMessagesController");
 const messageController = require("../controllers/messageController");
 
-
-
 // // utilitarios
-// const exportCompanyExcel = require("../controllers/exportToExcelCompany");
+const exportProfesionalesController = require("../../utils/exports/exportProfesionalesController");
 
 
 
@@ -63,13 +61,6 @@ router.delete("/profesionalEspecialidad/:id_asignacion",authUserWithStatus("owne
 router.put("/profesionalEspecialidad/:id_asignacion",authUserWithStatus("owner", "operador"), profesionalEspecialidadController.editAsignacionEspecialidadAsClient);
 
 
-
-// --------------------------------------------------------------------------------------------------------------
-// // Manejo de features especiales
-// router.get("/usersReport", authUserWithStatus(),exportCompanyExcel.exportUsersByCompany);
-
-
-
 // --------------------------------------------------------------------------------------------------------------
 // Manejo de Logs
 router.get("/globalLogs",authUserWithStatus("owner"), globalLogController.getAllLogsAsClient);
@@ -91,6 +82,15 @@ router.delete("/platform/single-message/:specific_message_id",authUserWithStatus
 
 router.put('/platform/message/read/:specific_message_id',authUserWithStatus("owner", "operador", "profesional"), messageController.marAsReadMessageAsClient);
 router.put('/platform/message/unread/:specific_message_id',authUserWithStatus("owner", "operador", "profesional"), messageController.marAsUnreadMessageAsClient);
+
+
+// VISTAS
+router.get("/profesionales/vistas",authUserWithStatus("owner", "operador"),exportProfesionalesController.exportProfesionalesToExcel);
+
+
+
+// --------------------------------------------------------------------------------------------------------------
+// // Manejo de features especiales
 
 
 module.exports = router;

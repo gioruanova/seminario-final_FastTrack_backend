@@ -31,6 +31,9 @@ exports.up = function (knex) {
     table.string("sing_heading_reclamos").notNullable().defaultTo("Reclamo");
     table.string("plu_heading_reclamos").notNullable().defaultTo("Reclamos");
 
+    table.string("sing_heading_especialidad").notNullable().defaultTo("Especialidad");
+    table.string("plu_heading_especialidad").notNullable().defaultTo("Especialidades");
+
     // Strings personalizados para reclamos
     table.text("string_inicio_reclamo_solicitante").notNullable().defaultTo("Hemos generado una gestión en base a su pedido. Adjunta encontrará la información pertinente al mismo:");
     table.text("string_recordatorio_reclamo_solicitante").notNullable().defaultTo("La fecha de gestión de su pedido se acerca. Adjunta encontrará la información pertinente al mismo:");

@@ -1,6 +1,5 @@
 require("dotenv").config();
 
-
 const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
@@ -30,18 +29,6 @@ app.use("/super", require("./src/routes/superRoutes"));
 app.use(require("./src/routes/userRoutes"));
 
 
-app.get("/ping", (req, res) => {
-  res.send("pong");
-});
-
-
-console.log(`Database Name: ${process.env.DB_NAME}`);
-console.log(`Database User: ${process.env.DB_USER}`);
-console.log(`Database Password: ${process.env.DB_PASSWORD}`);
-console.log(`Database Host: ${process.env.DB_HOST}`);
-console.log(`Database Port: ${process.env.DB_PORT}`);
-
-
 // =====================================================================
 // 404 fallback
 app.use((req, res) => {
@@ -55,7 +42,6 @@ app.use((req, res) => {
 
 // =====================================================================
 // Running
-console.log("✅ About to start server...");
 
 app.listen(port, "0.0.0.0", () => {
   console.log(`✅ Server running on http://localhost:${port}`);

@@ -57,7 +57,6 @@ async function updateCompanyAsAdmin(req, res) {
       updateData
     );
 
-    console.log(updatedCompany.company_id);
 
     /*LOGGER*/ await registrarNuevoLog(
       company.company_id,

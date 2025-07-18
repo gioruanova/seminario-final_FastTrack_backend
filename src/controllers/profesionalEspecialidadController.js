@@ -381,8 +381,6 @@ async function editAsignacionEspecialidadAsClient(req, res) {
       message: "Asignacion editada correctamente",
     });
   } catch (error) {
-    console.log(error);
-
     return res.status(500).json({ error: "Error al editar la asignacion" });
   }
 }

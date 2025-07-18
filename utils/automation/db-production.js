@@ -11,7 +11,6 @@ const runCommand = (command, label) => {
 };
 
 const main = () => {
-  runCommand("node ./utils/automation/db-reset.js", "Resetting database");
   runCommand("npx knex migrate:rollback --all", "Rolling back database");
   runCommand("npx knex migrate:latest", "Migrations starting");
   runCommand("node ./utils/automation/run-seeders.js", "Running seeders");

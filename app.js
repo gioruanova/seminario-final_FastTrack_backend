@@ -42,5 +42,6 @@ app.use((req, res) => {
 
 // running
 app.listen(port, "0.0.0.0", () => {
-  console.log(`Server up: \nhttp://${process.env.DB_HOST}:${port}`);
+  console.log(`Server up: \nhttp://localhost:${port}`);
+
 });

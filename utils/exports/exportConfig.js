@@ -14,7 +14,7 @@ async function exportToExcel(res, fileName, sheetName, columns, data) {
     "Content-Type",
     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
   );
-  res.setHeader("Content-Disposition", `attachment; filename="${fileName}".xlsx`);
+  res.setHeader("Content-Disposition", `attachment; filename="${fileName}.xlsx"`);
 
   await workbook.xlsx.write(res);
   res.end();

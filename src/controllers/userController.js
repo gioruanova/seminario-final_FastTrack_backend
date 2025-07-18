@@ -794,7 +794,7 @@ async function fetchProfesionalesDetail(companyId) {
 
   const users = await User.query()
     .select("*")
-    .where("company_id", companyId)
+    .where({ company_id: companyId, user_role: "profesional" })
     .withGraphFetched("especialidades.Especialidad(selectNombreEspecialidad)")
     .modifiers({
       selectNombreEspecialidad(builder) {
@@ -809,8 +809,9 @@ async function fetchProfesionalesDetail(companyId) {
       user.user_complete_name,
     Telefono: user.user_phone,
     Email: user.user_email,
-    [`${configCompany.sing_heading_especialidad}(s)`]:
-      user.especialidades.map((e) => e.Especialidad.nombre_especialidad).join(", "),
+    [`${configCompany.sing_heading_especialidad}(s)`]: user.especialidades
+      .map((e) => e.Especialidad.nombre_especialidad)
+      .join(", "),
   }));
 }
 
@@ -818,13 +819,13 @@ async function getProfesionalesDetailAsClient(req, res) {
   try {
     const companyId = req.user.company_id;
     const data = await fetchProfesionalesDetail(companyId);
+    console.log(data);
+
     res.json(data);
   } catch (error) {
     res.status(500).json({ error: "Error interno del servidor" });
   }
 }
-
-
 
 module.exports = {
   getUsersAsAdmin,

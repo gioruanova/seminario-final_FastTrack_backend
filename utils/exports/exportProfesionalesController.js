@@ -1,11 +1,13 @@
 const { exportToExcel } = require("./exportConfig");
-const { fetchProfesionalesDetail} = require("../../src/controllers/userController");
+const {
+  fetchProfesionalesDetail,
+} = require("../../src/controllers/userController");
 const companyConfigController = require("../../src/controllers/companyConfigController");
 
 async function exportProfesionalesToExcel(req, res) {
   const companyId = req.user.company_id;
   const configCompany =
-    await companyConfigController.fetchCompanySettingsByCompanyId(companyId);
+  await companyConfigController.fetchCompanySettingsByCompanyId(companyId);
   const data = await fetchProfesionalesDetail(companyId);
 
   if (!data.length) {
@@ -14,13 +16,12 @@ async function exportProfesionalesToExcel(req, res) {
   }
 
   const columns = [
-    { header: "ID", key: "ID", width: 10 },
-    { header: "DNI", key: "DNI", width: 20 },
     {
-      header: `Nombre - ${configCompany.sing_heading_profesional}`,
+      header: `Nombre ${configCompany.sing_heading_profesional}`,
       key: `Nombre - ${configCompany.sing_heading_profesional}`,
       width: 30,
     },
+    { header: "DNI", key: "DNI", width: 20 },
     { header: "Telefono", key: "Telefono", width: 20 },
     { header: "Email", key: "Email", width: 30 },
     {
@@ -31,9 +32,17 @@ async function exportProfesionalesToExcel(req, res) {
   ];
 
   const fileName = `${configCompany.company.company_nombre} - Listado Profesionales`;
-  const sheetName = `Listado ${configCompany.plu_heading_profesional}`;
+  const sheetName = `Listado de ${configCompany.plu_heading_profesional}`;
 
-  await exportToExcel(res, fileName, sheetName, columns, data);
+  await exportToExcel(
+    res,
+    fileName,
+    sheetName,
+    columns,
+    data,
+    configCompany.company,
+    req.user
+  );
 }
 
 module.exports = { exportProfesionalesToExcel };

@@ -30,6 +30,10 @@ app.use("/super", require("./src/routes/superRoutes"));
 app.use(require("./src/routes/userRoutes"));
 
 
+app.get("/ping", (req, res) => {
+  res.send("pong");
+});
+
 
 // =====================================================================
 // 404 fallback

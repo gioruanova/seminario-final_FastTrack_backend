@@ -31,8 +31,8 @@ async function exportProfesionalesToExcel(req, res) {
     },
   ];
 
-  const fileName = `${configCompany.company.company_nombre} - Listado Profesionales`;
-  const sheetName = `Listado de ${configCompany.plu_heading_profesional}`;
+  const fileName = `${configCompany.company.company_nombre} - Reporte Profesionales`;
+  const sheetName = `Reporte de ${configCompany.plu_heading_profesional}`;
 
   await exportToExcel(
     res,

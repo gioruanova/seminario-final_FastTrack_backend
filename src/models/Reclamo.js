@@ -24,10 +24,11 @@ class Reclamo extends BaseModel {
         reclamo_id: { type: "integer" },
         reclamo_titulo: { type: "string", minLength: 1 },
         reclamo_detalle: { type: "string", minLength: 1 },
+        reclamo_url: { type: ["string", "null"], minLength: 1 },
         reclamo_estado: {
           type: "string",
-          enum: ["abierto", "en proceso", "en pausa", "cerrado"],
-          default: "abierto",
+          enum: ["ABIERTO", "EN PROCESO", "EN PAUSA", "CERRADO", "CANCELADO", "RE-ABIERTO"],
+          default: "ABIERTO",
         },
         creado_por: { type: ["integer", "null"] },
         company_id: { type: "integer" },
@@ -97,7 +98,7 @@ class Reclamo extends BaseModel {
       },
 
       agendaReclamo: {
-        relation: BaseModel.HasOneRelation, 
+        relation: BaseModel.HasOneRelation,
         modelClass: AgendaReclamo,
         join: {
           from: "reclamos.reclamo_id",

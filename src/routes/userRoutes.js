@@ -24,6 +24,7 @@ const messageController = require("../controllers/messageController");
 
 // // utilitarios
 const exportProfesionalesController = require("../../utils/exports/exportProfesionalesController");
+const exportReclamosController = require("../../utils/exports/exportReclamosController");
 
 
 
@@ -76,9 +77,18 @@ router.get("/agenda",authUserWithStatus("owner", "operador"),agendaBloquedaContr
 router.post("/agendaBloqueada/:user_id",authUserWithStatus("owner", "operador"),disponibilidadController.getDisponibilidadBloqueadaByProfesioanlAsAdmin);
 router.post("/agenda/:user_id",authUserWithStatus("owner", "operador"),agendaBloquedaController.createAgendaBloqueadaAsClient);
 
-// Reclamos
+// Reclamos como owner / operador
 router.post("/reclamo",authUserWithStatus("owner", "operador"),reclamoController.createReclamo);
 router.get("/reclamos", authUserWithStatus("owner", "operador"),reclamoController.getReclamosAsClient);
+router.get("/reclamos/gestion/:reclamo_id", authUserWithStatus("owner", "operador"),reclamoController.getReclamosAsClientById);
+router.put("/reclamos/gestion/:reclamo_id", authUserWithStatus("owner", "operador"),reclamoController.updateReclamoAsClient);
+
+
+
+// Reclamos como profesional
+router.get("/reclamos/profesional", authUserWithStatus("profesional"),reclamoController.getReclamosAsProfesional);
+router.get("/reclamos/profesional/gestion/:reclamo_id", authUserWithStatus("profesional"),reclamoController.getReclamosAsProfesionalById);
+router.put("/reclamos/profesional/gestion/:reclamo_id", authUserWithStatus("profesional"),reclamoController.updateReclamoAsProfesional);
 
 
 // bloqueo manual de agenda
@@ -117,6 +127,7 @@ router.put('/platform/message/unread/:specific_message_id',authUserWithStatus("o
 // Manejo de features especiales
 // VISTAS
 router.get("/vistas/profesionales",authUserWithStatus("owner", "operador"),exportProfesionalesController.exportProfesionalesToExcel);
+router.get("/vistas/reclamos",authUserWithStatus("owner", "operador"),exportReclamosController.exportReclamosToExcel);
 
 
 

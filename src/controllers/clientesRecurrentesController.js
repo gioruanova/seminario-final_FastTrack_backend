@@ -1,5 +1,6 @@
 const ClienteRecurrente = require("../models/ClienteRecurrente");
 const Company = require("../models/Company");
+const companyConfigController = require("./companyConfigController");
 
 // CONTROLADORES PARA CLIENTE:
 // ---------------------------------------------------------
@@ -38,24 +39,29 @@ async function createClienteRecurrenteAsClient(req, res) {
     if (!company) {
       return res.status(400).json({ error: "No existe empresa bajo ese ID" });
     }
-    const requiredFields = [
-      "cliente_complete_name",
-      "cliente_dni",
-      "cliente_phone",
-      "cliente_email",
-      "cliente_direccion",
-    ];
-    const missingField = requiredFields.find((field) => !req.body[field]);
-    if (missingField) {
+
+    const requiereDomicilio =
+      await companyConfigController.fetchCompanySettingsByCompanyId(company_id);
+
+    if (requiereDomicilio.requiere_domicilio && !cliente_direccion) {
       return res
         .status(400)
-        .json({ error: `El campo ${missingField} es obligatorio.` });
+        .json({ error: "El campo domicilio es obligatorio." });
     }
-    // valido coordenadas
-    if (cliente_lat === undefined || cliente_lng === undefined) {
-      return res
-        .status(400)
-        .json({ error: "Las coordenadas lat y lng son obligatorias." });
+    if (
+      !cliente_complete_name ||
+      !cliente_dni ||
+      !cliente_phone ||
+      !cliente_email ||
+      (requiereDomicilio.requiere_domicilio && !cliente_direccion) ||
+      (requiereDomicilio.requiere_domicilio && !cliente_lat) ||
+      (requiereDomicilio.requiere_domicilio && !cliente_lng)
+    ) {
+      return res.status(400).json({
+        status: 400,
+        error:
+          "Los campos cliente_complete_name, cliente_dni, cliente_phone, cliente_email, cliente_direccion, cliente_lat y cliente_lng son obligatorios.",
+      });
     }
 
     const clienteExiste = await ClienteRecurrente.query()

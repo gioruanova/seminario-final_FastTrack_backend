@@ -2,6 +2,8 @@ const AgendaBloqueada = require("../models/AgendaBloqueada");
 const User = require("../models/User");
 const companyConfigController = require("./companyConfigController");
 
+const { registrarNuevoLog } = require("../controllers/globalLogController");
+
 // CONTROLADORES PARA CLIENTE:
 // ---------------------------------------------------------
 // Obtener tiempos bloqueados
@@ -33,6 +35,10 @@ async function createAgendaBloqueadaAsClient(req, res) {
   }
 
   const aptoRecibir = await User.query().where("user_id", userId).first();
+  if (!aptoRecibir) {
+    return res.status(400).json({ error: "Profesional no encontrado" });
+  }
+
   if (!aptoRecibir.apto_recibir) {
     throw new Error("El profesional no puede recibir citas en estos momentos");
   }
@@ -46,6 +52,7 @@ async function createAgendaBloqueadaAsClient(req, res) {
       company_id: companyId,
       agenda_notas,
     });
+
     return res.status(201).json(nuevoBloqueo);
   } catch (error) {
     return res.status(400).json({ error: error.message });
@@ -96,7 +103,7 @@ async function getAllAgendaBloqueadaAsProfesional(req, res) {
     });
     return res.json(agendaBloqueada);
   } catch (error) {
-    return res.status(500).json({ error: "Error interno del servidor" });
+    return res.status(500).json({ error: "Error interno del servidor", error });
   }
 }
 // ----------------------------------------
@@ -126,8 +133,8 @@ async function bloquearHorario(data) {
   const fechaHoraDesde = new Date(`${agenda_fecha}T${agenda_hora_desde}`);
 
   if (fechaHoraDesde <= now) {
-    console.log('aca');
-    
+    console.log("aca");
+
     throw new Error("No se puede bloquear un horario en el pasado");
   }
 
@@ -167,6 +174,13 @@ async function bloquearHorario(data) {
     profesional_id,
     agenda_notas,
   });
+
+  const userName = await User.query().where("user_id", profesional_id).first();
+
+  /*LOGGER*/ await registrarNuevoLog(
+    company_id,
+    `Se ha generado un nuevo bloqueo de agenda para el profesional ${profesional_id} (${userName.user_complete_name})`
+  );
 
   return nuevoBloqueo;
 }

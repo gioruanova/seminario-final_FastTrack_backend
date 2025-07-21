@@ -6,7 +6,7 @@ exports.up = function (knex) {
       table.string("cliente_dni").notNullable();
       table.string("cliente_phone").notNullable();
       table.string("cliente_email").notNullable();
-      table.string("cliente_direccion").notNullable();
+      table.string("cliente_direccion").nullable();
       table.decimal("cliente_lat", 10, 7).nullable();
       table.decimal("cliente_lng", 10, 7).nullable();
 

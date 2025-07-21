@@ -4,8 +4,9 @@ exports.up = function (knex) {
       table.increments("reclamo_id").primary();
       table.string("reclamo_titulo").notNullable();
       table.text("reclamo_detalle").notNullable();
+      table.text("reclamo_url").nullable();
       table
-        .enu("reclamo_estado", ["abierto", "en proceso", "en pausa", "cerrado"])
+        .enu("reclamo_estado", ["ABIERTO", "EN PROCESO", "EN PAUSA", "CERRADO", "CANCELADO", "RE-ABIERTO"])
         .notNullable()
         .defaultTo("abierto");
 

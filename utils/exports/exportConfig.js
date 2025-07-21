@@ -15,8 +15,10 @@ async function exportToExcel(
 ) {
   const workbook = new ExcelJS.Workbook();
   const worksheet = workbook.addWorksheet(sheetName);
-  worksheet.properties.showGridLines = false;
-  worksheet.views = [{ showGridLines: false }];
+  if (sheetName != "Reporte de Reclamos") {
+    worksheet.properties.showGridLines = false;
+    worksheet.views = [{ showGridLines: false }];
+  }
 
   workbook.creator = user.user_name;
   workbook.lastModifiedBy = user.user_name;
@@ -78,7 +80,7 @@ async function exportToExcel(
     await workbook.xlsx.write(res);
     res.end();
 
-    await registrarNuevoLog(
+    /*LOGGER*/  await registrarNuevoLog(
       user.company_id,
       `Reporte: ${sheetName}, fue generado con éxito y exportado por ${user.user_name}.`
     );

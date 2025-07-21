@@ -28,7 +28,6 @@ app.use("/public", require("./src/routes/publicRoutes"));
 app.use("/super", require("./src/routes/superRoutes"));
 app.use(require("./src/routes/userRoutes"));
 
-
 // =====================================================================
 // 404 fallback
 app.use((req, res) => {

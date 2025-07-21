@@ -41,6 +41,9 @@ class PlatformMessage extends BaseModel {
       },
     };
   }
+  $beforeUpdate() {
+    this.updated_at = new Date();
+  }
 }
 
 module.exports = PlatformMessage;

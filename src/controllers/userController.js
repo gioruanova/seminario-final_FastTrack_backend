@@ -133,7 +133,7 @@ async function editUserAsAdmin(req, res) {
       else
         patchData.user_password = bcrypt.hashSync(
           patchData.user_password,
-          saltRounds,
+          saltRounds
         );
     }
 
@@ -814,14 +814,12 @@ async function getCurrentTotalProfesionales(company_id) {
 async function bloquearUsuarioPorId(user_id) {
   return await User.query().patchAndFetchById(user_id, {
     user_status: false,
-    updated_at: new Date().toISOString(),
   });
 }
 
 async function desbloquearUsuarioPorId(user_id) {
   return await User.query().patchAndFetchById(user_id, {
     user_status: true,
-    updated_at: new Date().toISOString(),
   });
 }
 
@@ -830,7 +828,6 @@ async function habilitarUsuarioPorId(user_id) {
   await userLogController.deleteLogByYserid(user_id);
   return await User.query().patchAndFetchById(user_id, {
     user_status: true,
-    updated_at: new Date().toISOString(),
   });
 }
 
@@ -839,12 +836,9 @@ async function habilitarUsuarioPorId(user_id) {
 // ---------------------------------------------------------
 async function resetPassword(user_id, newPassword) {
   const passWordToUpdate = bcrypt.hashSync(newPassword, saltRounds);
-  await User.query()
-    .findById(user_id)
-    .patch({
-      user_password: passWordToUpdate,
-      updated_at: new Date().toISOString(),
-    });
+  await User.query().findById(user_id).patch({
+    user_password: passWordToUpdate,
+  });
 }
 
 // ---------------------------------------------------------

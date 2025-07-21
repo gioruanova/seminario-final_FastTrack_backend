@@ -6,7 +6,7 @@ class ProfesionalEspecialidad extends BaseModel {
   }
 
   static get idColumn() {
-    return "id_asignacion"; 
+    return "id_asignacion";
   }
 
   static get jsonSchema() {
@@ -53,6 +53,10 @@ class ProfesionalEspecialidad extends BaseModel {
         },
       },
     };
+  }
+
+  $beforeUpdate() {
+    this.updated_at = new Date();
   }
 }
 

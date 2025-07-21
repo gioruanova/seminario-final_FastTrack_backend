@@ -24,6 +24,9 @@ class ClienteRecurrente extends BaseModel {
       },
     };
   }
+  $beforeUpdate() {
+    this.updated_at = new Date();
+  }
 }
 
 module.exports = ClienteRecurrente;

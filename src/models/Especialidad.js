@@ -18,8 +18,14 @@ class Especialidad extends BaseModel {
         company_id: { type: "integer" },
         nombre_especialidad: { type: "string", maxLength: 255 },
         estado_especialidad: { type: "boolean", default: true },
+        created_at: { type: "string", format: "date-time" },
+        updated_at: { type: "string", format: "date-time" },
       },
     };
+  }
+
+  $beforeUpdate() {
+    this.updated_at = new Date().toISOString().slice(0, 19).replace("T", " ");
   }
 
   static get relationMappings() {

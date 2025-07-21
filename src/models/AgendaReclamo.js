@@ -23,13 +23,26 @@ class AgendaReclamo extends BaseModel {
         agenda_reclamo_id: { type: "integer" },
         reclamo_id: { type: "integer" },
         agenda_fecha: { type: "string", format: "date" },
-        agenda_hora_desde: { type: "string", pattern: '^(\\d|[01]\\d|2[0-3]):[0-5]\\d(:[0-5]\\d)?$' },
-        agenda_hora_hasta: { type: "string", pattern: '^(\\d|[01]\\d|2[0-3]):[0-5]\\d(:[0-5]\\d)?$' },
-        agenda_notas: { type: ["string", "null"], default: "Agenda de reclamo" },
+        agenda_hora_desde: {
+          type: "string",
+          pattern: "^(\\d|[01]\\d|2[0-3]):[0-5]\\d(:[0-5]\\d)?$",
+        },
+        agenda_hora_hasta: {
+          type: "string",
+          pattern: "^(\\d|[01]\\d|2[0-3]):[0-5]\\d(:[0-5]\\d)?$",
+        },
+        agenda_notas: {
+          type: ["string", "null"],
+          default: "Agenda de reclamo",
+        },
         company_id: { type: "integer" },
         profesional_id: { type: "integer" },
       },
     };
+  }
+
+  $beforeUpdate() {
+    this.updated_at = new Date().toISOString().slice(0, 19).replace("T", " ");
   }
 
   async $beforeInsert(queryContext) {

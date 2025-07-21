@@ -74,6 +74,11 @@ class CompaniesConfig extends BaseModel {
     };
   }
 
+    $beforeUpdate() {
+    this.updated_at = new Date().toISOString().slice(0, 19).replace("T", " ");
+  }
+
+
   static get relationMappings() {
     const Company = require("./Company");
     return {

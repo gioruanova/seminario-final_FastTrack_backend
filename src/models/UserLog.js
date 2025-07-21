@@ -17,8 +17,13 @@ class UserLog extends BaseModel {
         user_log_id: { type: "integer" },
         user_id: { type: ["integer", "null"] },
         created_at: { type: "string", format: "date-time" },
+        updated_at: { type: "string", format: "date-time" },
       },
     };
+  }
+
+  $beforeUpdate() {
+    this.updated_at = new Date().toISOString().slice(0, 19).replace("T", " ");
   }
 
   static get relationMappings() {

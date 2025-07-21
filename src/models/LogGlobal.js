@@ -20,8 +20,14 @@ class LogGlobal extends Model {
         log_detalle: { type: "string" },
         log_leido: { type: "boolean", default: false },
         created_at: { type: "string", format: "date-time" },
+                updated_at: { type: "string", format: "date-time" },
+
       },
     };
+  }
+
+  $beforeUpdate() {
+    this.updated_at = new Date().toISOString().slice(0, 19).replace("T", " ");
   }
 
   static get relationMappings() {

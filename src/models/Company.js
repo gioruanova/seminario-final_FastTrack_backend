@@ -31,8 +31,8 @@ class Company extends BaseModel {
         company_whatsapp: { type: ["string", "null"], maxLength: 50 },
         company_telegram: { type: ["string", "null"], maxLength: 50 },
         company_estado: { type: "boolean", default: true },
-        limite_operadores: { type: "integer", minimum: 0 , default: 3},
-        limite_profesionales: { type: "integer", minimum: 0 , default: 10},
+        limite_operadores: { type: "integer", minimum: 0, default: 3 },
+        limite_profesionales: { type: "integer", minimum: 0, default: 10 },
         limite_especialidades: { type: "integer", minimum: 0, default: 5 },
         reminder_manual: { type: "boolean", default: true },
         created_at: { type: "string", format: "date-time" },
@@ -40,6 +40,11 @@ class Company extends BaseModel {
       },
     };
   }
+
+  $beforeUpdate() {
+    this.updated_at = new Date().toISOString().slice(0, 19).replace("T", " ");
+  }
+
   static get relationMappings() {
     const User = require("./User");
     const ProfesionalesEspecialidad = require("./ProfesionalesEspecialidad");

@@ -190,7 +190,6 @@ async function updateReclamoAsClient(req, res) {
         reclamo_nota_cierre,
         reclamo_presupuesto,
         reclamo_estado,
-        updated_at: new Date().toISOString(),
       }
     );
 
@@ -274,7 +273,7 @@ async function updateReclamoAsProfesional(req, res) {
         reclamo_nota_cierre,
         reclamo_presupuesto,
         reclamo_estado,
-        updated_at: new Date().toISOString(),
+        
       }
     );
 

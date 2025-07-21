@@ -27,7 +27,14 @@ class Reclamo extends BaseModel {
         reclamo_url: { type: ["string", "null"], minLength: 1 },
         reclamo_estado: {
           type: "string",
-          enum: ["ABIERTO", "EN PROCESO", "EN PAUSA", "CERRADO", "CANCELADO", "RE-ABIERTO"],
+          enum: [
+            "ABIERTO",
+            "EN PROCESO",
+            "EN PAUSA",
+            "CERRADO",
+            "CANCELADO",
+            "RE-ABIERTO",
+          ],
           default: "ABIERTO",
         },
         creado_por: { type: ["integer", "null"] },
@@ -42,6 +49,9 @@ class Reclamo extends BaseModel {
         updated_at: { type: "string", format: "date-time" },
       },
     };
+  }
+  $beforeUpdate() {
+    this.updated_at = new Date().toISOString().slice(0, 19).replace("T", " ");
   }
 
   static get relationMappings() {

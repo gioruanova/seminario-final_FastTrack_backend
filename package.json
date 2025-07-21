@@ -7,7 +7,7 @@
     "start": "node app.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "refresh": "node utils/automation/refresh-db.js",
-    "production": "node utils/automation/db-production.js",
+    "refresh-prod": "node utils/automation/db-production.js",
     "seeds": "node utils/automation/run-seeders.js",
     "test-seed": "node utils/automation/testConnection.js"
   },

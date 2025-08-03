@@ -4,15 +4,15 @@ const { SUPERADMIN_EMAIL, SUPERADMIN_PASSWORD_HASH, SUPERADMIN_NAME } =
 
 const { generateTokens, refreshAccessToken } = require("./tokenService");
 
-async function loginAdmin(email, password) {
-  if (email !== SUPERADMIN_EMAIL) return null;
+async function loginAdmin(user_email, password) {
+  if (user_email !== SUPERADMIN_EMAIL) return null;
 
   const valid = await bcrypt.compare(password, SUPERADMIN_PASSWORD_HASH);
   if (!valid) return null;
 
   const payload = {
-    email,
-    name: SUPERADMIN_NAME,
+    user_email,
+    user_name: SUPERADMIN_NAME,
     user_role: "superadmin",
   };
 
@@ -20,8 +20,8 @@ async function loginAdmin(email, password) {
 
   return {
     ...tokens,
-    email: payload.email,
-    name: payload.name,
+    user_email: payload.user_email,
+    user_name: payload.user_name,
     user_role: payload.user_role,
   };
 }

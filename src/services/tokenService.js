@@ -25,9 +25,10 @@ function refreshAccessToken(refreshToken) {
 
     const payload = {
       user_id: decoded.user_id,
-      email: decoded.email,
+      user_email: decoded.email,
       user_role: decoded.user_role,
       company_id: decoded.company_id,
+      user_name: decoded.user_name,
     };
 
     return jwt.sign(payload, ACCESS_TOKEN_SECRET, {

@@ -11,8 +11,8 @@ async function login(req, res) {
       return res.status(401).json({ error: "Credenciales inválidas" });
 
     return res.json({
-      email: email, 
-      name: tokens.name,
+      user_email: email, 
+      user_name: tokens.user_name,
       user_role: "superadmin",
       accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken,

@@ -15,6 +15,13 @@ function authUserWithStatus(...allowedRoles) {
     try {
       const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
       req.user = decoded;
+      const expTimestamp = decoded.exp;
+
+      // Convertimos a milisegundos y creamos un objeto Date
+      const expDate = new Date(expTimestamp * 1000);
+
+      console.log(expDate.toString()); // Ej: "Thu Aug 21 2025 14:30:00 GMT-0300 (Argentina Standard Time)"
+      console.log(expDate.toISOString()); // Ej: "2025-08-21T17:30:00.000Z"
 
       // valido roles para ver si pueden acceder o no
       if (

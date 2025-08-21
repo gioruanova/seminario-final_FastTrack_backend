@@ -715,6 +715,24 @@ async function restoreUserAsClient(req, res) {
 
 // CONTROLADORES PARA PROFESIONAL
 // ---------------------------------------------------------
+// OBTENER ESTADO ACTUAL
+// ---------------------------------------------------------
+async function getWorkloadState(req, res) {
+    const user_id = req.user.user_id;
+    console.log('aca');
+    
+
+    try {
+      const userWorkloadState = await User.query().findById(user_id);
+            
+      
+      return res.json(userWorkloadState.apto_recibir == 1 ? true : false);
+    } catch (error) {
+      return res.status(500).json({ error: "Error interno del servidor" });
+    }
+}
+// CONTROLADORES PARA PROFESIONAL
+// ---------------------------------------------------------
 // HABILITAR RECIBIR TRABAJO
 // ---------------------------------------------------------
 async function enableReceiveWork(req, res) {
@@ -898,6 +916,7 @@ module.exports = {
   unblockUserAsClient,
   restoreUserAsClient,
 
+  getWorkloadState,
   enableReceiveWork,
   disableReceiveWork,
 

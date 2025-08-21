@@ -93,9 +93,10 @@ router.put("/reclamos/profesional/gestion/:reclamo_id", authUserWithStatus("prof
 
 // bloqueo manual de agenda
 router.post("/profesional/agenda",authUserWithStatus("profesional"),agendaBloquedaController.createAgendaBloqueadaAsProfesional);
-router.get("/agenda/vista/profesional",authUserWithStatus("owner", "operador"),agendaBloquedaController.getAllAgendaBloqueadaAsProfesional);
+router.get("/agenda/vista/profesional",authUserWithStatus("owner", "operador","profesional"),agendaBloquedaController.getAllAgendaBloqueadaAsProfesional);
 
 // deshabilita/habilita la poisibilidad de recibir trabajo
+router.get("/workload/estado",authUserWithStatus("profesional"),userController.getWorkloadState);
 router.put("/workload/enable",authUserWithStatus("profesional"),userController.enableReceiveWork);
 router.put("/workload/disable",authUserWithStatus("profesional"),userController.disableReceiveWork);
 

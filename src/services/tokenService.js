@@ -31,13 +31,22 @@ function refreshAccessToken(refreshToken) {
       user_name: decoded.user_name,
     };
 
-    return jwt.sign(payload, ACCESS_TOKEN_SECRET, {
+    // Nuevo accessToken
+    const accessToken = jwt.sign(payload, ACCESS_TOKEN_SECRET, {
       expiresIn: JWT_EXPIRATION,
     });
+
+    // Nuevo refreshToken si querés rotación
+    const newRefreshToken = jwt.sign(payload, REFRESH_TOKEN_SECRET, {
+      expiresIn: JWT_REFRESH_EXPIRATION,
+    });
+
+    return { accessToken, refreshToken: newRefreshToken };
   } catch {
     return null;
   }
 }
+
 
 module.exports = {
   generateTokens,

@@ -6,6 +6,16 @@ const PublicMessageCategory = require("../../models/cfv/PublicMessageCategory");
 // ---------------------------------------------------------
 async function getAllMessagesCategoriesAsAdmin(req, res) {
   try {
+    const categories = await PublicMessageCategory.query().where("category_status", true).select("*");
+    return res.json(categories);
+  } catch (error) {
+     
+    return res.status(500).json({ error: "Error al obtener las categorias" });
+  }
+}
+
+async function getAllMessagesCategoriesAsPublic(req, res) {
+  try {
     const categories = await PublicMessageCategory.query().select("*");
     return res.json(categories);
   } catch (error) {
@@ -166,6 +176,7 @@ async function deleteCategoryMessageAsAdmin(req, res) {
 
 module.exports = {
   getAllMessagesCategoriesAsAdmin,
+  getAllMessagesCategoriesAsPublic,
   createMessageCategoryAsAdmin,
   updateMessageCategoryAsAdmin,
   disableMessageCategoryAsAdmin,

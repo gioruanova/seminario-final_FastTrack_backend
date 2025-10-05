@@ -1,4 +1,7 @@
-const { loginAdmin, refreshAdminToken } = require("../services/authSuperService");
+const {
+  loginAdmin,
+  refreshAdminToken,
+} = require("../services/authSuperService");
 
 async function login(req, res) {
   try {
@@ -10,12 +13,25 @@ async function login(req, res) {
     if (!tokens)
       return res.status(401).json({ error: "Credenciales inválidas" });
 
+    res.cookie("accessToken", tokens.accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production", // solo https en producción
+      sameSite: "strict",
+      maxAge: 15 * 60 * 1000, // 15 minutos
+    });
+
+    res.cookie("refreshToken", tokens.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 días
+    });
+
+    // Devuelves solo la info pública
     return res.json({
-      user_email: email, 
+      user_email: email,
       user_name: tokens.user_name,
       user_role: "superadmin",
-      accessToken: tokens.accessToken,
-      refreshToken: tokens.refreshToken,
     });
   } catch (error) {
     return res.status(500).json({ error: "Error interno del servidor" });
@@ -24,15 +40,29 @@ async function login(req, res) {
 
 function refreshToken(req, res) {
   try {
-    const { refreshToken } = req.body;
-    if (!refreshToken)
+    const tokenFromCookie = req.cookies.refreshToken;
+
+    if (!tokenFromCookie)
       return res.status(400).json({ error: "Refresh token es requerido" });
 
-    const newAccessToken = refreshAdminToken(refreshToken);
-    if (!newAccessToken)
-      return res.status(401).json({ error: "Refresh token inválido o expirado" });
+    // Extraemos solo el accessToken
+    const tokenObject = refreshAdminToken(tokenFromCookie); // devuelve { accessToken, refreshToken }
+    if (!tokenObject || !tokenObject.accessToken)
+      return res
+        .status(401)
+        .json({ error: "Refresh token inválido o expirado" });
 
-    return res.json({ accessToken: newAccessToken });
+    const newAccessToken = tokenObject.accessToken;
+
+    // Guardamos solo el JWT en la cookie
+    res.cookie("accessToken", newAccessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 15 * 60 * 1000, // 15 minutos
+    });
+
+    return res.json({ success: true });
   } catch (error) {
     return res.status(500).json({ error: "Error interno del servidor" });
   }

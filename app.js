@@ -22,6 +22,9 @@ app.use(cors(corsOptions));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
+const cookieParser = require("cookie-parser");
+app.use(cookieParser());
+
 // =====================================================================
 // Routes
 app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(swaggerSpec));

@@ -4,26 +4,26 @@ const User = require("../models/User");
 
 function authUserWithStatus(...allowedRoles) {
   return async function (req, res, next) {
-    const authHeader = req.headers.authorization;
+    // ✅ Leer token desde cookie
 
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    const token = req.cookies.accessToken;
+
+    if (!token) {
       return res.status(401).json({ error: "Token no provisto" });
     }
 
-    const token = authHeader.split(" ")[1];
-
     try {
       const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+
       req.user = decoded;
       const expTimestamp = decoded.exp;
 
       // Convertimos a milisegundos y creamos un objeto Date
       const expDate = new Date(expTimestamp * 1000);
+      // console.log(expDate.toString());
+      // console.log(expDate.toISOString());
 
-      console.log(expDate.toString()); // Ej: "Thu Aug 21 2025 14:30:00 GMT-0300 (Argentina Standard Time)"
-      console.log(expDate.toISOString()); // Ej: "2025-08-21T17:30:00.000Z"
-
-      // valido roles para ver si pueden acceder o no
+      // valido roles
       if (
         allowedRoles.length > 0 &&
         !allowedRoles.includes(req.user.user_role)
@@ -43,7 +43,7 @@ function authUserWithStatus(...allowedRoles) {
           .json({ error: "Contacte al administrador del sistema por favor." });
       }
 
-      // valido estado del user (revisar relaciones para no borrar fisicamente y romper relaciones > ver en reclamos como se comporta esto)
+      // valido estado del user
       const user = await User.query().findById(user_id);
       if (!user || user.user_status !== 1) {
         const message =

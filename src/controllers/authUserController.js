@@ -13,8 +13,30 @@ async function login(req, res) {
     if (result.error === "blocked") {
       return res.status(403).json({ error: "Contacte a su administrador" });
     }
+    // ✅ Enviar tokens en cookies HTTP-only
+    res.cookie("accessToken", result.accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 15 * 60 * 1000, // 15 minutos
+    });
 
-    return res.json(result);
+    res.cookie("refreshToken", result.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 días
+    });
+
+    // ✅ Devolver solo la info pública
+    return res.json({
+      company_name: result.company_name,
+      company_id: result.company_id,
+      company_status: result.company_status,
+      user_name: result.user_name,
+      user_role: result.user_role,
+      user_email: result.user_email,
+    });
   } catch (error) {
     return res.status(500).json({ error: "Error interno del servidor" });
   }
@@ -22,17 +44,28 @@ async function login(req, res) {
 
 function refreshToken(req, res) {
   try {
-    const { refreshToken } = req.body;
-    if (!refreshToken)
+    const tokenFromCookie = req.cookies.refreshToken;
+    if (!tokenFromCookie)
       return res.status(400).json({ error: "Refresh token es requerido" });
 
-    const newAccessToken = refreshUserToken(refreshToken);
-    if (!newAccessToken)
+    // ✅ Extraemos solo el accessToken del objeto
+    const tokenObject = refreshUserToken(tokenFromCookie); // devuelve { accessToken, refreshToken }
+    if (!tokenObject || !tokenObject.accessToken)
       return res
         .status(401)
         .json({ error: "Refresh token inválido o expirado" });
 
-    return res.json({ accessToken: newAccessToken });
+    const newAccessToken = tokenObject.accessToken;
+
+    // Guardamos solo el JWT en la cookie
+    res.cookie("accessToken", newAccessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 15 * 60 * 1000, // 15 minutos
+    });
+
+    return res.json({ success: true });
   } catch (error) {
     return res.status(500).json({ error: "Error interno del servidor" });
   }

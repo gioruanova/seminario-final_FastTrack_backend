@@ -37,7 +37,6 @@ async function createPublicMessage(req, res) {
       .status(201)
       .json({ success: true, message: "Mensaje creado correctamente" });
   } catch (error) {
-     
     return res.status(500).json({ error: "Error al crear el mensaje" });
   }
 }
@@ -49,8 +48,7 @@ async function createPublicMessage(req, res) {
 // ---------------------------------------------------------
 async function createFeedbackMessage(req, res) {
   try {
-    const { message_content } =
-      req.body;
+    const { message_content } = req.body;
 
     if (!message_content) {
       return res
@@ -58,14 +56,12 @@ async function createFeedbackMessage(req, res) {
         .json({ error: "Todos los campos son obligatorios" });
     }
 
-
-
     await PublicMessage.query().insert({
-      message_email:req.user.user_email,
-      message_source:"PLATFORM",
-      message_phone:"N/A",
-      message_content : `EMPRESA | ${req.user.company_name} ${message_content}`,
-      category_id:0,
+      message_email: req.user.user_email,
+      message_source: "PLATFORM",
+      message_phone: "N/A",
+      message_content: `EMPRESA | ${req.user.company_name} ${message_content}`,
+      category_id: 0,
       category_original: "Feedback",
     });
 
@@ -73,7 +69,6 @@ async function createFeedbackMessage(req, res) {
       .status(201)
       .json({ success: true, message: "Feedback correctamente" });
   } catch (error) {
-     
     return res.status(500).json({ error: "Error al crear el mensaje" });
   }
 }
@@ -86,7 +81,7 @@ async function gettAlMessagesAsAdmin(req, res) {
       .select("*")
       .withGraphFetched("category");
 
-    const result = messages.map(msg => {
+    const result = messages.map((msg) => {
       if (!msg.category) {
         const { category, ...rest } = msg;
         return {
@@ -99,7 +94,6 @@ async function gettAlMessagesAsAdmin(req, res) {
 
     return res.json(result);
   } catch (error) {
-     
     return res.status(500).json({ error: "Error al obtener los mensajes" });
   }
 }
@@ -125,7 +119,6 @@ async function markMessageAsReadAsAdmin(req, res) {
       .status(200)
       .json({ success: true, message: "Mensaje marcado como leído" });
   } catch (error) {
-     
     return res
       .status(500)
       .json({ error: "Error al marcar el mensaje como leído" });
@@ -153,7 +146,6 @@ async function markMessageAsUnreadAsAdmin(req, res) {
       .status(200)
       .json({ success: true, message: "Mensaje marcado como no leído" });
   } catch (error) {
-     
     return res
       .status(500)
       .json({ error: "Error al marcar el mensaje como leído" });
@@ -177,7 +169,6 @@ async function deleteMessageAsAdmin(req, res) {
       .status(200)
       .json({ success: true, message: "Mensaje eliminado correctamente" });
   } catch (error) {
-     
     return res.status(500).json({ error: "Error al eliminar el mensaje" });
   }
 }
@@ -188,5 +179,5 @@ module.exports = {
   markMessageAsReadAsAdmin,
   markMessageAsUnreadAsAdmin,
   deleteMessageAsAdmin,
-  createFeedbackMessage
+  createFeedbackMessage,
 };

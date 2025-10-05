@@ -10,10 +10,12 @@ async function createPublicMessage(req, res) {
     const { message_email, message_phone, message_content, category_id } =
       req.body;
 
-    if (!message_email || !message_phone || !message_content || !category_id) {
+    if (!message_email || !message_content || !category_id) {
       return res
         .status(400)
-        .json({ error: "Todos los campos son obligatorios" });
+        .json({
+          error: "Por favor revise los campos marcados con * como mandatorios",
+        });
     }
 
     const categoria = await PublicMessageCategory.query()

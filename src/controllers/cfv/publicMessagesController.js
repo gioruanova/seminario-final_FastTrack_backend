@@ -27,7 +27,7 @@ async function createPublicMessage(req, res) {
       });
     }
 
-    const projectID = "service-now-6979c";
+    const projectID = "fast-track-474423";
     const siteKey = process.env.RECAPTCHA_SITE_KEY;
     if (!siteKey) {
       throw new Error("Falta RECAPTCHA_SITE_KEY en las variables de entorno");

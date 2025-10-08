@@ -16,6 +16,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@google-cloud/recaptcha-enterprise": "^6.3.0",
     "bcrypt": "^5.1.1",
     "body-parser": "^2.2.0",
     "cookie-parser": "^1.4.7",

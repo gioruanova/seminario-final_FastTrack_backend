@@ -1,21 +1,92 @@
 const PublicMessage = require("../../models/cfv/PublicMessage");
+const {
+  RecaptchaEnterpriseServiceClient,
+} = require("@google-cloud/recaptcha-enterprise");
+
 const PublicMessageCategory = require("../../models/cfv/PublicMessageCategory");
+const path = require("path");
 
 // CONTROLADORES PUBLIC:
 // ---------------------------------------------------------
 // Crear nuevo mensaje
 // ---------------------------------------------------------
+
 async function createPublicMessage(req, res) {
   try {
-    const { message_email, message_phone, message_content, category_id } =
-      req.body;
+    const {
+      message_email,
+      message_phone,
+      message_content,
+      category_id,
+      recaptchaToken,
+    } = req.body;
 
-    if (!message_email || !message_content || !category_id) {
+    if (!message_email || !message_content || !category_id || !recaptchaToken) {
+      return res.status(400).json({
+        error: "Por favor complete todos los campos obligatorios y el captcha",
+      });
+    }
+
+    const projectID = "service-now-6979c";
+    const siteKey = "6LdL_pErAAAAALtFUHN1Rs4MgJbF6xBv_CDKdVMr";
+    const action = "submit";
+
+    let client;
+
+    if (process.env.DB_HOST === "localhost") {
+      // Local: carga desde archivo
+      client = new RecaptchaEnterpriseServiceClient({
+        keyFilename: path.join(
+          __dirname,
+          "../../../keys/google-credentials.json"
+        ),
+      });
+    } else {
+      // Producción: carga desde variable de entorno
+      if (!process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON) {
+        throw new Error(
+          "Falta GOOGLE_APPLICATION_CREDENTIALS_JSON en producción"
+        );
+      }
+      const credentials = JSON.parse(
+        process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON
+      );
+      client = new RecaptchaEnterpriseServiceClient({ credentials });
+    }
+
+    const request = {
+      assessment: {
+        event: {
+          token: recaptchaToken,
+          siteKey,
+        },
+      },
+      parent: client.projectPath(projectID),
+    };
+
+    const [response] = await client.createAssessment(request);
+
+    console.log("reCAPTCHA completo:", JSON.stringify(response, null, 2));
+
+    if (!response.tokenProperties?.valid) {
+      console.log("Token inválido:", response.tokenProperties.invalidReason);
+      return res.status(403).json({ error: "Captcha inválido" });
+    }
+
+    if (response.tokenProperties.action !== action) {
+      console.log(
+        "La acción del token no coincide con la esperada:",
+        response.tokenProperties.action
+      );
+      return res.status(403).json({ error: "Captcha acción inválida" });
+    }
+
+    const score = response.riskAnalysis?.score ?? 0;
+    console.log("Score de riesgo:", score);
+    if (score < 0.5) {
       return res
-        .status(400)
-        .json({
-          error: "Por favor revise los campos marcados con * como mandatorios",
-        });
+        .status(403)
+        .json({ error: "Captcha válido pero riesgo demasiado alto" });
     }
 
     const categoria = await PublicMessageCategory.query()
@@ -39,6 +110,7 @@ async function createPublicMessage(req, res) {
       .status(201)
       .json({ success: true, message: "Mensaje creado correctamente" });
   } catch (error) {
+    console.error("Error en createPublicMessage:", error);
     return res.status(500).json({ error: "Error al crear el mensaje" });
   }
 }

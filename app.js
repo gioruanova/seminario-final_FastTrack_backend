@@ -30,7 +30,7 @@ app.use(cookieParser());
 app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(swaggerSpec));
 app.use("/publicApi", require("./src/routes/publicRoutes"));
 app.use("/superApi", require("./src/routes/superRoutes"));
-app.use("clientApi", require("./src/routes/userRoutes"));
+app.use("/customersApi", require("./src/routes/userRoutes"));
 
 // =====================================================================
 // 404 fallback

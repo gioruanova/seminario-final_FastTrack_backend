@@ -125,6 +125,10 @@ async function createPublicMessage(req, res) {
 // ---------------------------------------------------------
 async function createFeedbackMessage(req, res) {
   try {
+    console.log("=== FEEDBACK DEBUG ===");
+    console.log("User:", req.user);
+    console.log("Body:", req.body);
+
     const { message_content } = req.body;
 
     if (!message_content) {
@@ -133,7 +137,9 @@ async function createFeedbackMessage(req, res) {
         .json({ error: "Todos los campos son obligatorios" });
     }
 
-    await PublicMessage.query().insert({
+    console.log("Intentando insertar en BD...");
+
+    const result = await PublicMessage.query().insert({
       message_email: req.user.user_email,
       message_source: "PLATFORM",
       message_phone: "N/A",
@@ -142,10 +148,13 @@ async function createFeedbackMessage(req, res) {
       category_original: "Feedback",
     });
 
+    console.log("✅ Insertado:", result);
+
     return res
       .status(201)
       .json({ success: true, message: "Feedback correctamente" });
   } catch (error) {
+    console.error("❌ ERROR COMPLETO:", error); // ← Esto te dirá exactamente qué falló
     return res.status(500).json({ error: "Error al crear el mensaje" });
   }
 }

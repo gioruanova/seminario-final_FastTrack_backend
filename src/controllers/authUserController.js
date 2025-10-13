@@ -16,13 +16,13 @@ async function login(req, res) {
       return res.status(403).json({ error: "Contacte a su administrador" });
     }
 
-    // ✅ Enviar tokens en cookies HTTP-only
+    // envioo tokens en cookies HTTP-only
     res.cookie("accessToken", result.accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       path: "/",
-      maxAge: 1 * 60 * 1000, // 1 minuto
+      maxAge: ms(process.env.JWT_EXPIRATION), // 30m
     });
 
     res.cookie("refreshToken", result.refreshToken, {
@@ -30,10 +30,10 @@ async function login(req, res) {
       secure: process.env.NODE_ENV === "production",
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       path: "/",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 días
+      maxAge: ms(process.env.JWT_REFRESH_EXPIRATION), // 7d
     });
 
-    // ✅ Extraer userData y devolver solo info pública
+    // tomo  userData y devuelvo solo info pública
     const { accessToken, refreshToken, ...userData } = result;
 
     return res.json({
@@ -59,20 +59,20 @@ function refreshToken(req, res) {
         .status(401)
         .json({ error: "Refresh token inválido o expirado" });
 
-    // Solo actualizamos la cookie
+    // actualizo cookie
     res.cookie("accessToken", tokenObject.accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       path: "/",
-      maxAge: 15 * 60 * 1000,
+      maxAge: ms(process.env.JWT_EXPIRATION), // 30m
     });
 
     return res.json({
       success: true,
       message: "Refresh token actualizado",
       status: 200,
-    }); // ✅ no enviamos token
+    }); // sin token
   } catch {
     return res.status(500).json({ error: "Error interno del servidor" });
   }

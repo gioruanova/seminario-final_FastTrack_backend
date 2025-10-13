@@ -5,8 +5,10 @@ const publicMessageCategoryController = require("../controllers/cfv/publicMessag
 const authUserController = require("../controllers/authUserController");
 
 router.post("/messages", publicMessagesController.createPublicMessage);
-router.get("/messageCategories", publicMessageCategoryController.getAllMessagesCategoriesAsPublic);
-
+router.get(
+  "/messageCategories",
+  publicMessageCategoryController.getAllMessagesCategoriesAsPublic
+);
 
 router.post("/login", authUserController.login);
 router.get("/refresh", authUserController.refreshToken);

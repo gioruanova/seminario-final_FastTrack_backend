@@ -6,13 +6,31 @@ const companyConfigController = require("../../src/controllers/companyConfigCont
 
 async function exportReclamosToExcel(req, res) {
   const companyId = req.user.company_id;
+  const statusParam = req.params.status?.toLowerCase();
   const configCompany =
     await companyConfigController.fetchCompanySettingsByCompanyId(companyId);
   const data = await fetchReclamosByCompanyId(companyId);
 
-  if (!data.length) {
-    res.status(404).json({ error: "No hay reclamos para exportar" });
-    return;
+  let filtered;
+  let statusReport;
+
+  if (statusParam === "all") {
+    filtered = data; // todos los reclamos
+    statusReport = "Historico";
+  } else if (statusParam === "active") {
+    const activeStates = ["ABIERTO", "EN PROCESO", "EN PAUSA", "RE-ABIERTO"];
+    statusReport = "En curso";
+    filtered = data.filter((r) => activeStates.includes(r.reclamo_estado));
+  } else if (statusParam === "inactive") {
+    const inactiveStates = ["CERRADO", "CANCELADO"];
+    statusReport = "Fuera de curso";
+    filtered = data.filter((r) => inactiveStates.includes(r.reclamo_estado));
+  } else {
+    return res.status(400).json({ error: "Parámetro de estado inválido" });
+  }
+
+  if (!filtered.length) {
+    return res.status(404).json({ error: "No hay reclamos para exportar" });
   }
 
   const columns = [
@@ -77,16 +95,15 @@ async function exportReclamosToExcel(req, res) {
     { header: `Ultima actualización`, key: "updated_at", width: 30 },
   ];
 
-  const fileName = `${configCompany.company.company_nombre} - Reporte ${configCompany.plu_heading_reclamos}`;
+  const fileName = `${configCompany.company.company_nombre} - Reporte ${configCompany.plu_heading_reclamos} - [${statusReport}]`;
   const sheetName = `Reporte de ${configCompany.plu_heading_reclamos}`;
-  console.log(sheetName);
 
   await exportToExcel(
     res,
     fileName,
     sheetName,
     columns,
-    data,
+    filtered,
     configCompany.company,
     req.user
   );

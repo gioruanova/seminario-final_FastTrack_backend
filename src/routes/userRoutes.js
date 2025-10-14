@@ -309,7 +309,7 @@ router.get(
   exportProfesionalesController.exportProfesionalesToExcel
 );
 router.get(
-  "/vistas/reclamos",
+  "/vistas/reclamos/:status",
   authUserWithStatus("owner", "operador"),
   exportReclamosController.exportReclamosToExcel
 );

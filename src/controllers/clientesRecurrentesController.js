@@ -2,13 +2,24 @@ const ClienteRecurrente = require("../models/ClienteRecurrente");
 const Company = require("../models/Company");
 const companyConfigController = require("./companyConfigController");
 
+// CONTROLADORES PARA ADMIN:
+// ---------------------------------------------------------
+// Obtener clientes recurrentes
+// ---------------------------------------------------------
+async function getAllClientesRecurrentesAsAdmin(req, res) {
+  try {
+    const clientesRecurrentes = await ClienteRecurrente.query();
+    return res.json(clientesRecurrentes);
+  } catch (error) {
+    return res.status(500).json({ error: "Error interno del servidor" });
+  }
+}
+
 // CONTROLADORES PARA CLIENTE:
 // ---------------------------------------------------------
 // Obtener clientes recurrentes
 // ---------------------------------------------------------
 async function getAllClientesRecurrentesAsClient(req, res) {
-  
-  
   const company_id = req.user.company_id;
   try {
     const clientesRecurrentes = await ClienteRecurrente.query().where({
@@ -168,12 +179,11 @@ async function editarClienteAsClient(req, res) {
   }
 }
 
-
 // ---------------------------------------------------------
 // Desactivar cliente recurrente
 // ---------------------------------------------------------
 async function desactivarClienteAsClient(req, res) {
-   const company_id = req.user.company_id;
+  const company_id = req.user.company_id;
   const { cliente_id } = req.params;
 
   try {
@@ -231,9 +241,11 @@ async function activarClienteAsClient(req, res) {
 }
 
 module.exports = {
+  getAllClientesRecurrentesAsAdmin,
+
   getAllClientesRecurrentesAsClient,
   createClienteRecurrenteAsClient,
   editarClienteAsClient,
   activarClienteAsClient,
-  desactivarClienteAsClient
+  desactivarClienteAsClient,
 };

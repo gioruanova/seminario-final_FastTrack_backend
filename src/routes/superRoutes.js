@@ -7,6 +7,7 @@ const authSuperadmin = require("../middlewares/authSuperadmin");
 // controllers
 const userController = require("../controllers/userController");
 const companyController = require("../controllers/companyController");
+const clienteRecurrenteController = require("../controllers/clientesRecurrentesController");
 const especialidadController = require("../controllers/especialidadController");
 const profesionalEspecialidadController = require("../controllers/profesionalEspecialidadController");
 
@@ -17,6 +18,7 @@ const reclamoController = require("../controllers/reclamoController");
 
 const globalLogController = require("../controllers/globalLogController");
 const messageController = require("../controllers/messageController");
+const { getAllClientesRecurrentesAsAdmin } = require("../controllers/clientesRecurrentesController");
 
 // =======================
 // Middleware global para rutas protegidas
@@ -65,6 +67,11 @@ router.delete("/profesionalEspecialidad/:id_asignacion", profesionalEspecialidad
 router.put("/profesionalEspecialidad/:id_asignacion", profesionalEspecialidadController.editAsignacionEspecialidadAsAdmin);
 
 // --------------------------------------------------------------------------------------------------------------
+// Manejo de clientes recurrentes
+// --------------------------------------------------------------------------------------------------------------
+// TODO: Documentar endpoint
+router.get("/clientes-recurrentes", clienteRecurrenteController.getAllClientesRecurrentesAsAdmin);
+
 // Manejo de empresas
 router.get("/companies", companyController.getAllCompanies);
 router.post("/companies/:company_id", companyController.getCompanyById);

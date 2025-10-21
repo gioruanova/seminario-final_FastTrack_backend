@@ -23,7 +23,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /login:
+ * /publicApi/login:
  *   post:
  *     summary: Iniciar sesión
  *     description: Autentica usuarios y devuelve tokens de acceso y renovación
@@ -121,127 +121,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /messageCategories:
- *   get:
- *     summary: Obtener categorías de mensajes
- *     description: Lista todas las categorías activas disponibles para clasificar mensajes públicos
- *     tags:
- *       - Public API - MENSAJES PUBLICOS
- *     security: []
- *     responses:
- *       200:
- *         description: Lista de categorías obtenida exitosamente
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   category_id:
- *                     type: integer
- *                     example: 1
- *                   category_name:
- *                     type: string
- *                     example: "Consulta General"
- *                   category_status:
- *                     type: boolean
- *                     example: true
- *       500:
- *         description: Error interno del servidor
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: "Error al obtener las categorías"
- */
-
-/**
- * @swagger
- * /publicApi/messages:
- *   post:
- *     summary: Crear mensaje público
- *     description: Permite a usuarios anónimos enviar mensajes de contacto desde el sitio web público
- *     tags:
- *       - Public API - MENSAJES PUBLICOS
- *     security: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - message_email
- *               - message_phone
- *               - message_content
- *               - category_id
- *             properties:
- *               message_email:
- *                 type: string
- *                 format: email
- *                 example: "usuario@ejemplo.com"
- *               message_phone:
- *                 type: string
- *                 example: "+54 9 11 1234-5678"
- *               message_content:
- *                 type: string
- *                 example: "Hola, me gustaría obtener más información sobre sus servicios"
- *               category_id:
- *                 type: integer
- *                 example: 1
- *     responses:
- *       201:
- *         description: Mensaje creado exitosamente
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: true
- *                 message:
- *                   type: string
- *                   example: "Mensaje creado correctamente"
- *       400:
- *         description: Campos obligatorios faltantes o categoría inválida
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: "Todos los campos son obligatorios"
- *       404:
- *         description: Categoría no encontrada o inactiva
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: "Categoría no válida o inactiva"
- *       500:
- *         description: Error interno del servidor
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: "Error al crear el mensaje"
- */
-
-/**
- * @swagger
- * /refresh:
+ * /publicApi/refresh:
  *   get:
  *     summary: Renovar token de acceso
  *     description: Genera un nuevo token de acceso usando el refresh token válido
@@ -301,127 +181,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /messageCategories:
- *   get:
- *     summary: Obtener categorías de mensajes
- *     description: Lista todas las categorías activas disponibles para clasificar mensajes públicos
- *     tags:
- *       - Public API - MENSAJES PUBLICOS
- *     security: []
- *     responses:
- *       200:
- *         description: Lista de categorías obtenida exitosamente
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   category_id:
- *                     type: integer
- *                     example: 1
- *                   category_name:
- *                     type: string
- *                     example: "Consulta General"
- *                   category_status:
- *                     type: boolean
- *                     example: true
- *       500:
- *         description: Error interno del servidor
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: "Error al obtener las categorías"
- */
-
-/**
- * @swagger
- * /messages:
- *   post:
- *     summary: Crear mensaje público
- *     description: Permite a usuarios anónimos enviar mensajes de contacto desde el sitio web público
- *     tags:
- *       - Public API - MENSAJES PUBLICOS
- *     security: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - message_email
- *               - message_phone
- *               - message_content
- *               - category_id
- *             properties:
- *               message_email:
- *                 type: string
- *                 format: email
- *                 example: "usuario@ejemplo.com"
- *               message_phone:
- *                 type: string
- *                 example: "+54 9 11 1234-5678"
- *               message_content:
- *                 type: string
- *                 example: "Hola, me gustaría obtener más información sobre sus servicios"
- *               category_id:
- *                 type: integer
- *                 example: 1
- *     responses:
- *       201:
- *         description: Mensaje creado exitosamente
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: true
- *                 message:
- *                   type: string
- *                   example: "Mensaje creado correctamente"
- *       400:
- *         description: Campos obligatorios faltantes o categoría inválida
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: "Todos los campos son obligatorios"
- *       404:
- *         description: Categoría no encontrada o inactiva
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: "Categoría no válida o inactiva"
- *       500:
- *         description: Error interno del servidor
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: "Error al crear el mensaje"
- */
-
-/**
- * @swagger
- * /profile:
+ * /publicApi/profile:
  *   get:
  *     summary: Obtener perfil del usuario
  *     description: Retorna la información del perfil del usuario autenticado
@@ -476,127 +236,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /messageCategories:
- *   get:
- *     summary: Obtener categorías de mensajes
- *     description: Lista todas las categorías activas disponibles para clasificar mensajes públicos
- *     tags:
- *       - Public API - MENSAJES PUBLICOS
- *     security: []
- *     responses:
- *       200:
- *         description: Lista de categorías obtenida exitosamente
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   category_id:
- *                     type: integer
- *                     example: 1
- *                   category_name:
- *                     type: string
- *                     example: "Consulta General"
- *                   category_status:
- *                     type: boolean
- *                     example: true
- *       500:
- *         description: Error interno del servidor
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: "Error al obtener las categorías"
- */
-
-/**
- * @swagger
- * /messages:
- *   post:
- *     summary: Crear mensaje público
- *     description: Permite a usuarios anónimos enviar mensajes de contacto desde el sitio web público
- *     tags:
- *       - Public API - MENSAJES PUBLICOS
- *     security: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - message_email
- *               - message_phone
- *               - message_content
- *               - category_id
- *             properties:
- *               message_email:
- *                 type: string
- *                 format: email
- *                 example: "usuario@ejemplo.com"
- *               message_phone:
- *                 type: string
- *                 example: "+54 9 11 1234-5678"
- *               message_content:
- *                 type: string
- *                 example: "Hola, me gustaría obtener más información sobre sus servicios"
- *               category_id:
- *                 type: integer
- *                 example: 1
- *     responses:
- *       201:
- *         description: Mensaje creado exitosamente
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: true
- *                 message:
- *                   type: string
- *                   example: "Mensaje creado correctamente"
- *       400:
- *         description: Campos obligatorios faltantes o categoría inválida
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: "Todos los campos son obligatorios"
- *       404:
- *         description: Categoría no encontrada o inactiva
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: "Categoría no válida o inactiva"
- *       500:
- *         description: Error interno del servidor
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: "Error al crear el mensaje"
- */
-
-/**
- * @swagger
- * /logout:
+ * /publicApi/logout:
  *   get:
  *     summary: Cerrar sesión
  *     description: Invalida el token de acceso actual del usuario
@@ -642,7 +282,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /messageCategories:
+ * /publicApi/messageCategories:
  *   get:
  *     summary: Obtener categorías de mensajes
  *     description: Lista todas las categorías activas disponibles para clasificar mensajes públicos
@@ -682,7 +322,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /messages:
+ * /publicApi/messages:
  *   post:
  *     summary: Crear mensaje público
  *     description: Permite a usuarios anónimos enviar mensajes de contacto desde el sitio web público

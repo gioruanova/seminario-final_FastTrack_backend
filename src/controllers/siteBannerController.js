@@ -73,7 +73,6 @@ async function getActiveBanner(req, res) {
       .select()
       .where("banner_active", true);
 
-    console.log(banners.length);
 
     if (!banners.length) {
       return res.status(404).json({ error: "No hay banners" });

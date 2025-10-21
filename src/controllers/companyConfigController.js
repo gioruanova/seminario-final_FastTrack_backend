@@ -154,7 +154,7 @@ async function fetchCompanySettingsByCompanyId(company_id) {
 }
 
 // metodo para pluralizar
-// TODO: Revisar bien esto y hacer muchos experimentos
+// PENDIENTE: Revisar bien esto y hacer muchos experimentos
 function convertirAPlural(word) {
   if (!word || typeof word !== "string") return word;
   const lower = word.toLowerCase();

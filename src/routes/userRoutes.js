@@ -28,12 +28,6 @@ const siteBannerController = require("../controllers/siteBannerController");
 // =======================
 // Rutas protegidas
 
-// gestion banner
-router.get(
-  "/active-banner",
-  authUserWithStatus("owner", "operador", "profesional"),
-  siteBannerController.getActiveBanner
-);
 // Manejo de company
 router.get(
   "/company/companyInfo",
@@ -332,6 +326,13 @@ router.put(
   messageController.marAsUnreadMessageAsClient
 );
 
+// obtener banner
+router.get(
+  "/active-banner",
+  authUserWithStatus("owner", "operador", "profesional"),
+  siteBannerController.getActiveBanner
+);
+
 // --------------------------------------------------------------------------------------------------------------
 // Manejo de features especiales
 // VISTAS
@@ -354,7 +355,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /company/companyInfo:
+ * /customersApi/company/companyInfo:
  *   get:
  *     summary: EMPRESA - Obtener información (Owner)
  *     description: Obtiene la información completa de la empresa del usuario autenticado
@@ -406,7 +407,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /company/companyStatus:
+ * /customersApi/company/companyStatus:
  *   get:
  *     summary: EMPRESA - Obtener estado de configuración (Owner)
  *     description: Obtiene el estado de configuración de la empresa
@@ -425,7 +426,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /company/config:
+ * /customersApi/company/config:
  *   get:
  *     summary: EMPRESA - Obtener configuración
  *     description: Obtiene la configuración de la empresa (disponible para todos los roles)
@@ -444,7 +445,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /company:
+ * /customersApi/company:
  *   put:
  *     summary: EMPRESA - Actualizar información (Owner)
  *     description: Actualiza la información de contacto de la empresa
@@ -487,7 +488,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /company/config:
+ * /customersApi/company/config:
  *   put:
  *     summary: EMPRESA - Actualizar configuración (Owner)
  *     description: Actualiza la configuración de la empresa
@@ -519,7 +520,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /users:
+ * /customersApi/users:
  *   get:
  *     summary: USUARIOS - Listar de la empresa
  *     description: Obtiene todos los usuarios de la empresa (Owner/Operador)
@@ -536,7 +537,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /users:
+ * /customersApi/users:
  *   post:
  *     summary: USUARIOS - Crear nuevo
  *     description: Crea un nuevo usuario en la empresa (Owner/Operador)
@@ -598,7 +599,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /users/{user_id}:
+ * /customersApi/users/{user_id}:
  *   put:
  *     summary: USUARIOS - Actualizar
  *     description: Actualiza la información de un usuario (Owner/Operador)
@@ -647,7 +648,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /users/block/{user_id}:
+ * /customersApi/users/block/{user_id}:
  *   post:
  *     summary: USUARIOS - Bloquear (Owner)
  *     description: Bloquea un usuario de la empresa
@@ -675,7 +676,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /users/unblock/{user_id}:
+ * /customersApi/users/unblock/{user_id}:
  *   post:
  *     summary: USUARIOS - Desbloquear (Owner)
  *     description: Desbloquea un usuario de la empresa
@@ -703,7 +704,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /users/restore/{user_id}:
+ * /customersApi/users/restore/{user_id}:
  *   put:
  *     summary: USUARIOS - Restaurar con nueva contraseña (Owner)
  *     description: Restaura un usuario bloqueado estableciendo una nueva contraseña
@@ -745,7 +746,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /especialidades:
+ * /customersApi/especialidades:
  *   get:
  *     summary: ESPECIALIDADES - Listar de la empresa
  *     description: Obtiene especialidades de la empresa (Owner/Operador)
@@ -762,7 +763,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /especialidades:
+ * /customersApi/especialidades:
  *   post:
  *     summary: ESPECIALIDADES - Crear nueva (Owner)
  *     description: Crea una nueva especialidad para la empresa
@@ -796,7 +797,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /especialidades/{especialidadId}:
+ * /customersApi/especialidades/{especialidadId}:
  *   put:
  *     summary: ESPECIALIDADES - Actualizar (Owner)
  *     description: Actualiza el nombre de una especialidad
@@ -839,7 +840,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /especialidades/block/{especialidadId}:
+ * /customersApi/especialidades/block/{especialidadId}:
  *   put:
  *     summary: ESPECIALIDADES - Desactivar (Owner)
  *     description: Desactiva una especialidad
@@ -867,7 +868,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /especialidades/unblock/{especialidadId}:
+ * /customersApi/especialidades/unblock/{especialidadId}:
  *   put:
  *     summary: ESPECIALIDADES - Activar (Owner)
  *     description: Activa una especialidad previamente desactivada
@@ -895,7 +896,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /profesionalEspecialidad:
+ * /customersApi/profesionalEspecialidad:
  *   post:
  *     summary: ESPECIALIDADES - Asignar a profesional
  *     description: Asigna una especialidad a un profesional (Owner/Operador)
@@ -936,7 +937,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /profesionalEspecialidad/{id_asignacion}:
+ * /customersApi/profesionalEspecialidad/{id_asignacion}:
  *   delete:
  *     summary: ESPECIALIDADES - Eliminar asignación
  *     description: Elimina la asignación de una especialidad (Owner/Operador)
@@ -962,7 +963,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /profesionalEspecialidad/{id_asignacion}:
+ * /customersApi/profesionalEspecialidad/{id_asignacion}:
  *   put:
  *     summary: ESPECIALIDADES - Editar asignación
  *     description: Edita la asignación cambiándola por otra especialidad (Owner/Operador)
@@ -1005,7 +1006,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /clientes-recurrentes:
+ * /customersApi/clientes-recurrentes:
  *   get:
  *     summary: CLIENTES RECURRENTES - Listar
  *     description: Obtiene clientes recurrentes de la empresa (Owner/Operador)
@@ -1022,7 +1023,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /clientes-recurrentes:
+ * /customersApi/clientes-recurrentes:
  *   post:
  *     summary: CLIENTES RECURRENTES - Crear nuevo
  *     description: Crea un nuevo cliente recurrente (Owner/Operador)
@@ -1081,7 +1082,223 @@ module.exports = router;
 
 /**
  * @swagger
- * /agenda:
+ * /customersApi/clientes-recurrentes/{cliente_id}:
+ *   put:
+ *     summary: CLIENTES RECURRENTES - Editar
+ *     description: Edita la información de un cliente recurrente existente (Owner/Operador)
+ *     tags:
+ *       - Customer API - CLIENTES RECURRENTES
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: cliente_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID del cliente recurrente
+ *         example: 1
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - cliente_nombre
+ *               - cliente_telefono
+ *               - cliente_email
+ *             properties:
+ *               cliente_nombre:
+ *                 type: string
+ *                 description: "* Nombre completo del cliente"
+ *                 example: "Juan Pérez"
+ *               cliente_telefono:
+ *                 type: string
+ *                 description: "* Teléfono del cliente"
+ *                 example: "+54 9 11 1234-5678"
+ *               cliente_email:
+ *                 type: string
+ *                 format: email
+ *                 description: "* Email del cliente"
+ *                 example: "juan@ejemplo.com"
+ *     responses:
+ *       200:
+ *         description: Cliente recurrente editado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Cliente recurrente editado correctamente"
+ *       400:
+ *         description: Campos requeridos faltantes
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Todos los campos son requeridos"
+ *       404:
+ *         description: Cliente recurrente no encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Cliente recurrente no encontrado"
+ *       500:
+ *         description: Error interno del servidor
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Error al editar el cliente recurrente"
+ */
+
+/**
+ * @swagger
+ * /customersApi/clientes-recurrentes/unblock/{cliente_id}:
+ *   put:
+ *     summary: CLIENTES RECURRENTES - Activar
+ *     description: Activa un cliente recurrente previamente desactivado (Owner/Operador)
+ *     tags:
+ *       - Customer API - CLIENTES RECURRENTES
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: cliente_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID del cliente recurrente
+ *         example: 1
+ *     responses:
+ *       200:
+ *         description: Cliente recurrente activado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Cliente recurrente activado correctamente"
+ *       400:
+ *         description: Cliente ya está activo
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "El cliente ya está activo"
+ *       404:
+ *         description: Cliente recurrente no encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Cliente recurrente no encontrado"
+ *       500:
+ *         description: Error interno del servidor
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Error al activar el cliente recurrente"
+ */
+
+/**
+ * @swagger
+ * /customersApi/clientes-recurrentes/block/{cliente_id}:
+ *   put:
+ *     summary: CLIENTES RECURRENTES - Desactivar
+ *     description: Desactiva un cliente recurrente del sistema (Owner/Operador)
+ *     tags:
+ *       - Customer API - CLIENTES RECURRENTES
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: cliente_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID del cliente recurrente
+ *         example: 1
+ *     responses:
+ *       200:
+ *         description: Cliente recurrente desactivado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Cliente recurrente desactivado correctamente"
+ *       400:
+ *         description: Cliente ya está desactivado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "El cliente ya está desactivado"
+ *       404:
+ *         description: Cliente recurrente no encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Cliente recurrente no encontrado"
+ *       500:
+ *         description: Error interno del servidor
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Error al desactivar el cliente recurrente"
+ */
+
+/**
+ * @swagger
+ * /customersApi/agenda:
  *   get:
  *     summary: AGENDA - Listar agenda bloqueada
  *     description: Obtiene la agenda bloqueada de la empresa (Owner/Operador)
@@ -1098,7 +1315,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /agendaBloqueada/{user_id}:
+ * /customersApi/agendaBloqueada/{user_id}:
  *   post:
  *     summary: AGENDA - Obtener disponibilidad bloqueada por profesional
  *     description: Obtiene la disponibilidad bloqueada de un profesional (Owner/Operador)
@@ -1122,7 +1339,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /agenda/{user_id}:
+ * /customersApi/agenda/{user_id}:
  *   post:
  *     summary: AGENDA - Crear bloqueo (Owner/Operador)
  *     description: Crea un bloqueo de agenda para un profesional
@@ -1176,7 +1393,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /profesional/agenda:
+ * /customersApi/profesional/agenda:
  *   post:
  *     summary: AGENDA - Crear bloqueo (Profesional)
  *     description: Permite al profesional crear bloqueos en su propia agenda
@@ -1223,7 +1440,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /agenda/vista/profesional:
+ * /customersApi/agenda/vista/profesional:
  *   get:
  *     summary: AGENDA - Vista de agenda para profesional
  *     description: Obtiene la vista de agenda bloqueada (Todos los roles)
@@ -1240,7 +1457,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /reclamo:
+ * /customersApi/reclamo:
  *   post:
  *     summary: RECLAMOS - Crear nuevo
  *     description: Crea un nuevo reclamo (Owner/Operador)
@@ -1311,7 +1528,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /reclamos:
+ * /customersApi/reclamos:
  *   get:
  *     summary: RECLAMOS - Listar (Owner/Operador)
  *     description: Obtiene todos los reclamos de la empresa
@@ -1328,7 +1545,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /reclamos/gestion/{reclamo_id}:
+ * /customersApi/reclamos/gestion/{reclamo_id}:
  *   get:
  *     summary: RECLAMOS - Obtener por ID (Owner/Operador)
  *     description: Obtiene los detalles de un reclamo específico
@@ -1354,7 +1571,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /reclamos/gestion/{reclamo_id}:
+ * /customersApi/reclamos/gestion/{reclamo_id}:
  *   put:
  *     summary: RECLAMOS - Actualizar (Owner/Operador)
  *     description: Actualiza un reclamo específico
@@ -1401,7 +1618,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /reclamos/profesional:
+ * /customersApi/reclamos/profesional:
  *   get:
  *     summary: RECLAMOS - Listar asignados (Profesional)
  *     description: Obtiene los reclamos asignados al profesional
@@ -1418,7 +1635,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /reclamos/profesional/gestion/{reclamo_id}:
+ * /customersApi/reclamos/profesional/gestion/{reclamo_id}:
  *   get:
  *     summary: RECLAMOS - Obtener por ID (Profesional)
  *     description: Obtiene los detalles de un reclamo asignado
@@ -1444,7 +1661,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /reclamos/profesional/gestion/{reclamo_id}:
+ * /customersApi/reclamos/profesional/gestion/{reclamo_id}:
  *   put:
  *     summary: RECLAMOS - Actualizar (Profesional)
  *     description: Actualiza un reclamo asignado al profesional
@@ -1488,7 +1705,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /workload/estado:
+ * /customersApi/workload/estado:
  *   get:
  *     summary: WORKLOAD - Obtener estado (Profesional)
  *     description: Obtiene el estado actual de disponibilidad para recibir trabajo
@@ -1505,7 +1722,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /workload/enable:
+ * /customersApi/workload/enable:
  *   put:
  *     summary: WORKLOAD - Habilitar recepción de trabajo (Profesional)
  *     description: Habilita la recepción de nuevos trabajos
@@ -1524,7 +1741,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /workload/disable:
+ * /customersApi/workload/disable:
  *   put:
  *     summary: WORKLOAD - Deshabilitar recepción de trabajo (Profesional)
  *     description: Deshabilita la recepción de nuevos trabajos
@@ -1543,7 +1760,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /globalLogs:
+ * /customersApi/globalLogs:
  *   get:
  *     summary: LOGS - Obtener todos (Owner)
  *     description: Obtiene todos los logs de la empresa
@@ -1560,7 +1777,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /globalLogs/read:
+ * /customersApi/globalLogs/read:
  *   put:
  *     summary: LOGS - Marcar todos como leídos (Owner)
  *     description: Marca todos los logs como leídos
@@ -1577,7 +1794,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /globalLogs/unread:
+ * /customersApi/globalLogs/unread:
  *   put:
  *     summary: LOGS - Marcar todos como no leídos (Owner)
  *     description: Marca todos los logs como no leídos
@@ -1594,7 +1811,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /globalLogs:
+ * /customersApi/globalLogs:
  *   delete:
  *     summary: LOGS - Eliminar (Owner)
  *     description: Elimina logs de la empresa
@@ -1611,7 +1828,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /platform/feedback:
+ * /customersApi/platform/feedback:
  *   post:
  *     summary: FEEDBACK - Enviar feedback
  *     description: Envía feedback a la plataforma (Todos los roles)
@@ -1643,7 +1860,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /platform/messages:
+ * /customersApi/platform/messages:
  *   get:
  *     summary: MENSAJES DE PLATAFORMA - Listar
  *     description: Obtiene mensajes de la plataforma (Todos los roles)
@@ -1660,7 +1877,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /platform/messages:
+ * /customersApi/platform/messages:
  *   post:
  *     summary: MENSAJES DE PLATAFORMA - Crear para empresa
  *     description: Crea un mensaje para toda la empresa (Owner/Operador)
@@ -1697,7 +1914,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /platform/messages/user/{user_id}:
+ * /customersApi/platform/messages/user/{user_id}:
  *   post:
  *     summary: MENSAJES DE PLATAFORMA - Crear para usuario
  *     description: Crea un mensaje para un usuario específico (Owner/Operador)
@@ -1741,7 +1958,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /platform/messages/{platform_message_id}:
+ * /customersApi/platform/messages/{platform_message_id}:
  *   delete:
  *     summary: MENSAJES DE PLATAFORMA - Eliminar mensaje de empresa (Owner)
  *     description: Elimina un mensaje de la empresa
@@ -1767,7 +1984,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /platform/single-message/{specific_message_id}:
+ * /customersApi/platform/single-message/{specific_message_id}:
  *   delete:
  *     summary: MENSAJES DE PLATAFORMA - Eliminar mensaje específico
  *     description: Elimina un mensaje específico (Todos los roles)
@@ -1793,7 +2010,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /platform/message/read/{specific_message_id}:
+ * /customersApi/platform/message/read/{specific_message_id}:
  *   put:
  *     summary: MENSAJES DE PLATAFORMA - Marcar como leído
  *     description: Marca un mensaje como leído (Todos los roles)
@@ -1819,7 +2036,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /platform/message/unread/{specific_message_id}:
+ * /customersApi/platform/message/unread/{specific_message_id}:
  *   put:
  *     summary: MENSAJES DE PLATAFORMA - Marcar como no leído
  *     description: Marca un mensaje como no leído (Todos los roles)
@@ -1845,7 +2062,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /vistas/profesionales:
+ * /customersApi/vistas/profesionales:
  *   get:
  *     summary: EXPORTACIONES - Exportar profesionales a Excel
  *     description: Exporta la información de profesionales a Excel (Owner/Operador)
@@ -1867,7 +2084,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /vistas/reclamos/{status}:
+ * /customersApi/vistas/reclamos/{status}:
  *   get:
  *     summary: EXPORTACIONES - Exportar reclamos a Excel
  *     description: Exporta la información de reclamos a Excel (Owner/Operador)
@@ -1893,4 +2110,61 @@ module.exports = router;
  *               format: binary
  *       500:
  *         description: Error interno del servidor
+ */
+
+
+/**
+ * @swagger
+ * /customersApi/active-banner:
+ *   get:
+ *     summary: BANNERS - Obtener banner activo
+ *     description: Obtiene el banner activo para mostrar en la interfaz de usuario
+ *     tags:
+ *       - Customer API - BANNERS
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Banner activo obtenido exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 banner_id:
+ *                   type: integer
+ *                   example: 1
+ *                 banner_title:
+ *                   type: string
+ *                   example: "Banner Principal"
+ *                 banner_content:
+ *                   type: string
+ *                   example: "Contenido del banner"
+ *                 banner_status:
+ *                   type: boolean
+ *                   example: true
+ *                 created_at:
+ *                   type: string
+ *                   format: date-time
+ *                   example: "2024-01-15T10:30:00Z"
+ *       404:
+ *         description: No hay banner activo
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "No hay banner activo"
+ *       500:
+ *         description: Error interno del servidor
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Error al obtener el banner activo"
  */

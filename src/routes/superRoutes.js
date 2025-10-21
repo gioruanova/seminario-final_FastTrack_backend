@@ -27,13 +27,13 @@ router.use(authSuperadmin);
 // =======================
 // Rutas protegidas
 
-
 router.get("/banners", siteBannerController.getBannersAsAdmin);
 router.post("/banners", siteBannerController.createBanner);
 router.put("/banners/:banner_id", siteBannerController.editBanner);
 router.delete("/banners/:banner_id", siteBannerController.deleteBanner);
-router.put("/banners/enable/:banner_id", siteBannerController.enableBanner);
-router.put("/banners/disable/:banner_id", siteBannerController.disableBanner);
+router.post("/banners/enable/:banner_id", siteBannerController.enableBanner);
+router.post("/banners/disable/:banner_id", siteBannerController.disableBanner);
+
 // Mensajes publicos
 router.get("/messages", publicMessagesController.gettAlMessagesAsAdmin);
 router.put("/messages/read/:message_id", publicMessagesController.markMessageAsReadAsAdmin);
@@ -77,7 +77,6 @@ router.put("/profesionalEspecialidad/:id_asignacion", profesionalEspecialidadCon
 // --------------------------------------------------------------------------------------------------------------
 // Manejo de clientes recurrentes
 // --------------------------------------------------------------------------------------------------------------
-// TODO: Documentar endpoint
 router.get("/clientes-recurrentes", clienteRecurrenteController.getAllClientesRecurrentesAsAdmin);
 
 // Manejo de empresas
@@ -111,7 +110,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /companies:
+ * /superApi/companies:
  *   get:
  *     summary: EMPRESAS - Listar todas
  *     description: Obtiene todas las empresas del sistema con sus usuarios y especialidades
@@ -170,7 +169,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /companies/{company_id}:
+ * /superApi/companies/{company_id}:
  *   post:
  *     summary: EMPRESAS - Obtener por ID
  *     description: Obtiene la información detallada de una empresa específica con sus usuarios
@@ -236,7 +235,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /companies:
+ * /superApi/companies:
  *   post:
  *     summary: EMPRESAS - Crear nueva
  *     description: Crea una nueva empresa en el sistema con su configuración inicial
@@ -342,7 +341,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /companies/{company_id}:
+ * /superApi/companies/{company_id}:
  *   put:
  *     summary: EMPRESAS - Actualizar
  *     description: Actualiza la información de una empresa existente
@@ -432,7 +431,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /users:
+ * /superApi/users:
  *   get:
  *     summary: USUARIOS - Listar todos
  *     description: Obtiene todos los usuarios del sistema de todas las empresas
@@ -488,7 +487,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /users/{company_id}:
+ * /superApi/users/{company_id}:
  *   get:
  *     summary: USUARIOS - Listar por empresa
  *     description: Obtiene todos los usuarios de una empresa específica
@@ -540,7 +539,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /users:
+ * /superApi/users:
  *   post:
  *     summary: USUARIOS - Crear nuevo
  *     description: Crea un nuevo usuario en el sistema y lo asigna a una empresa
@@ -632,7 +631,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /users/{user_id}:
+ * /superApi/users/{user_id}:
  *   put:
  *     summary: USUARIOS - Actualizar
  *     description: Actualiza la información de un usuario existente
@@ -728,7 +727,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /users/block/{user_id}:
+ * /superApi/users/block/{user_id}:
  *   post:
  *     summary: USUARIOS - Bloquear
  *     description: Bloquea un usuario del sistema impidiendo su acceso
@@ -782,7 +781,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /users/unblock/{user_id}:
+ * /superApi/users/unblock/{user_id}:
  *   post:
  *     summary: USUARIOS - Desbloquear
  *     description: Desbloquea un usuario del sistema permitiendo su acceso nuevamente
@@ -836,7 +835,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /users/restore/{user_id}:
+ * /superApi/users/restore/{user_id}:
  *   put:
  *     summary: USUARIOS - Restaurar con nueva contraseña
  *     description: Restaura un usuario bloqueado y establece una nueva contraseña
@@ -904,7 +903,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /especialidades:
+ * /superApi/especialidades:
  *   get:
  *     summary: ESPECIALIDADES - Listar todas
  *     description: Obtiene todas las especialidades del sistema de todas las empresas
@@ -948,7 +947,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /especialidades/{company_id}:
+ * /superApi/especialidades/{company_id}:
  *   get:
  *     summary: ESPECIALIDADES - Listar por empresa
  *     description: Obtiene todas las especialidades de una empresa específica
@@ -1000,7 +999,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /especialidades:
+ * /superApi/especialidades:
  *   post:
  *     summary: ESPECIALIDADES - Crear nueva
  *     description: Crea una nueva especialidad en el sistema para una empresa específica
@@ -1074,7 +1073,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /especialidades/{especialidadId}:
+ * /superApi/especialidades/{especialidadId}:
  *   put:
  *     summary: ESPECIALIDADES - Actualizar
  *     description: Actualiza el nombre de una especialidad existente
@@ -1151,7 +1150,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /especialidades/block/{especialidadId}:
+ * /superApi/especialidades/block/{especialidadId}:
  *   put:
  *     summary: ESPECIALIDADES - Desactivar
  *     description: Desactiva una especialidad del sistema
@@ -1215,7 +1214,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /especialidades/unblock/{especialidadId}:
+ * /superApi/especialidades/unblock/{especialidadId}:
  *   put:
  *     summary: ESPECIALIDADES - Activar
  *     description: Activa una especialidad previamente desactivada
@@ -1279,7 +1278,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /profesionalEspecialidad:
+ * /superApi/profesionalEspecialidad:
  *   post:
  *     summary: ESPECIALIDADES - Asignar a profesional
  *     description: Asigna una especialidad a un profesional
@@ -1360,7 +1359,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /profesionalEspecialidad/{id_asignacion}:
+ * /superApi/profesionalEspecialidad/{id_asignacion}:
  *   delete:
  *     summary: ESPECIALIDADES - Eliminar asignación
  *     description: Elimina la asignación de una especialidad a un profesional
@@ -1421,7 +1420,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /profesionalEspecialidad/{id_asignacion}:
+ * /superApi/profesionalEspecialidad/{id_asignacion}:
  *   put:
  *     summary: ESPECIALIDADES - Editar asignación
  *     description: Edita la asignación de una especialidad cambiándola por otra
@@ -1505,7 +1504,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /reclamos:
+ * /superApi/reclamos:
  *   get:
  *     summary: RECLAMOS - Listar todos
  *     description: Obtiene todos los reclamos del sistema de todas las empresas
@@ -1559,7 +1558,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /reclamos/{company_id}:
+ * /superApi/reclamos/{company_id}:
  *   get:
  *     summary: RECLAMOS - Listar por empresa
  *     description: Obtiene todos los reclamos de una empresa específica
@@ -1606,9 +1605,67 @@ module.exports = router;
  *                   example: "Error interno del servidor"
  */
 
+
 /**
  * @swagger
- * /messages:
+ * /superApi/clientes-recurrentes:
+ *   get:
+ *     summary: CLIENTES RECURRENTES - Listar todos
+ *     description: Obtiene todos los clientes recurrentes del sistema de todas las empresas
+ *     tags:
+ *       - SuperAdmin API - CLIENTES RECURRENTES
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de clientes recurrentes obtenida exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   cliente_id:
+ *                     type: integer
+ *                     example: 1
+ *                   cliente_nombre:
+ *                     type: string
+ *                     example: "Juan Pérez"
+ *                   cliente_telefono:
+ *                     type: string
+ *                     example: "+54 9 11 1234-5678"
+ *                   cliente_email:
+ *                     type: string
+ *                     example: "juan@ejemplo.com"
+ *                   cliente_estado:
+ *                     type: boolean
+ *                     example: true
+ *                   company_id:
+ *                     type: integer
+ *                     example: 1
+ *                   company_nombre:
+ *                     type: string
+ *                     example: "Empresa Demo S.A."
+ *                   created_at:
+ *                     type: string
+ *                     format: date-time
+ *                     example: "2024-01-15T10:30:00Z"
+ *       500:
+ *         description: Error interno del servidor
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Error al obtener los clientes recurrentes"
+ */
+
+/**
+ * @swagger
+ * /superApi/messages:
  *   get:
  *     summary: MENSAJES PÚBLICOS - Listar todos
  *     description: Obtiene todos los mensajes públicos recibidos desde el sitio web
@@ -1661,7 +1718,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /messages/read/{message_id}:
+ * /superApi/messages/read/{message_id}:
  *   put:
  *     summary: MENSAJES PÚBLICOS - Marcar como leído
  *     description: Marca un mensaje público como leído
@@ -1715,7 +1772,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /messages/unread/{message_id}:
+ * /superApi/messages/unread/{message_id}:
  *   put:
  *     summary: MENSAJES PÚBLICOS - Marcar como no leído
  *     description: Marca un mensaje público como no leído
@@ -1769,7 +1826,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /messages/{message_id}:
+ * /superApi/messages/{message_id}:
  *   delete:
  *     summary: MENSAJES PÚBLICOS - Eliminar
  *     description: Elimina un mensaje público del sistema
@@ -1823,7 +1880,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /messageCategories:
+ * /superApi/messageCategories:
  *   get:
  *     summary: CATEGORÍAS DE MENSAJES - Listar todas
  *     description: Obtiene todas las categorías de mensajes públicos del sistema
@@ -1864,7 +1921,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /messageCategories:
+ * /superApi/messageCategories:
  *   post:
  *     summary: CATEGORÍAS DE MENSAJES - Crear nueva
  *     description: Crea una nueva categoría para clasificar mensajes públicos
@@ -1923,7 +1980,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /messageCategories/{category_id}:
+ * /superApi/messageCategories/{category_id}:
  *   put:
  *     summary: CATEGORÍAS DE MENSAJES - Actualizar
  *     description: Actualiza el nombre de una categoría de mensajes existente
@@ -1990,7 +2047,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /messageCategories/disable/{category_id}:
+ * /superApi/messageCategories/disable/{category_id}:
  *   put:
  *     summary: CATEGORÍAS DE MENSAJES - Desactivar
  *     description: Desactiva una categoría de mensajes del sistema
@@ -2044,7 +2101,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /messageCategories/enable/{category_id}:
+ * /superApi/messageCategories/enable/{category_id}:
  *   put:
  *     summary: CATEGORÍAS DE MENSAJES - Activar
  *     description: Activa una categoría de mensajes previamente desactivada
@@ -2098,7 +2155,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /messageCategories/{category_id}:
+ * /superApi/messageCategories/{category_id}:
  *   delete:
  *     summary: CATEGORÍAS DE MENSAJES - Eliminar
  *     description: Elimina una categoría de mensajes del sistema
@@ -2152,7 +2209,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /globalLogs:
+ * /superApi/globalLogs:
  *   get:
  *     summary: LOGS GLOBALES - Listar todos
  *     description: Obtiene todos los logs globales del sistema de todas las empresas
@@ -2197,7 +2254,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /globalLogs/{company_id}:
+ * /superApi/globalLogs/{company_id}:
  *   get:
  *     summary: LOGS GLOBALES - Listar por empresa
  *     description: Obtiene todos los logs de una empresa específica
@@ -2247,7 +2304,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /platform/messages:
+ * /superApi/platform/messages:
  *   post:
  *     summary: MENSAJES DE PLATAFORMA - Crear para todas las empresas
  *     description: Crea un mensaje que se enviará a todas las empresas del sistema
@@ -2311,7 +2368,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /platform/messages/company/{company_id}:
+ * /superApi/platform/messages/company/{company_id}:
  *   post:
  *     summary: MENSAJES DE PLATAFORMA - Crear para empresa específica
  *     description: Crea un mensaje para todos los usuarios de una empresa específica
@@ -2383,7 +2440,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /platform/messages/user/{user_id}:
+ * /superApi/platform/messages/user/{user_id}:
  *   post:
  *     summary: MENSAJES DE PLATAFORMA - Crear para usuario específico
  *     description: Crea un mensaje dirigido a un usuario específico
@@ -2455,7 +2512,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /platform/messages/{platform_message_id}:
+ * /superApi/platform/messages/{platform_message_id}:
  *   delete:
  *     summary: MENSAJES DE PLATAFORMA - Eliminar
  *     description: Elimina un mensaje de plataforma del sistema
@@ -2505,4 +2562,356 @@ module.exports = router;
  *                 error:
  *                   type: string
  *                   example: "Error al eliminar el mensaje"
+ */
+
+
+/**
+ * @swagger
+ * /superApi/banners:
+ *   get:
+ *     summary: BANNERS - Listar todos
+ *     description: Obtiene todos los banners del sistema
+ *     tags:
+ *       - SuperAdmin API - BANNERS
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de banners obtenida exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   banner_id:
+ *                     type: integer
+ *                     example: 1
+ *                   banner_title:
+ *                     type: string
+ *                     example: "Banner Principal"
+ *                   banner_content:
+ *                     type: string
+ *                     example: "Contenido del banner"
+ *                   banner_status:
+ *                     type: boolean
+ *                     example: true
+ *                   created_at:
+ *                     type: string
+ *                     format: date-time
+ *                     example: "2024-01-15T10:30:00Z"
+ *       500:
+ *         description: Error interno del servidor
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Error al obtener los banners"
+ */
+
+/**
+ * @swagger
+ * /superApi/banners:
+ *   post:
+ *     summary: BANNERS - Crear nuevo
+ *     description: Crea un nuevo banner en el sistema
+ *     tags:
+ *       - SuperAdmin API - BANNERS
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - banner_title
+ *               - banner_content
+ *             properties:
+ *               banner_title:
+ *                 type: string
+ *                 description: "* Título del banner"
+ *                 example: "Banner Principal"
+ *               banner_content:
+ *                 type: string
+ *                 description: "* Contenido del banner"
+ *                 example: "Contenido del banner"
+ *               banner_status:
+ *                 type: boolean
+ *                 description: Estado del banner (activo/inactivo)
+ *                 example: true
+ *     responses:
+ *       201:
+ *         description: Banner creado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Banner creado correctamente"
+ *       400:
+ *         description: Campos requeridos faltantes
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "El título y contenido son requeridos"
+ *       500:
+ *         description: Error interno del servidor
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Error al crear el banner"
+ */
+
+/**
+ * @swagger
+ * /superApi/banners/{banner_id}:
+ *   put:
+ *     summary: BANNERS - Actualizar
+ *     description: Actualiza un banner existente
+ *     tags:
+ *       - SuperAdmin API - BANNERS
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: banner_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID del banner
+ *         example: 1
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               banner_title:
+ *                 type: string
+ *                 description: Título del banner
+ *                 example: "Banner Actualizado"
+ *               banner_content:
+ *                 type: string
+ *                 description: Contenido del banner
+ *                 example: "Contenido actualizado del banner"
+ *               banner_status:
+ *                 type: boolean
+ *                 description: Estado del banner
+ *                 example: true
+ *     responses:
+ *       200:
+ *         description: Banner actualizado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Banner actualizado correctamente"
+ *       404:
+ *         description: Banner no encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Banner no encontrado"
+ *       500:
+ *         description: Error interno del servidor
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Error al actualizar el banner"
+ */
+
+/**
+ * @swagger
+ * /superApi/banners/{banner_id}:
+ *   delete:
+ *     summary: BANNERS - Eliminar
+ *     description: Elimina un banner del sistema
+ *     tags:
+ *       - SuperAdmin API - BANNERS
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: banner_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID del banner
+ *         example: 1
+ *     responses:
+ *       200:
+ *         description: Banner eliminado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Banner eliminado correctamente"
+ *       404:
+ *         description: Banner no encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Banner no encontrado"
+ *       500:
+ *         description: Error interno del servidor
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Error al eliminar el banner"
+ */
+
+/**
+ * @swagger
+ * /superApi/banners/enable/{banner_id}:
+ *   post:
+ *     summary: BANNERS - Activar
+ *     description: Activa un banner del sistema
+ *     tags:
+ *       - SuperAdmin API - BANNERS
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: banner_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID del banner
+ *         example: 1
+ *     responses:
+ *       200:
+ *         description: Banner activado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Banner activado correctamente"
+ *       404:
+ *         description: Banner no encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Banner no encontrado"
+ *       500:
+ *         description: Error interno del servidor
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Error al activar el banner"
+ */
+
+/**
+ * @swagger
+ * /superApi/banners/disable/{banner_id}:
+ *   post:
+ *     summary: BANNERS - Desactivar
+ *     description: Desactiva un banner del sistema
+ *     tags:
+ *       - SuperAdmin API - BANNERS
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: banner_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID del banner
+ *         example: 1
+ *     responses:
+ *       200:
+ *         description: Banner desactivado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Banner desactivado correctamente"
+ *       404:
+ *         description: Banner no encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Banner no encontrado"
+ *       500:
+ *         description: Error interno del servidor
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Error al desactivar el banner"
  */

@@ -1,0 +1,346 @@
+/**
+ * @swagger
+ * /superApi/banners:
+ *   get:
+ *     summary: BANNERS - Listar todos
+ *     description: Obtiene todos los banners del sistema
+ *     tags:
+ *       - SuperAdmin API - BANNERS
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de banners obtenida exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   banner_id:
+ *                     type: integer
+ *                     example: 1
+ *                   banner_title:
+ *                     type: string
+ *                     example: "Banner Principal"
+ *                   banner_content:
+ *                     type: string
+ *                     example: "Contenido del banner"
+ *                   banner_status:
+ *                     type: boolean
+ *                     example: true
+ *       500:
+ *         description: Error interno del servidor
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Error al obtener los banners"
+ */
+
+/**
+ * @swagger
+ * /superApi/banners:
+ *   post:
+ *     summary: BANNERS - Crear nuevo
+ *     description: Crea un nuevo banner en el sistema
+ *     tags:
+ *       - SuperAdmin API - BANNERS
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - banner_title
+ *               - banner_content
+ *             properties:
+ *               banner_title:
+ *                 type: string
+ *                 description: "* Título del banner"
+ *                 example: "Banner Principal"
+ *               banner_content:
+ *                 type: string
+ *                 description: "* Contenido del banner"
+ *                 example: "Contenido del banner"
+ *               banner_status:
+ *                 type: boolean
+ *                 description: Estado del banner (activo/inactivo)
+ *                 example: true
+ *     responses:
+ *       201:
+ *         description: Banner creado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Banner creado correctamente"
+ *       400:
+ *         description: Campos requeridos faltantes
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "El título y contenido son requeridos"
+ *       500:
+ *         description: Error interno del servidor
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Error al crear el banner"
+ */
+
+/**
+ * @swagger
+ * /superApi/banners/{banner_id}:
+ *   put:
+ *     summary: BANNERS - Actualizar
+ *     description: Actualiza un banner existente
+ *     tags:
+ *       - SuperAdmin API - BANNERS
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: banner_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID del banner
+ *         example: 1
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               banner_title:
+ *                 type: string
+ *                 description: Título del banner
+ *                 example: "Banner Actualizado"
+ *               banner_content:
+ *                 type: string
+ *                 description: Contenido del banner
+ *                 example: "Contenido actualizado del banner"
+ *               banner_status:
+ *                 type: boolean
+ *                 description: Estado del banner
+ *                 example: true
+ *     responses:
+ *       200:
+ *         description: Banner actualizado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Banner actualizado correctamente"
+ *       404:
+ *         description: Banner no encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Banner no encontrado"
+ *       500:
+ *         description: Error interno del servidor
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Error al actualizar el banner"
+ */
+
+/**
+ * @swagger
+ * /superApi/banners/{banner_id}:
+ *   delete:
+ *     summary: BANNERS - Eliminar
+ *     description: Elimina un banner del sistema
+ *     tags:
+ *       - SuperAdmin API - BANNERS
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: banner_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID del banner
+ *         example: 1
+ *     responses:
+ *       200:
+ *         description: Banner eliminado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Banner eliminado correctamente"
+ *       404:
+ *         description: Banner no encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Banner no encontrado"
+ *       500:
+ *         description: Error interno del servidor
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Error al eliminar el banner"
+ */
+
+/**
+ * @swagger
+ * /superApi/banners/enable/{banner_id}:
+ *   post:
+ *     summary: BANNERS - Activar
+ *     description: Activa un banner del sistema
+ *     tags:
+ *       - SuperAdmin API - BANNERS
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: banner_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID del banner
+ *         example: 1
+ *     responses:
+ *       200:
+ *         description: Banner activado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Banner activado correctamente"
+ *       404:
+ *         description: Banner no encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Banner no encontrado"
+ *       500:
+ *         description: Error interno del servidor
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Error al activar el banner"
+ */
+
+/**
+ * @swagger
+ * /superApi/banners/disable/{banner_id}:
+ *   post:
+ *     summary: BANNERS - Desactivar
+ *     description: Desactiva un banner del sistema
+ *     tags:
+ *       - SuperAdmin API - BANNERS
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: banner_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID del banner
+ *         example: 1
+ *     responses:
+ *       200:
+ *         description: Banner desactivado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Banner desactivado correctamente"
+ *       404:
+ *         description: Banner no encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Banner no encontrado"
+ *       500:
+ *         description: Error interno del servidor
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Error al desactivar el banner"
+ */

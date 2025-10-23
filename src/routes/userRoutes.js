@@ -24,6 +24,7 @@ const messageController = require("../controllers/messageController");
 const exportProfesionalesController = require("../../utils/exports/exportProfesionalesController");
 const exportReclamosController = require("../../utils/exports/exportReclamosController");
 const siteBannerController = require("../controllers/siteBannerController");
+const notificationController = require("../controllers/notificationController");
 
 // =======================
 // Rutas protegidas
@@ -345,6 +346,34 @@ router.get(
   "/vistas/reclamos/:status",
   authUserWithStatus("owner", "operador"),
   exportReclamosController.exportReclamosToExcel
+);
+
+// =======================
+// Rutas de notificaciones
+router.get(
+  "/notifications/vapid-public-key",
+  authUserWithStatus(),
+  notificationController.getVapidPublicKey
+);
+router.post(
+  "/notifications/register-token",
+  authUserWithStatus(),
+  notificationController.registerToken
+);
+router.post(
+  "/notifications/send",
+  authUserWithStatus(),
+  notificationController.sendNotification
+);
+router.delete(
+  "/notifications/unregister-token",
+  authUserWithStatus(),
+  notificationController.unregisterToken
+);
+router.delete(
+  "/notifications/unregister-specific-token",
+  authUserWithStatus(),
+  notificationController.unregisterSpecificToken
 );
 
 module.exports = router;

@@ -213,6 +213,12 @@ router.put(
   reclamoController.updateReclamoAsClient
 );
 
+router.put(
+  "/reclamos/reminder/:reclamo_id",
+  authUserWithStatus("owner", "operador"),
+  reclamoController.sendReminderToProfesional
+);
+
 // Reclamos como profesional
 router.get(
   "/reclamos/profesional",
@@ -1730,6 +1736,60 @@ module.exports = router;
  *         description: Reclamo no encontrado
  *       500:
  *         description: Error interno del servidor
+ */
+
+/**
+ * @swagger
+ * /customersApi/reclamos/reminder/{reclamo_id}:
+ *   put:
+ *     summary: RECLAMOS - Enviar recordatorio a profesional (Owner/Operador)
+ *     description: Envía un recordatorio al profesional asignado a un reclamo pendiente de atender
+ *     tags:
+ *       - Customer API - RECLAMOS
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: reclamo_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID del reclamo
+ *         example: 123
+ *     responses:
+ *       200:
+ *         description: Recordatorio enviado al profesional correctamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Recordatorio enviado al profesional correctamente"
+ *       404:
+ *         description: Reclamo o profesional no encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Reclamo no encontrado"
+ *       500:
+ *         description: Error interno del servidor
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Error interno del servidor"
  */
 
 /**

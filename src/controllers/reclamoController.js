@@ -527,7 +527,7 @@ async function notificacionNuevoReclamo(reclamo, user, creator) {
     " - " +
     reclamo.reclamo_titulo +
     "\n\n" +
-    `Vea sus ${companyConfig.plu_heading_reclamos} en curso ` + `<a class="font-medium text-primary hover:underline" href="/dashboard/profesional/trabajar-reclamos">aquí</a>.`;
+    `Revisa tus ${companyConfig.plu_heading_reclamos} en curso ` + `<a class="font-medium text-primary hover:underline" href="/dashboard/profesional/trabajar-reclamos">aquí</a>.`;
 
   await messageController.createMessageCustom({
     platform_message_title: "Nueva asignacion de " + companyConfig.sing_heading_reclamos,
@@ -548,7 +548,6 @@ async function actualizacionReclamo(reclamo, user, creator, nuevoEstado) {
     .first();
 
   const estadoReclamo = nuevoEstado == "CERRADO" || nuevoEstado == "CANCELADO" ? { estado: `Revisa tu historial de ${companyConfig.plu_heading_reclamos}`, path: "/dashboard/profesional/historial-reclamos" } : { estado: `Revisa tus ${companyConfig.plu_heading_reclamos} en curso `, path: "/dashboard/profesional/trabajar-reclamos" };
-
   const nuevoReclamoMensaje = companyConfig.string_actualizacion_reclamo_profesional +
     "\n\n" +
     "ID: " +
@@ -576,9 +575,7 @@ async function actualizacionReclamoOperador(reclamo, user, creator, nuevoEstado)
     .where("company_id", reclamo.company_id)
     .first();
 
-  const estadoReclamo = nuevoEstado == "CERRADO" || nuevoEstado == "CANCELADO" ?
-    { estado: `Revisa el historial de ${companyConfig.plu_heading_reclamos} de la empresa`, path: "/dashboard/operador/historial-reclamos" } :
-    { estado: `Revisa el reporte de  ${companyConfig.plu_heading_reclamos} en curso `, path: "/dashboard/operador/trabajar-reclamos" };
+  const estadoReclamo = nuevoEstado == "CERRADO" || nuevoEstado == "CANCELADO" ? { estado: `Revisa el historial de ${companyConfig.plu_heading_reclamos} de la empresa`, path: "/dashboard/operador/historial-reclamos" } : { estado: `Revisa el reporte de  ${companyConfig.plu_heading_reclamos} en curso `, path: "/dashboard/operador/trabajar-reclamos" };
 
   const userNameProfesional = await User.query().findById(reclamo.profesional_id);
 
@@ -601,6 +598,72 @@ async function actualizacionReclamoOperador(reclamo, user, creator, nuevoEstado)
 }
 
 
+async function sendReminderToProfesional(req, res) {
+  try {
+    const reclamo_id = parseInt(req.params.reclamo_id, 10);
+
+    // Buscar el reclamo por ID
+    const reclamo = await Reclamo.query()
+      .findById(reclamo_id)
+      .withGraphFetched("[profesional, company]");
+
+    if (!reclamo) {
+      return res.status(404).json({ error: "Reclamo no encontrado" });
+    }
+
+    // Obtener el profesional
+    const profesional = await User.query().findById(reclamo.profesional_id);
+
+    if (!profesional) {
+      return res.status(404).json({ error: "Profesional no encontrado" });
+    }
+
+    // Obtener config de la empresa
+    const companyConfig = await CompaniesConfig.query()
+      .select()
+      .where("company_id", reclamo.company_id)
+      .first();
+
+    // Crear mensaje de recordatorio
+    const mensajeRecordatorio = `Recordatorio de ${companyConfig.sing_heading_reclamos} pendiente de atender.` +
+      "\n\n" +
+      "ID: " +
+      reclamo.reclamo_id +
+      " - " +
+      reclamo.reclamo_titulo +
+      "\n\n" +
+      `Revisa tus ${companyConfig.plu_heading_reclamos} en curso ` + `<a class="font-medium text-primary hover:underline" href="/dashboard/profesional/trabajar-reclamos">aquí</a>.`;
+
+    // Enviar mensaje personalizado
+    await messageController.createMessageCustom({
+      platform_message_title: "Recordatorio de " + companyConfig.sing_heading_reclamos,
+      platform_message_content: mensajeRecordatorio,
+      user_id: profesional.user_id,
+      company_id: profesional.company_id,
+      company_name: reclamo.company?.company_nombre || "Fast Track",
+    });
+
+    sendNotificationToUser(profesional.user_id,
+      `Recordatorio de ${companyConfig.sing_heading_reclamos}`,
+      `Detalle: ${reclamo.reclamo_titulo}`,
+      { title: "Fast Track" },
+      `/dashboard/profesional/trabajar-reclamos`);
+
+    /*LOGGER*/ await registrarNuevoLog(
+        reclamo.company_id,
+        `Se ha enviado recordatorio de reclamo con el ID: ${reclamo.reclamo_id}`
+      );
+
+    return res.json({
+      success: true,
+      message: "Recordatorio enviado al profesional correctamente",
+    });
+  } catch (error) {
+    console.error("Error enviando recordatorio:", error);
+    return res.status(500).json({ error: "Error interno del servidor" });
+  }
+}
+
 
 module.exports = {
   getReclamosAsAdmin,
@@ -610,6 +673,7 @@ module.exports = {
   getReclamosAsClient,
   getReclamosAsClientById,
   updateReclamoAsClient,
+  sendReminderToProfesional,
 
   getReclamosAsProfesional,
   getReclamosAsProfesionalById,

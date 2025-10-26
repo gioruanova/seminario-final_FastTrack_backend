@@ -49,6 +49,11 @@ class CompaniesConfig extends BaseModel {
           default:
             "La fecha de gestion de su pedido se acerca. Adjunta encontrara la informacion pertinetne al mismo:",
         },
+        string_actualizacion_reclamo_solicitante: {
+          type: "string",
+          default:
+            "Hay una nueva actualizacion en una gestion registrada. Adjunta encontrara la informacion pertinetne al mismo:",
+        },
         string_cierre_reclamo_solicitante: {
           type: "string",
           default:
@@ -64,6 +69,11 @@ class CompaniesConfig extends BaseModel {
           type: "string",
           default:
             "La fecha de gestion de su actividad se acerca. Adjunta encontrara la informacion pertinetne al mismo:",
+        },
+        string_actualizacion_reclamo_profesional: {
+          type: "string",
+          default:
+            "Hay una nueva actualizacion en una gestion registrada  a su nombre. Adjunta encontrara la informacion pertinetne al mismo:",
         },
         string_cierre_reclamo_profesional: {
           type: "string",

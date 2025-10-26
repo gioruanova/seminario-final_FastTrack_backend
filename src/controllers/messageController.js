@@ -41,7 +41,7 @@ async function createMessageForAllAsAdmin(req, res) {
     for (const entry of entries) {
       const user = await User.query().findById(entry.user_id);
       if (user) {
-        await sendNotificationToUser(entry.user_id,"Nuevo mensaje",platform_message_title,{title: "Fast Track",role: user.user_role},`/dashboard/${user.user_role}/mensajes`);
+        await sendNotificationToUser(entry.user_id, "Nuevo mensaje", platform_message_title, { title: "Fast Track", role: user.user_role }, `/dashboard/${user.user_role}/mensajes`);
       }
     }
 
@@ -433,6 +433,42 @@ async function getAllMesagesAsClient(req, res) {
   }
 }
 
+
+// envio de mensajes flexible (helper function)
+async function createMessageCustom({platform_message_title, platform_message_content, user_id, company_id, company_name}) {
+
+  try {
+    const user = await User.query()
+      .findById(user_id)
+      .where("company_id", company_id);
+
+    if (!user) {
+      console.error("Usuario no encontrado al crear mensaje personalizado");
+      return;
+    }
+
+    const message = await PlatformMessage.query().insert({
+      platform_message_title,
+      platform_message_content,
+      company_id,
+      apto_empresa: false,
+      user_id: user_id,
+      message_sender: company_name || "Fast Track",
+    });
+
+    await knex("platform_messages_users").insert({
+      platform_message_id: message.platform_message_id,
+      user_id: user.user_id,
+      is_read: false,
+    });
+
+    return message;
+  } catch (error) {
+    console.error("Error creando mensaje personalizado:", error);
+    return null;
+  }
+}
+
 module.exports = {
   createMessageForAllAsAdmin,
   createMessageForCompanyAsAdmin,
@@ -447,4 +483,6 @@ module.exports = {
   marAsReadMessageAsClient,
   marAsUnreadMessageAsClient,
   getAllMesagesAsClient,
+
+  createMessageCustom
 };

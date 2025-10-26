@@ -11,6 +11,8 @@ const companyConfigController = require("./companyConfigController");
 const { registrarNuevoLog } = require("../controllers/globalLogController");
 const { update } = require("../db/knex");
 const { sendNotificationToUser } = require("./notificationController");
+const CompaniesConfig = require("../models/CompaniesConfig");
+const messageController = require("./messageController");
 
 // CONTROLADORES PARA ADMIN:
 // ---------------------------------------------------------
@@ -96,6 +98,14 @@ async function createReclamo(req, res) {
         .json({ status: 400, error: validacionHorario.error });
     }
 
+    // valida disponibilidad en fila de trabajo de usuario profesional
+    const profesionalApto = await User.query().findById(data.profesional_id);
+    if (!profesionalApto.apto_recibir) {
+      return res
+        .status(400)
+        .json({ status: 400, error: "El profesional no puede recibir citas en estos momentos" });
+    }
+
     const disponibilidad = await disponibilidadController.validarDisponibilidad(
       {
         profesional_id: data.profesional_id,
@@ -112,6 +122,7 @@ async function createReclamo(req, res) {
         .json({ status: 400, error: disponibilidad.motivo });
     }
 
+
     const nuevoReclamoData = {
       reclamo_titulo: data.reclamo_titulo,
       reclamo_detalle: data.reclamo_detalle,
@@ -125,7 +136,6 @@ async function createReclamo(req, res) {
 
     const nuevoReclamo = await Reclamo.query().insert(nuevoReclamoData);
 
-    // console.log(nuevoReclamo);
 
     await AgendaReclamo.query().insert({
       agenda_fecha: data.agenda_fecha,
@@ -136,7 +146,8 @@ async function createReclamo(req, res) {
       company_id,
     });
 
-    simulacionEnvioEmailReclamoInicial(nuevoReclamo);
+    const profesionalUser = await User.query().findById(data.profesional_id);
+    notificacionNuevoReclamo(nuevoReclamo, profesionalUser, creator);
     sendNotificationToUser(nuevoReclamo.profesional_id,
       `Asignacion de ${companyConfig.sing_heading_reclamos}`,
       `Detalle: ${nuevoReclamo.reclamo_titulo} - 
@@ -234,6 +245,10 @@ async function updateReclamoAsClient(req, res) {
     const companyConfig = await companyConfigController.fetchCompanySettingsByCompanyId(reclamoExiste.company_id);
 
 
+    const profesionalUser = await User.query().findById(reclamoExiste.profesional_id);
+    actualizacionReclamo(reclamoExiste, profesionalUser, req.user, reclamoActualizado.reclamo_estado);
+
+
     sendNotificationToUser(
       reclamoExiste.profesional_id,
       `Actualizaciones en  ${companyConfig.sing_heading_reclamos}`,
@@ -241,7 +256,6 @@ async function updateReclamoAsClient(req, res) {
       { title: "Fast Track" },
       `/dashboard/profesional/trabajar-reclamos`);
 
-    simulacionEnvioEmailReclamoActualizacion(reclamoActualizado);
 
     res.json({
       status: 200,
@@ -327,11 +341,8 @@ async function updateReclamoAsProfesional(req, res) {
 
       const resultado = await fetchReclamosByCompanyId(companyId, user_id);
 
-      simulacionEnvioEmailReclamoActualizacion(reclamoActualizado);
-
-
       const companyConfig = await companyConfigController.fetchCompanySettingsByCompanyId(reclamoExiste.company_id);
-      const compUsers = await User.query().select().where("user_role", "superadmin");
+      const compUsers = await User.query().select().where("user_role", "operador");
 
       for (const cu of compUsers) {
         const user = await User.query().findById(cu.user_id);
@@ -342,6 +353,7 @@ async function updateReclamoAsProfesional(req, res) {
             `${companyConfig.sing_heading_reclamos} nro: ${reclamoExiste.reclamo_id} - ${reclamoExiste.reclamo_titulo}`,
             { title: "Fast Track" },
             `${reclamoActualizado.reclamo_estado == "CERRADO" || reclamoActualizado.reclamo_estado == "CANCELADO" ? `/dashboard/operador/historial-reclamos` : `/dashboard/operador/trabajar-reclamos`}`);
+          actualizacionReclamoOperador(reclamoExiste, user, req.user, reclamoActualizado.reclamo_estado);
         }
       }
 
@@ -498,52 +510,97 @@ async function fetchReclamosByCompanyId(_company_id, _user_id) {
   }));
 }
 
-async function simulacionEnvioEmailReclamoInicial(reclamo) {
-  const profesionalEmail = await User.query()
-    .select("user_email")
-    .where("user_id", reclamo.profesional_id)
+
+
+// helper de notificacion para neuvo reclamo
+async function notificacionNuevoReclamo(reclamo, user, creator) {
+
+  const companyConfig = await CompaniesConfig.query()
+    .select()
+    .where("company_id", reclamo.company_id)
     .first();
 
-  const clientIdEmail = await ClienteRecurrente.query()
-    .select("cliente_email")
-    .where("cliente_id", reclamo.cliente_id)
-    .first();
+  const nuevoReclamoMensaje = companyConfig.string_inicio_reclamo_profesional +
+    "\n\n" +
+    "ID: " +
+    reclamo.reclamo_id +
+    " - " +
+    reclamo.reclamo_titulo +
+    "\n\n" +
+    `Vea sus ${companyConfig.plu_heading_reclamos} en curso ` + `<a class="font-medium text-primary hover:underline" href="/dashboard/profesional/trabajar-reclamos">aquí</a>.`;
 
-  console.log(
-    `Mandando email de inicio de reclamo a: ${profesionalEmail.user_email}`
-  );
-  console.log(
-    `Mandando email de inicio de reclamo a: ${clientIdEmail.cliente_email}`
-  );
+  await messageController.createMessageCustom({
+    platform_message_title: "Nueva asignacion de " + companyConfig.sing_heading_reclamos,
+    platform_message_content: nuevoReclamoMensaje,
+    user_id: user.user_id,
+    company_id: user.company_id,
+    company_name: creator.company_name,
+  });
 }
 
-async function simulacionEnvioEmailReclamoActualizacion(reclamo) {
-  const profesionalEmail = await User.query()
-    .select("user_email")
-    .where("user_id", reclamo.profesional_id)
+
+
+// helper de notificacion para actalizacion de reclamo
+async function actualizacionReclamo(reclamo, user, creator, nuevoEstado) {
+  const companyConfig = await CompaniesConfig.query()
+    .select()
+    .where("company_id", reclamo.company_id)
     .first();
 
-  const clientIdEmail = await ClienteRecurrente.query()
-    .select("cliente_email")
-    .where("cliente_id", reclamo.cliente_id)
-    .first();
+  const estadoReclamo = nuevoEstado == "CERRADO" || nuevoEstado == "CANCELADO" ? { estado: `Revisa tu historial de ${companyConfig.plu_heading_reclamos}`, path: "/dashboard/profesional/historial-reclamos" } : { estado: `Revisa tus ${companyConfig.plu_heading_reclamos} en curso `, path: "/dashboard/profesional/trabajar-reclamos" };
 
-  if (reclamo.reclamo_estado == "CERRADO") {
-    console.log(
-      `Mandando email de actualizacion (${reclamo.reclamo_estado}) de reclamo a: ${profesionalEmail.user_email}\nNotas de resolucion: ${reclamo.reclamo_nota_cierre}`
-    );
-    console.log(
-      `Mandando email de actualizacion (${reclamo.reclamo_estado}) de reclamo a: ${clientIdEmail.cliente_email}\nNotas de resolucion: ${reclamo.reclamo_nota_cierre}`
-    );
-  } else {
-    console.log(
-      `Mandando email de actualizacion (${reclamo.reclamo_estado}) de reclamo a: ${profesionalEmail.user_email}`
-    );
-    console.log(
-      `Mandando email de actualizacion (${reclamo.reclamo_estado}) de reclamo a: ${clientIdEmail.cliente_email}`
-    );
-  }
+  const nuevoReclamoMensaje = companyConfig.string_actualizacion_reclamo_profesional +
+    "\n\n" +
+    "ID: " +
+    reclamo.reclamo_id +
+    " - " +
+    reclamo.reclamo_titulo +
+    "\n\n" +
+    `${estadoReclamo.estado} ` + `<a class="font-medium text-primary hover:underline" href="${estadoReclamo.path}">aquí</a>.`;
+
+  await messageController.createMessageCustom({
+    platform_message_title: "Actualizacion de  " + companyConfig.sing_heading_reclamos,
+    platform_message_content: nuevoReclamoMensaje,
+    user_id: user.user_id,
+    company_id: user.company_id,
+    company_name: creator.company_name,
+  });
 }
+
+
+// helper de notificacion para OPERADORES para actalizacion de reclamo
+async function actualizacionReclamoOperador(reclamo, user, creator, nuevoEstado) {
+
+  const companyConfig = await CompaniesConfig.query()
+    .select()
+    .where("company_id", reclamo.company_id)
+    .first();
+
+  const estadoReclamo = nuevoEstado == "CERRADO" || nuevoEstado == "CANCELADO" ?
+    { estado: `Revisa el historial de ${companyConfig.plu_heading_reclamos} de la empresa`, path: "/dashboard/operador/historial-reclamos" } :
+    { estado: `Revisa el reporte de  ${companyConfig.plu_heading_reclamos} en curso `, path: "/dashboard/operador/trabajar-reclamos" };
+
+  const userNameProfesional = await User.query().findById(reclamo.profesional_id);
+
+  const nuevoReclamoMensaje = `Se registro actualizacion en  ${companyConfig.sing_heading_reclamos} con asignacion al ${companyConfig.sing_heading_profesional}: ${userNameProfesional.user_complete_name}. ` +
+    "\n\n" +
+    "ID: " +
+    reclamo.reclamo_id +
+    " - " +
+    reclamo.reclamo_titulo +
+    "\n\n" +
+    `${estadoReclamo.estado} ` + `<a class="font-medium text-primary hover:underline" href="${estadoReclamo.path}">aquí</a>.`;
+
+  await messageController.createMessageCustom({
+    platform_message_title: "Accionamiento de   " + companyConfig.sing_heading_reclamos,
+    platform_message_content: nuevoReclamoMensaje,
+    user_id: user.user_id,
+    company_id: user.company_id,
+    company_name: creator.company_name,
+  });
+}
+
+
 
 module.exports = {
   getReclamosAsAdmin,

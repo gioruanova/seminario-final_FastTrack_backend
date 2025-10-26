@@ -23,6 +23,7 @@ const options = {
       { name: "SuperAdmin API - LOGS GLOBALES", description: "Logs del sistema" },
       { name: "SuperAdmin API - MENSAJES DE PLATAFORMA", description: "Mensajes internos de la plataforma" },
       { name: "SuperAdmin API - BANNERS", description: "Manejo de banners de la plataforma" },
+      { name: "SuperAdmin API - PUSH", description: "Manejo de notificaciones desde la plataforma" },
 
       { name: "Customer API - EMPRESA", description: "Gestión de información y configuración de la empresa" },
       { name: "Customer API - USUARIOS", description: "Gestión de usuarios de la empresa" },
@@ -36,6 +37,7 @@ const options = {
       { name: "Customer API - MENSAJES DE PLATAFORMA", description: "Mensajes internos de la plataforma" },
       { name: "Customer API - EXPORTACIONES", description: "Exportación de datos a Excel" },
       { name: "Customer API - BANNERS", description: "Lectura de banners de la plataforma" },
+      { name: "Customer API - PUSH", description: "Manejo de notificaciones desde la plataforma" },
     ],
     servers: [
       {

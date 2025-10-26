@@ -14,9 +14,9 @@ exports.seed = function (knex) {
           cliente_dni: "123456",
           cliente_phone: "123456789",
           cliente_email: "cliente-1@gmailcom",
-          cliente_direccion: "Av. Corrientes 2037, Caba, CP: 1045",
-          cliente_lat: -34.604302546035875,
-          cliente_lng: -58.396008763217424,
+          cliente_direccion: "Instituto Leonardo Da Vinci, 2037, Avenida Corrientes, Balvanera, Buenos Aires, Comuna 3, Autonomous City of Buenos Aires",
+          cliente_lat: -34.6043714,
+          cliente_lng: -58.3960032,
           company_id: 1000,
         },
         {

@@ -2197,3 +2197,285 @@ module.exports = router;
  *                   type: string
  *                   example: "Error al obtener el banner activo"
  */
+
+/**
+ * @swagger
+ * /customersApi/notifications/vapid-public-key:
+ *   get:
+ *     summary: NOTIFICACIONES PUSH - Obtener clave pública VAPID
+ *     description: Obtiene la clave pública VAPID para configurar notificaciones push
+ *     tags:
+ *       - Customer API - PUSH
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Clave pública VAPID obtenida exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 publicKey:
+ *                   type: string
+ *                   example: "BEl62iUYgUivxIkv69yViEuiBIa40HI8F7jW0JgCVv0X2f3xKqLz1DB1yFyR8uU0Pj8"
+ *       500:
+ *         description: Error interno del servidor
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Error al obtener la clave pública VAPID"
+ */
+
+/**
+ * @swagger
+ * /customersApi/notifications/register-token:
+ *   post:
+ *     summary: NOTIFICACIONES PUSH - Registrar token
+ *     description: Registra un token de dispositivo para recibir notificaciones push
+ *     tags:
+ *       - Customer API - PUSH
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - token
+ *             properties:
+ *               token:
+ *                 type: string
+ *                 description: "* Token del dispositivo para notificaciones push"
+ *                 example: "fGx2iUYgUivxIkv69yViEuiBIa40HI8F7jW0JgCVv0X2f3xKqLz1DB1yFyR8uU0Pj8"
+ *     responses:
+ *       200:
+ *         description: Token registrado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Token registrado correctamente"
+ *       400:
+ *         description: Token requerido
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "El token es requerido"
+ *       500:
+ *         description: Error interno del servidor
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Error al registrar el token"
+ */
+
+/**
+ * @swagger
+ * /customersApi/notifications/send:
+ *   post:
+ *     summary: NOTIFICACIONES PUSH - Enviar notificación
+ *     description: Envía una notificación push a dispositivos registrados
+ *     tags:
+ *       - Customer API - PUSH
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - title
+ *               - body
+ *             properties:
+ *               title:
+ *                 type: string
+ *                 description: "* Título de la notificación"
+ *                 example: "Nueva actualización"
+ *               body:
+ *                 type: string
+ *                 description: "* Cuerpo de la notificación"
+ *                 example: "El sistema ha sido actualizado con nuevas funcionalidades"
+ *               icon:
+ *                 type: string
+ *                 description: URL del icono de la notificación
+ *                 example: "/icon.png"
+ *               url:
+ *                 type: string
+ *                 description: URL a la que dirigir al hacer clic en la notificación
+ *                 example: "/dashboard"
+ *     responses:
+ *       200:
+ *         description: Notificación enviada exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Notificación enviada correctamente"
+ *       400:
+ *         description: Título y cuerpo son requeridos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "El título y cuerpo son requeridos"
+ *       500:
+ *         description: Error interno del servidor
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Error al enviar la notificación"
+ */
+
+/**
+ * @swagger
+ * /customersApi/notifications/unregister-token:
+ *   delete:
+ *     summary: NOTIFICACIONES PUSH - Desregistrar token
+ *     description: Desregistra un token de dispositivo para dejar de recibir notificaciones push
+ *     tags:
+ *       - Customer API - PUSH
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - token
+ *             properties:
+ *               token:
+ *                 type: string
+ *                 description: "* Token del dispositivo a desregistrar"
+ *                 example: "fGx2iUYgUivxIkv69yViEuiBIa40HI8F7jW0JgCVv0X2f3xKqLz1DB1yFyR8uU0Pj8"
+ *     responses:
+ *       200:
+ *         description: Token desregistrado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Token desregistrado correctamente"
+ *       400:
+ *         description: Token requerido
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "El token es requerido"
+ *       500:
+ *         description: Error interno del servidor
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Error al desregistrar el token"
+ */
+
+/**
+ * @swagger
+ * /customersApi/notifications/unregister-specific-token:
+ *   delete:
+ *     summary: NOTIFICACIONES PUSH - Desregistrar token específico
+ *     description: Desregistra un token específico de dispositivo para dejar de recibir notificaciones push
+ *     tags:
+ *       - Customer API - PUSH
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - token
+ *             properties:
+ *               token:
+ *                 type: string
+ *                 description: "* Token específico del dispositivo a desregistrar"
+ *                 example: "fGx2iUYgUivxIkv69yViEuiBIa40HI8F7jW0JgCVv0X2f3xKqLz1DB1yFyR8uU0Pj8"
+ *     responses:
+ *       200:
+ *         description: Token específico desregistrado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Token específico desregistrado correctamente"
+ *       400:
+ *         description: Token requerido
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "El token es requerido"
+ *       500:
+ *         description: Error interno del servidor
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Error al desregistrar el token específico"
+ */

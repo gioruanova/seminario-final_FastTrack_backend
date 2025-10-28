@@ -14,6 +14,32 @@ const User = require("../../models/User");
 // Crear nuevo mensaje
 // ---------------------------------------------------------
 
+async function createInternalMessageAsPlatform(email,  message_content, type) {
+  try {
+    
+    const superaAdmins = await User.query().select().where("user_role", "superadmin");
+    for (const sa of superaAdmins) {
+      const user = await User.query().findById(sa.user_id);
+      if (user) {
+        await sendNotificationToUser(sa.user_id, type,message_content, { title: "Fast Track" }, `/dashboard/${user.user_role}/users`);
+      }
+      await PublicMessage.query().insert({
+        message_email: email,
+        message_source: "PLATFORM",
+        message_phone: "N/A",
+        message_content: message_content,
+        category_id: 0,
+        category_original: type,
+      });
+    }
+
+
+  } catch (error) {
+    console.error("Error en createInternalMessageAsPlatform:", error);
+    return null;
+  }
+}
+
 async function createPublicMessage(req, res) {
   try {
     const {
@@ -280,4 +306,5 @@ module.exports = {
   markMessageAsUnreadAsAdmin,
   deleteMessageAsAdmin,
   createFeedbackMessage,
+  createInternalMessageAsPlatform,
 };

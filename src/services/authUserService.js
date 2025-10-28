@@ -1,10 +1,9 @@
 const bcrypt = require("bcrypt");
 const User = require("../models/User");
-
 const { generateTokens, refreshAccessToken } = require("./tokenService");
-
 const userLogController = require("../controllers/UserLogController");
 const userController = require("../controllers/userController");
+const messageController = require("../controllers/cfv/publicMessagesController");
 
 const { registrarNuevoLog } = require("../controllers/globalLogController");
 
@@ -36,14 +35,26 @@ async function loginUser(email, password) {
 
     fallosPrevios = await userLogController.contarLogsPorUsuario(user.user_id);
 
+
+
     if (fallosPrevios == 3) {
       await userController.bloquearUsuarioPorId(user.user_id);
       registrarNuevoLog(
         user.company_id,
         "El usuario " +
-          user.user_complete_name +
-          " ha sido bloqueado por varios intentos fallidos de ingreso."
+        user.user_complete_name +
+        " ha sido bloqueado por varios intentos fallidos de ingreso."
       );
+      if (user.user_role === "owner") {
+
+        await messageController.createInternalMessageAsPlatform(
+          user.user_email,
+          `Bloqueo de usuario ${user.user_complete_name}\n` + `Revisar el estado en la opcion <a class="font-medium text-primary hover:underline" href="/dashboard/superadmin/users">usuarios</a>.`,
+          "BLOQUEO PROPIETARIO"
+        );
+      }
+
+
       return { error: "blocked" };
     }
   }
@@ -58,6 +69,8 @@ async function loginUser(email, password) {
   };
 
   const { accessToken, refreshToken } = generateTokens(payload);
+  await userLogController.deleteLogByYserid(user.user_id);
+
 
   return {
     accessToken,

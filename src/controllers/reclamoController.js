@@ -54,7 +54,6 @@ async function createReclamo(req, res) {
   const data = req.body;
 
   try {
-    // PENDIENTE: Para ver en el FormDataEvent. esta validacion impide asignar un profeisonal y especialidad a un reclamo cuando todavia no existe dicha asignacion
     const especialidadProfesionalExiste = await ProfesionalEspecialidad.query()
       .where({
         id_usuario: data.profesional_id,

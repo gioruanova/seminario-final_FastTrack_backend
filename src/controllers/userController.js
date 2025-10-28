@@ -6,6 +6,7 @@ const userLogController = require("./UserLogController");
 const Company = require("../models/Company");
 const companyController = require("./companyController");
 const companyConfigController = require("./companyConfigController");
+const messageController = require("./messageController");
 
 const { registrarNuevoLog } = require("../controllers/globalLogController");
 
@@ -55,9 +56,9 @@ async function createUserAsAdmin(req, res) {
     /*LOGGER*/ await registrarNuevoLog(
       newUser.company_id,
       "El usuario " +
-        newUser.user_complete_name +
-        " ha sido creado" +
-        " (Ejecutado por Sistema)"
+      newUser.user_complete_name +
+      " ha sido creado" +
+      " (Ejecutado por Sistema)"
     );
 
     return res
@@ -142,9 +143,9 @@ async function editUserAsAdmin(req, res) {
     /*LOGGER*/ await registrarNuevoLog(
       user.company_id,
       "El usuario " +
-        user.user_complete_name +
-        " ha sido editado." +
-        " (Ejecutado por Sistema)"
+      user.user_complete_name +
+      " ha sido editado." +
+      " (Ejecutado por Sistema)"
     );
 
     return res
@@ -210,9 +211,9 @@ async function blockUserAsAdmin(req, res) {
     /*LOGGER*/ await registrarNuevoLog(
       userToBlock.company_id,
       "El usuario " +
-        userToBlock.user_complete_name +
-        " ha sido bloqueado." +
-        " (Ejecutado por Sistema)"
+      userToBlock.user_complete_name +
+      " ha sido bloqueado." +
+      " (Ejecutado por Sistema)"
     );
 
     return res
@@ -242,9 +243,9 @@ async function unblockUserAsAdmin(req, res) {
     /*LOGGER*/ await registrarNuevoLog(
       userToUnblock.company_id,
       "El usuario " +
-        userToUnblock.user_complete_name +
-        " ha sido desbloqueado." +
-        " (Ejecutado por Sistema)"
+      userToUnblock.user_complete_name +
+      " ha sido desbloqueado." +
+      " (Ejecutado por Sistema)"
     );
 
     return res
@@ -280,13 +281,25 @@ async function restoreUserAsAdmin(req, res) {
     await resetPassword(user_id, new_password);
     habilitarUsuarioPorId(user_id);
 
+
+
+    await messageController.createMessageCustom({
+      platform_message_title: "Cuenta reestablecida",
+      platform_message_content: "Hemos restablecido tu cuenta con una contraseña provisoria. Te recomendamos cambiarla por una más segura desde la seccion de tu Perfil.",
+      user_id: userToRestore.user_id,
+      company_id: userToRestore.company_id,
+      company_name: userToRestore.company_name,
+    });
+
     /*LOGGER*/ await registrarNuevoLog(
       userToRestore.company_id,
       "El usuario " +
-        userToRestore.user_complete_name +
-        " ha sido desbloqueado y la contraseña ha sido reestablecida." +
-        " (Ejecutado por Sistema)"
+      userToRestore.user_complete_name +
+      " ha sido desbloqueado y la contraseña ha sido reestablecida." +
+      " (Ejecutado por Sistema)"
     );
+
+
 
     return res
       .status(200)
@@ -377,11 +390,11 @@ async function createUserAsClient(req, res) {
     /*LOGGER*/ await registrarNuevoLog(
       newUser.company_id,
       "El usuario " +
-        newUser.user_complete_name +
-        " ha sido creado" +
-        ". (Ejecutado por " +
-        req.user.user_name +
-        ")."
+      newUser.user_complete_name +
+      " ha sido creado" +
+      ". (Ejecutado por " +
+      req.user.user_name +
+      ")."
     );
 
     return res
@@ -508,11 +521,11 @@ async function editUserAsClient(req, res) {
     /*LOGGER*/ await registrarNuevoLog(
       user.company_id,
       "El usuario " +
-        user.user_complete_name +
-        " ha sido editado." +
-        " (Ejecutado por " +
-        creator.user_name +
-        ")."
+      user.user_complete_name +
+      " ha sido editado." +
+      " (Ejecutado por " +
+      creator.user_name +
+      ")."
     );
 
     return res
@@ -527,7 +540,7 @@ async function editUserAsClient(req, res) {
 // Obtener todos lo suaurios
 // ---------------------------------------------------------
 async function getUsersAsClient(req, res) {
-  
+
   const companyId = req.user.company_id;
 
   try {
@@ -594,11 +607,11 @@ async function blockUserAsClient(req, res) {
     /*LOGGER*/ await registrarNuevoLog(
       userToBlock.company_id,
       "El usuario " +
-        userToBlock.user_complete_name +
-        " ha sido bloqueado." +
-        ". (Ejecutado por " +
-        req.user.user_name +
-        ")."
+      userToBlock.user_complete_name +
+      " ha sido bloqueado." +
+      ". (Ejecutado por " +
+      req.user.user_name +
+      ")."
     );
 
     return res
@@ -646,11 +659,11 @@ async function unblockUserAsClient(req, res) {
     /*LOGGER*/ await registrarNuevoLog(
       userToUnblock.company_id,
       "El usuario " +
-        userToUnblock.user_complete_name +
-        " ha sido bloqueado." +
-        ". (Ejecutado por " +
-        req.user.user_name +
-        ")."
+      userToUnblock.user_complete_name +
+      " ha sido bloqueado." +
+      ". (Ejecutado por " +
+      req.user.user_name +
+      ")."
     );
 
     return res
@@ -697,14 +710,22 @@ async function restoreUserAsClient(req, res) {
     await resetPassword(user_id, new_password);
     habilitarUsuarioPorId(user_id);
 
+    await messageController.createMessageCustom({
+      platform_message_title: "Cuenta habilitada",
+      platform_message_content: "Hemos reestablecido tu cuenta con una contraseña provisoria. Te recomendamos cambiarla por una más segura desde la seccion de tu Perfil.",
+      user_id: userToRestore.user_id,
+      company_id: userToRestore.company_id,
+
+    });
+
     /*LOGGER*/ await registrarNuevoLog(
       userToRestore.company_id,
       "El usuario " +
-        userToRestore.user_complete_name +
-        " ha sido desbloqueado y la contraseña ha sido reestablecida." +
-        ". (Ejecutado por " +
-        req.user.user_name +
-        ")."
+      userToRestore.user_complete_name +
+      " ha sido desbloqueado y la contraseña ha sido reestablecida." +
+      ". (Ejecutado por " +
+      req.user.user_name +
+      ")."
     );
 
     return res
@@ -720,17 +741,17 @@ async function restoreUserAsClient(req, res) {
 // OBTENER ESTADO ACTUAL
 // ---------------------------------------------------------
 async function getWorkloadState(req, res) {
-    const user_id = req.user.user_id;
-    
+  const user_id = req.user.user_id;
 
-    try {
-      const userWorkloadState = await User.query().findById(user_id);
-            
-      
-      return res.json(userWorkloadState.apto_recibir == 1 ? true : false);
-    } catch (error) {
-      return res.status(500).json({ error: "Error interno del servidor" });
-    }
+
+  try {
+    const userWorkloadState = await User.query().findById(user_id);
+
+
+    return res.json(userWorkloadState.apto_recibir == 1 ? true : false);
+  } catch (error) {
+    return res.status(500).json({ error: "Error interno del servidor" });
+  }
 }
 // CONTROLADORES PARA PROFESIONAL
 // ---------------------------------------------------------

@@ -115,7 +115,7 @@ async function createPublicMessage(req, res) {
     for (const sa of superaAdmins) {
       const user = await User.query().findById(sa.user_id);
       if (user) {
-        await sendNotificationToUser(sa.user_id,"Nuevo contacto",`Nuevo mensaje externo en ${categoria.category_name}`,{title: "Fast Track"},`/dashboard/${user.user_role}/mensajes`);
+        await sendNotificationToUser(sa.user_id, "Nuevo contacto", `Nuevo mensaje externo en ${categoria.category_name}`, { title: "Fast Track" }, `/dashboard/${user.user_role}/mensajes`);
       }
     }
 
@@ -156,11 +156,11 @@ async function createFeedbackMessage(req, res) {
     });
 
     const superaAdmins = await User.query().select().where("user_role", "superadmin");
-    
+
     for (const sa of superaAdmins) {
       const user = await User.query().findById(sa.user_id);
       if (user) {
-        await sendNotificationToUser(sa.user_id,"Feedback recibido", `Feedback recibido de ${req.user.company_name}`, { title: "Fast Track" }, `/dashboard/${user.user_role}/mensajes`);
+        await sendNotificationToUser(sa.user_id, "Feedback recibido", `Feedback recibido de ${req.user.company_name}`, { title: "Fast Track" }, `/dashboard/${user.user_role}/mensajes`);
       }
     }
 
@@ -200,7 +200,6 @@ async function gettAlMessagesAsAdmin(req, res) {
 // Marcar mensaje como leido
 // ---------------------------------------------------------
 async function markMessageAsReadAsAdmin(req, res) {
-  console.log('aca');
 
   try {
     const { message_id } = req.params;

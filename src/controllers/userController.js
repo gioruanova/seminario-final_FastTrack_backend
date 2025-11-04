@@ -26,6 +26,10 @@ async function createUserAsAdmin(req, res) {
   } = req.body;
 
   try {
+    if (!user_complete_name || !user_dni || !user_phone || !user_email || !user_password || !user_role || !company_id) {
+      return res.status(400).json({ error: "Todos los campos son requeridos" });
+    }
+
     const company = await Company.query().findById(company_id);
 
     if (!company) {
@@ -340,6 +344,13 @@ async function createUserAsClient(req, res) {
   } = req.body;
 
   try {
+
+    if (!user_complete_name || !user_dni || !user_phone || !user_email || !user_password || !user_role) {
+      return res.status(400).json({ error: "Todos los campos son requeridos" });
+    }
+
+
+
     const company = await Company.query().findById(company_id);
     if (!company) {
       return res.status(400).json({ error: "No existe empresa bajo ese ID" });

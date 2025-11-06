@@ -13,37 +13,47 @@ exports.seed = async function (knex) {
       company_estado: true,
       limite_operadores: 3,
       limite_profesionales: 15,
-      limite_especialidades:10,
+      limite_especialidades: 10,
       reminder_manual: 1
     },
-    
     {
       company_unique_id: "987654321",
-      company_nombre: "Servicios Integrales SA",
+      company_nombre: "Davinci",
       company_phone: "1198765432",
       company_whatsapp: "+541198765432",
       company_telegram: "+541198765432",
-      company_email: "contacto@serviciosintegrales.com",
+      company_email: "contacto@davinci.com",
       company_estado: true,
       limite_operadores: 3,
       limite_profesionales: 15,
-      limite_especialidades:10,
+      limite_especialidades: 10,
       reminder_manual: 1
     },
     {
       company_unique_id: "564738291",
-      company_nombre: "Publicidad Ramirez",
+      company_nombre: "Electronica Moreno",
       company_phone: "1145678901",
       company_whatsapp: "+541145678901",
       company_telegram: "+541145678901",
-      company_email: "contacto@mantenimientoysoluciones.com",
+      company_email: "contacto@electronicamoreno.com",
       company_estado: true,
       limite_operadores: 3,
-      limite_profesionales: 6,
-      limite_especialidades:5,
+      limite_profesionales: 15,
+      limite_especialidades: 10,
+      reminder_manual: 1
+    },
+    {
+      company_unique_id: "111222333",
+      company_nombre: "Renovar Gym",
+      company_phone: "1156789012",
+      company_whatsapp: "+541156789012",
+      company_telegram: "+541156789012",
+      company_email: "contacto@renovargym.com",
+      company_estado: true,
+      limite_operadores: 3,
+      limite_profesionales: 15,
+      limite_especialidades: 10,
       reminder_manual: 1
     }
-    
   ]);
 };
-

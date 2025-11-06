@@ -21,15 +21,15 @@ exports.seed = async function (knex) {
     },
     {
       company_id: 1001,
-      nombre_especialidad: "Jardineria",
+      nombre_especialidad: "PM",
     },
     {
       company_id: 1001,
-      nombre_especialidad: "Pintura",
+      nombre_especialidad: "UX/UI",
     },
     {
       company_id: 1001,
-      nombre_especialidad: "Limpieza",
+      nombre_especialidad: "Diseñador",
     },
   ]);
 };

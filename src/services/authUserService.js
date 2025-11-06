@@ -69,7 +69,7 @@ async function loginUser(email, password) {
   };
 
   const { accessToken, refreshToken } = generateTokens(payload);
-  await userLogController.deleteLogByYserid(user.user_id);
+  await userLogController.eliminarLogsPorUsuario(user.user_id);
 
 
   return {

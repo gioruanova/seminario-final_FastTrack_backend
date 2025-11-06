@@ -7,7 +7,7 @@ exports.up = function (knex) {
       table.string("user_phone").notNullable();
       table.string("user_email").notNullable().unique();
       table.text("user_password").notNullable();
-      table.string("user_role").notNullable();
+      table.enum("user_role", ["superadmin", "owner", "operador", "profesional"]).notNullable();
       table.boolean("user_status").notNullable().defaultTo(true);
       table.boolean("apto_recibir").notNullable().defaultTo(true);
 

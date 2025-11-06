@@ -1,27 +1,26 @@
+// -----------------
+// CONTROLADOR DE MENSAJES PÚBLICOS
+// -----------------
+
 const PublicMessage = require("../../models/cfv/PublicMessage");
-const {
-  RecaptchaEnterpriseServiceClient,
-} = require("@google-cloud/recaptcha-enterprise");
-
 const PublicMessageCategory = require("../../models/cfv/PublicMessageCategory");
-const path = require("path");
-const { sendNotificationToUser } = require("../notificationController");
 const User = require("../../models/User");
+const { sendNotificationToUser } = require("../notificationController");
+const { RecaptchaEnterpriseServiceClient, } = require("@google-cloud/recaptcha-enterprise");
+const { enviarLista, enviarExito, enviarError, enviarNoEncontrado, enviarSolicitudInvalida } = require("../../helpers/responseHelpers");
+const { obtenerPorId } = require("../../helpers/registroHelpers");
+const path = require("path");
 
-
-// CONTROLADORES PUBLIC:
-// ---------------------------------------------------------
-// Crear nuevo mensaje
-// ---------------------------------------------------------
-
-async function createInternalMessageAsPlatform(email,  message_content, type) {
+// -----------------
+// CREAR MENSAJE INTERNO COMO PLATAFORMA
+// -----------------
+async function createInternalMessageAsPlatform(email, message_content, type) {
   try {
-    
     const superaAdmins = await User.query().select().where("user_role", "superadmin");
     for (const sa of superaAdmins) {
       const user = await User.query().findById(sa.user_id);
       if (user) {
-        await sendNotificationToUser(sa.user_id, type,message_content, { title: "Fast Track" }, `/dashboard/${user.user_role}/users`);
+        await sendNotificationToUser(sa.user_id, type, message_content, { title: "Fast Track" }, `/dashboard/${user.user_role}/users`);
       }
       await PublicMessage.query().insert({
         message_email: email,
@@ -32,14 +31,19 @@ async function createInternalMessageAsPlatform(email,  message_content, type) {
         category_original: type,
       });
     }
-
-
   } catch (error) {
     console.error("Error en createInternalMessageAsPlatform:", error);
     return null;
   }
 }
 
+// -----------------
+// CONTROLADORES PUBLIC:
+// -----------------
+
+// -----------------
+// CREAR NUEVO MENSAJE PÚBLICO
+// -----------------
 async function createPublicMessage(req, res) {
   try {
     const {
@@ -51,11 +55,12 @@ async function createPublicMessage(req, res) {
     } = req.body;
 
     if (!message_email || !message_content || !category_id || !recaptchaToken) {
-      return res.status(400).json({
-        error: "Por favor complete todos los campos obligatorios y el captcha",
-      });
+      return enviarSolicitudInvalida(res, "Por favor complete todos los campos obligatorios y el captcha");
     }
 
+    // ============================================
+    // BLOQUE DE reCAPTCHA - NO MODIFICAR
+    // ============================================
     const projectID = "fast-track-474423";
     const siteKey = process.env.RECAPTCHA_SITE_KEY;
     if (!siteKey) {
@@ -119,6 +124,9 @@ async function createPublicMessage(req, res) {
         .status(403)
         .json({ error: "Captcha válido pero riesgo demasiado alto" });
     }
+    // ============================================
+    // FIN BLOQUE DE reCAPTCHA
+    // ============================================
 
     const categoria = await PublicMessageCategory.query()
       .findById(category_id)
@@ -145,29 +153,26 @@ async function createPublicMessage(req, res) {
       }
     }
 
-    return res
-      .status(201)
-      .json({ success: true, message: "Mensaje creado correctamente" });
+    return enviarExito(res, "Mensaje creado correctamente", 201);
   } catch (error) {
     console.error("Error en createPublicMessage:", error);
-    return res.status(500).json({ error: "Error al crear el mensaje" });
+    return enviarError(res, "Error al crear el mensaje", 500);
   }
 }
 
+// -----------------
 // CONTROLADORES ADMIN:
-// ---------------------------------------------------------
-// ---------------------------------------------------------
-// Traer todos los mensajes
-// ---------------------------------------------------------
-async function createFeedbackMessage(req, res) {
+// -----------------
 
+// -----------------
+// CREAR MENSAJE DE FEEDBACK
+// -----------------
+async function createFeedbackMessage(req, res) {
   try {
     const { message_content } = req.body;
 
     if (!message_content) {
-      return res
-        .status(400)
-        .json({ error: "Todos los campos son obligatorios" });
+      return enviarSolicitudInvalida(res, "Todos los campos son obligatorios");
     }
 
     console.log("Intentando insertar en BD...");
@@ -190,16 +195,15 @@ async function createFeedbackMessage(req, res) {
       }
     }
 
-    return res
-      .status(201)
-      .json({ success: true, message: "Feedback correctamente" });
+    return enviarExito(res, "Feedback correctamente", 201);
   } catch (error) {
-    return res.status(500).json({ error: "Error al crear el mensaje" });
+    return enviarError(res, "Error al crear el mensaje", 500);
   }
 }
-// ---------------------------------------------------------
-// Traer todos los mensajes
-// ---------------------------------------------------------
+
+// -----------------
+// OBTENER TODOS LOS MENSAJES
+// -----------------
 async function gettAlMessagesAsAdmin(req, res) {
   try {
     const messages = await PublicMessage.query()
@@ -217,85 +221,81 @@ async function gettAlMessagesAsAdmin(req, res) {
       return msg;
     });
 
-    return res.json(result);
+    return enviarLista(res, result);
   } catch (error) {
-    return res.status(500).json({ error: "Error al obtener los mensajes" });
+    return enviarError(res, "Error al obtener los mensajes", 500);
   }
 }
-// ---------------------------------------------------------
-// Marcar mensaje como leido
-// ---------------------------------------------------------
-async function markMessageAsReadAsAdmin(req, res) {
 
+// -----------------
+// MARCAR MENSAJE COMO LEÍDO
+// -----------------
+async function markMessageAsReadAsAdmin(req, res) {
   try {
     const { message_id } = req.params;
 
-    const validacionMensaje = await PublicMessage.query().findById(message_id);
+    const validacionMensaje = await obtenerPorId(PublicMessage, message_id);
+
+    if (!validacionMensaje) {
+      return enviarNoEncontrado(res, "Mensaje");
+    }
 
     if (validacionMensaje.message_read) {
-      return res
-        .status(400)
-        .json({ error: "El mensaje ya está marcado como leído" });
+      return enviarSolicitudInvalida(res, "El mensaje ya está marcado como leído");
     }
 
     await PublicMessage.query()
       .patch({ message_read: true })
       .where({ message_id: message_id });
-    return res
-      .status(200)
-      .json({ success: true, message: "Mensaje marcado como leído" });
+
+    return enviarExito(res, "Mensaje marcado como leído");
   } catch (error) {
-    return res
-      .status(500)
-      .json({ error: "Error al marcar el mensaje como leído" });
+    return enviarError(res, "Error al marcar el mensaje como leído", 500);
   }
 }
 
-// ---------------------------------------------------------
-// Marcar mensaje como no leido
-// ---------------------------------------------------------
+// -----------------
+// MARCAR MENSAJE COMO NO LEÍDO
+// -----------------
 async function markMessageAsUnreadAsAdmin(req, res) {
   try {
     const { message_id } = req.params;
 
-    const validacionMensaje = await PublicMessage.query().findById(message_id);
+    const validacionMensaje = await obtenerPorId(PublicMessage, message_id);
+
+    if (!validacionMensaje) {
+      return enviarNoEncontrado(res, "Mensaje");
+    }
 
     if (!validacionMensaje.message_read) {
-      return res
-        .status(400)
-        .json({ error: "El mensaje ya está marcado como no leído" });
+      return enviarSolicitudInvalida(res, "El mensaje ya está marcado como no leído");
     }
+
     await PublicMessage.query()
       .patch({ message_read: false })
       .where({ message_id: message_id });
-    return res
-      .status(200)
-      .json({ success: true, message: "Mensaje marcado como no leído" });
+
+    return enviarExito(res, "Mensaje marcado como no leído");
   } catch (error) {
-    return res
-      .status(500)
-      .json({ error: "Error al marcar el mensaje como leído" });
+    return enviarError(res, "Error al marcar el mensaje como leído", 500);
   }
 }
 
-// ---------------------------------------------------------
-// Borrar mensaje
-// ---------------------------------------------------------
-
+// -----------------
+// ELIMINAR MENSAJE
+// -----------------
 async function deleteMessageAsAdmin(req, res) {
   try {
     const { message_id } = req.params;
     const messageToDelete = await PublicMessage.query().deleteById(message_id);
 
     if (!messageToDelete) {
-      return res.status(404).json({ error: "Mensaje no encontrado" });
+      return enviarNoEncontrado(res, "Mensaje");
     }
 
-    return res
-      .status(200)
-      .json({ success: true, message: "Mensaje eliminado correctamente" });
+    return enviarExito(res, "Mensaje eliminado correctamente");
   } catch (error) {
-    return res.status(500).json({ error: "Error al eliminar el mensaje" });
+    return enviarError(res, "Error al eliminar el mensaje", 500);
   }
 }
 

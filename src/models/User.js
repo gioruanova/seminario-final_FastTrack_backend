@@ -28,7 +28,11 @@ class User extends BaseModel {
         user_phone: { type: "string", maxLength: 50 },
         user_email: { type: "string", maxLength: 255, format: "email" },
         user_password: { type: "string" },
-        user_role: { type: "string", maxLength: 50 },
+        user_role: { 
+          type: "string", 
+          enum: ["superadmin", "owner", "operador", "profesional"],
+          maxLength: 50 
+        },
         user_status: { type: "boolean", default: true },
         apto_recibir: { type: "boolean", default: true },
         company_id: { type: ["integer", "null"] },

@@ -1,3 +1,7 @@
+// -----------------
+// CONTROLADOR DE RECLAMOS
+// -----------------
+
 const Reclamo = require("../models/Reclamo");
 const Company = require("../models/Company");
 const Especialidad = require("../models/Especialidad");
@@ -13,41 +17,46 @@ const { update } = require("../db/knex");
 const { sendNotificationToUser } = require("./notificationController");
 const CompaniesConfig = require("../models/CompaniesConfig");
 const messageController = require("./messageController");
+const { enviarLista, enviarError, enviarErrorReclamo, enviarExitoReclamo, enviarExito, enviarNoEncontrado } = require("../helpers/responseHelpers");
+const { obtenerPorId } = require("../helpers/registroHelpers");
 
+// -----------------
 // CONTROLADORES PARA ADMIN:
-// ---------------------------------------------------------
-// Obtener reclamos as ADMIN
-// ---------------------------------------------------------
+// -----------------
+
+// -----------------
+// OBTENER RECLAMOS COMO ADMIN
+// -----------------
 async function getReclamosAsAdmin(req, res) {
   try {
     const companyId = req.user.company_id;
-
     const resultado = await fetchReclamosByCompanyId();
-
-    res.json(resultado);
+    return enviarLista(res, resultado);
   } catch (error) {
-    res.status(500).json({ error: "Error interno del servidor" });
+    return enviarError(res, "Error interno del servidor", 500);
   }
 }
-// ---------------------------------------------------------
-// Obtener reclamos por empresa as ADMIN
-// ---------------------------------------------------------
+
+// -----------------
+// OBTENER RECLAMOS POR EMPRESA COMO ADMIN
+// -----------------
 async function getReclamosByCompanyAsAdmin(req, res) {
   try {
     const companyId = req.params.company_id;
-
     const resultado = await fetchReclamosByCompanyId(companyId);
-
-    res.json(resultado);
+    return enviarLista(res, resultado);
   } catch (error) {
-    res.status(500).json({ error: "Error interno del servidor" });
+    return enviarError(res, "Error interno del servidor", 500);
   }
 }
 
-// CONTROLADORES PARA CLIENT:
-// ---------------------------------------------------------
-// Crear reclamo
-// ---------------------------------------------------------
+// -----------------
+// CONTROLADORES PARA USUARIO COMUN (CON SUS ROLES):
+// -----------------
+
+// -----------------
+// CREAR RECLAMO
+// -----------------
 async function createReclamo(req, res) {
   const creator = req.user;
   const company_id = creator.company_id;
@@ -63,9 +72,7 @@ async function createReclamo(req, res) {
       .first();
 
     if (!especialidadProfesionalExiste) {
-      return res
-        .status(400)
-        .json({ status: 400, error: "Especialidad profesional no encontrada" });
+      return enviarErrorReclamo(res, "Especialidad profesional no encontrada", 400);
     }
 
     const companyConfig =
@@ -76,7 +83,7 @@ async function createReclamo(req, res) {
       companyConfig
     );
     if (!valid) {
-      return res.status(400).json({ status: 400, error });
+      return enviarErrorReclamo(res, error, 400);
     }
     data.agenda_hora_hasta = newAgendaHoraHasta;
 
@@ -85,24 +92,18 @@ async function createReclamo(req, res) {
       data
     );
     if (!entidadesValidas.valid) {
-      return res
-        .status(400)
-        .json({ status: 400, error: entidadesValidas.error });
+      return enviarErrorReclamo(res, entidadesValidas.error, 400);
     }
 
     const validacionHorario = validarHorario(data, companyConfig);
     if (!validacionHorario.valid) {
-      return res
-        .status(400)
-        .json({ status: 400, error: validacionHorario.error });
+      return enviarErrorReclamo(res, validacionHorario.error, 400);
     }
 
     // valida disponibilidad en fila de trabajo de usuario profesional
-    const profesionalApto = await User.query().findById(data.profesional_id);
-    if (!profesionalApto.apto_recibir) {
-      return res
-        .status(400)
-        .json({ status: 400, error: "El profesional no puede recibir citas en estos momentos" });
+    const profesionalApto = await obtenerPorId(User, data.profesional_id);
+    if (!profesionalApto || !profesionalApto.apto_recibir) {
+      return enviarErrorReclamo(res, "El profesional no puede recibir citas en estos momentos", 400);
     }
 
     const disponibilidad = await disponibilidadController.validarDisponibilidad(
@@ -116,11 +117,8 @@ async function createReclamo(req, res) {
     );
 
     if (!disponibilidad.disponible) {
-      return res
-        .status(400)
-        .json({ status: 400, error: disponibilidad.motivo });
+      return enviarErrorReclamo(res, disponibilidad.motivo, 400);
     }
-
 
     const nuevoReclamoData = {
       reclamo_titulo: data.reclamo_titulo,
@@ -134,7 +132,6 @@ async function createReclamo(req, res) {
     };
 
     const nuevoReclamo = await Reclamo.query().insert(nuevoReclamoData);
-
 
     await AgendaReclamo.query().insert({
       agenda_fecha: data.agenda_fecha,
@@ -156,33 +153,33 @@ async function createReclamo(req, res) {
       `/dashboard/profesional/trabajar-reclamos`);
 
     /*LOGGER*/ await registrarNuevoLog(
-        company_id,
-        `Se ha generado un nuevo reclamo con el ID: ${nuevoReclamo.reclamo_id}`
-      );
+      company_id,
+      `Se ha generado un nuevo reclamo con el ID: ${nuevoReclamo.reclamo_id}`
+    );
 
-    return res
-      .status(201)
-      .json({ status: 201, message: "Reclamo creado exitosamente" });
+    return enviarExitoReclamo(res, "Reclamo creado exitosamente", 201);
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: "Error creando reclamo" });
+    return enviarError(res, "Error creando reclamo", 500);
   }
 }
-// ---------------------------------------------------------
-// Obtener reclamos as Owner/Operador
-// ---------------------------------------------------------
+
+// -----------------
+// OBTENER RECLAMOS COMO OWNER/OPERADOR
+// -----------------
 async function getReclamosAsClient(req, res) {
   try {
     const companyId = req.user.company_id;
-
     const resultado = await fetchReclamosByCompanyId(companyId);
-
-    res.json(resultado);
+    return enviarLista(res, resultado);
   } catch (error) {
-    res.status(500).json({ error: "Error interno del servidor" });
+    return enviarError(res, "Error interno del servidor", 500);
   }
 }
 
+// -----------------
+// OBTENER RECLAMO POR ID COMO CLIENTE
+// -----------------
 async function getReclamosAsClientById(req, res) {
   // PENDIENTE: Testear esto
   const companyId = req.user.company_id;
@@ -192,18 +189,18 @@ async function getReclamosAsClientById(req, res) {
 
     const reclamo = resultado.find((r) => r.reclamo_id === reclamo_id);
     if (!reclamo) {
-      return res.status(404).json({ error: "Reclamo no encontrado" });
+      return enviarNoEncontrado(res, "Reclamo");
     }
 
-    res.json(resultado);
+    return enviarLista(res, resultado);
   } catch (error) {
-    res.status(500).json({ error: "Error interno del servidor" });
+    return enviarError(res, "Error interno del servidor", 500);
   }
 }
 
-// ---------------------------------------------------------
-// Gestion reclamo como owner / operador
-// ---------------------------------------------------------
+// -----------------
+// ACTUALIZAR RECLAMO COMO OWNER/OPERADOR
+// -----------------
 async function updateReclamoAsClient(req, res) {
   const companyId = req.user.company_id;
   const reclamo_id = parseInt(req.params.reclamo_id, 10);
@@ -212,7 +209,7 @@ async function updateReclamoAsClient(req, res) {
 
   if (reclamo_estado === "CERRADO" || reclamo_estado === "CANCELADO") {
     if (!reclamo_nota_cierre) {
-      return res.status(400).json({ error: "La nota es necesaria" });
+      return enviarErrorReclamo(res, "La nota es necesaria", 400);
     }
   }
 
@@ -221,15 +218,16 @@ async function updateReclamoAsClient(req, res) {
       .where("reclamo_id", reclamo_id)
       .andWhere("company_id", companyId)
       .first();
+
     if (!reclamoExiste) {
-      return res.status(404).json({ error: "Reclamo no encontrado" });
+      return enviarNoEncontrado(res, "Reclamo");
     }
 
     if (
       reclamoExiste.reclamo_estado === "CERRADO" &&
       reclamo_estado === "CERRADO"
     ) {
-      return res.status(400).json({ error: "El reclamo ya esta cerrado" });
+      return enviarErrorReclamo(res, "El reclamo ya esta cerrado", 400);
     }
 
     const reclamoActualizado = await Reclamo.query().patchAndFetchById(
@@ -243,10 +241,8 @@ async function updateReclamoAsClient(req, res) {
 
     const companyConfig = await companyConfigController.fetchCompanySettingsByCompanyId(reclamoExiste.company_id);
 
-
     const profesionalUser = await User.query().findById(reclamoExiste.profesional_id);
     actualizacionReclamo(reclamoExiste, profesionalUser, req.user, reclamoActualizado.reclamo_estado);
-
 
     sendNotificationToUser(
       reclamoExiste.profesional_id,
@@ -255,32 +251,33 @@ async function updateReclamoAsClient(req, res) {
       { title: "Fast Track" },
       `/dashboard/profesional/trabajar-reclamos`);
 
-
-    res.json({
-      status: 200,
-      message: "Reclamo actualizado correctamente",
-    });
+    return enviarExitoReclamo(res, "Reclamo actualizado correctamente", 200);
   } catch (error) {
-
-    return res.status(500).json({ error: "Error interno del servidor" });
+    return enviarError(res, "Error interno del servidor", 500);
   }
 }
 
+// -----------------
 // CONTROLADORES PARA PROFESIONAL:
-// ---------------------------------------------------------
-// Obtener reclamos as Profesional
-// ---------------------------------------------------------
+// -----------------
+
+// -----------------
+// OBTENER RECLAMOS COMO PROFESIONAL
+// -----------------
 async function getReclamosAsProfesional(req, res) {
   const companyId = req.user.company_id;
   const user_id = req.user.user_id;
   try {
     const resultado = await fetchReclamosByCompanyId(companyId, user_id);
-    res.json(resultado);
+    return enviarLista(res, resultado);
   } catch (error) {
-    res.status(500).json({ error: "Error interno del servidor" });
+    return enviarError(res, "Error interno del servidor", 500);
   }
 }
 
+// -----------------
+// OBTENER RECLAMO POR ID COMO PROFESIONAL
+// -----------------
 async function getReclamosAsProfesionalById(req, res) {
   const companyId = req.user.company_id;
   const user_id = req.user.user_id;
@@ -290,18 +287,18 @@ async function getReclamosAsProfesionalById(req, res) {
 
     const reclamo = resultado.find((r) => r.reclamo_id === reclamo_id);
     if (!reclamo) {
-      return res.status(404).json({ error: "Reclamo no encontrado" });
+      return enviarNoEncontrado(res, "Reclamo");
     }
 
-    res.json(resultado);
+    return enviarLista(res, resultado);
   } catch (error) {
-    res.status(500).json({ error: "Error interno del servidor" });
+    return enviarError(res, "Error interno del servidor", 500);
   }
 }
 
-// ---------------------------------------------------------
-// Gestion reclamo como profesional
-// ---------------------------------------------------------
+// -----------------
+// ACTUALIZAR RECLAMO COMO PROFESIONAL
+// -----------------
 async function updateReclamoAsProfesional(req, res) {
   const companyId = req.user.company_id;
   const user_id = req.user.user_id;
@@ -311,7 +308,7 @@ async function updateReclamoAsProfesional(req, res) {
 
   if (reclamo_estado === "CERRADO") {
     if (!reclamo_nota_cierre) {
-      return res.status(400).json({ error: "La nota de cierre es requerida" });
+      return enviarErrorReclamo(res, "La nota de cierre es requerida", 400);
     }
   }
 
@@ -320,11 +317,13 @@ async function updateReclamoAsProfesional(req, res) {
       .where("reclamo_id", reclamo_id)
       .andWhere("company_id", companyId)
       .first();
+
     if (!reclamoExiste) {
-      return res.status(404).json({ error: "Reclamo no encontrado" });
+      return enviarNoEncontrado(res, "Reclamo");
     }
+
     if (reclamoExiste.reclamo_estado === "CERRADO" || reclamo_estado === "CANCELADO") {
-      return res.status(400).json({ error: "El reclamo ya esta cerrado" });
+      return enviarErrorReclamo(res, "El reclamo ya esta cerrado", 400);
     }
 
     const reclamoActualizado = await Reclamo.query().patchAndFetchById(
@@ -337,7 +336,6 @@ async function updateReclamoAsProfesional(req, res) {
     );
 
     if (reclamoActualizado) {
-
       const resultado = await fetchReclamosByCompanyId(companyId, user_id);
 
       const companyConfig = await companyConfigController.fetchCompanySettingsByCompanyId(reclamoExiste.company_id);
@@ -356,21 +354,86 @@ async function updateReclamoAsProfesional(req, res) {
         }
       }
 
-
-      res.json({
-        status: 200,
-        message: "Reclamo actualizado correctamente",
-      });
+      return enviarExitoReclamo(res, "Reclamo actualizado correctamente", 200);
     }
   } catch (error) {
-    return res.status(500).json({ error: "Error interno del servidor" });
+    return enviarError(res, "Error interno del servidor", 500);
   }
 }
 
-// --------------------------------------------
-// HELPERs
-// --------------------------------------------
+// -----------------
+// ENVIAR RECORDATORIO A PROFESIONAL
+// -----------------
+async function sendReminderToProfesional(req, res) {
+  try {
+    const reclamo_id = parseInt(req.params.reclamo_id, 10);
 
+    // Buscar el reclamo por ID
+    const reclamo = await Reclamo.query()
+      .findById(reclamo_id)
+      .withGraphFetched("[profesional, company]");
+
+    if (!reclamo) {
+      return enviarNoEncontrado(res, "Reclamo");
+    }
+
+    // Obtener el profesional
+    const profesional = await obtenerPorId(User, reclamo.profesional_id);
+
+    if (!profesional) {
+      return enviarNoEncontrado(res, "Profesional");
+    }
+
+    // Obtener config de la empresa
+    const companyConfig = await CompaniesConfig.query()
+      .select()
+      .where("company_id", reclamo.company_id)
+      .first();
+
+    // Crear mensaje de recordatorio
+    const mensajeRecordatorio = `Recordatorio de ${companyConfig.sing_heading_reclamos} pendiente de atender.` +
+      "\n\n" +
+      "ID: " +
+      reclamo.reclamo_id +
+      " - " +
+      reclamo.reclamo_titulo +
+      "\n\n" +
+      `Revisa tus ${companyConfig.plu_heading_reclamos} en curso ` + `<a class="font-medium text-primary hover:underline" href="/dashboard/profesional/trabajar-reclamos">aquí</a>.`;
+
+    // Enviar mensaje personalizado
+    await messageController.createMessageCustom({
+      platform_message_title: "Recordatorio de " + companyConfig.sing_heading_reclamos,
+      platform_message_content: mensajeRecordatorio,
+      user_id: profesional.user_id,
+      company_id: profesional.company_id,
+      company_name: reclamo.company?.company_nombre || "Fast Track",
+    });
+
+    sendNotificationToUser(profesional.user_id,
+      `Recordatorio de ${companyConfig.sing_heading_reclamos}`,
+      `Detalle: ${reclamo.reclamo_titulo}`,
+      { title: "Fast Track" },
+      `/dashboard/profesional/trabajar-reclamos`);
+
+    /*LOGGER*/ await registrarNuevoLog(
+      reclamo.company_id,
+      `Se ha enviado recordatorio de reclamo con el ID: ${reclamo.reclamo_id}`
+    );
+
+    return enviarExito(res, "Recordatorio enviado al profesional correctamente");
+  } catch (error) {
+    console.error("Error enviando recordatorio:", error);
+    return enviarError(res, "Error interno del servidor", 500);
+  }
+}
+
+// -----------------
+// HELPERS DE VALIDACIÓN:
+// -----------------
+
+// -----------------
+// VALIDAR DATOS OBLIGATORIOS Y HORA
+// -----------------
 function validarDatosObligatoriosYHora(data, companyConfig) {
   const newAgendaHoraHasta = data.agenda_hora_hasta || "23:59:59";
 
@@ -396,9 +459,12 @@ function validarDatosObligatoriosYHora(data, companyConfig) {
   return { valid: true, error: null, newAgendaHoraHasta };
 }
 
+// -----------------
+// VALIDAR ENTIDADES RELACIONADAS
+// -----------------
 async function validarEntidadesRelacionadas(company_id, data) {
   // Empresa
-  const company = await Company.query().findById(company_id);
+  const company = await obtenerPorId(Company, company_id);
   if (!company) return { valid: false, error: "No existe empresa bajo ese ID" };
 
   // Especialidad
@@ -426,6 +492,9 @@ async function validarEntidadesRelacionadas(company_id, data) {
   return { valid: true };
 }
 
+// -----------------
+// VALIDAR HORARIO
+// -----------------
 function validarHorario(data, companyConfig) {
   if (
     data.agenda_hora_hasta &&
@@ -459,6 +528,9 @@ function validarHorario(data, companyConfig) {
   return { valid: true };
 }
 
+// -----------------
+// OBTENER RECLAMOS POR COMPANY ID
+// -----------------
 async function fetchReclamosByCompanyId(_company_id, _user_id) {
   const reclamos = await Reclamo.query()
     .modify((qb) => {
@@ -509,11 +581,14 @@ async function fetchReclamosByCompanyId(_company_id, _user_id) {
   }));
 }
 
+// -----------------
+// HELPERS DE NOTIFICACIÓN:
+// -----------------
 
-
-// helper de notificacion para neuvo reclamo
+// -----------------
+// NOTIFICACIÓN DE NUEVO RECLAMO
+// -----------------
 async function notificacionNuevoReclamo(reclamo, user, creator) {
-
   const companyConfig = await CompaniesConfig.query()
     .select()
     .where("company_id", reclamo.company_id)
@@ -537,9 +612,9 @@ async function notificacionNuevoReclamo(reclamo, user, creator) {
   });
 }
 
-
-
-// helper de notificacion para actalizacion de reclamo
+// -----------------
+// NOTIFICACIÓN DE ACTUALIZACIÓN DE RECLAMO
+// -----------------
 async function actualizacionReclamo(reclamo, user, creator, nuevoEstado) {
   const companyConfig = await CompaniesConfig.query()
     .select()
@@ -565,10 +640,10 @@ async function actualizacionReclamo(reclamo, user, creator, nuevoEstado) {
   });
 }
 
-
-// helper de notificacion para OPERADORES para actalizacion de reclamo
+// -----------------
+// NOTIFICACIÓN DE ACTUALIZACIÓN DE RECLAMO PARA OPERADORES
+// -----------------
 async function actualizacionReclamoOperador(reclamo, user, creator, nuevoEstado) {
-
   const companyConfig = await CompaniesConfig.query()
     .select()
     .where("company_id", reclamo.company_id)
@@ -595,74 +670,6 @@ async function actualizacionReclamoOperador(reclamo, user, creator, nuevoEstado)
     company_name: creator.company_name,
   });
 }
-
-
-async function sendReminderToProfesional(req, res) {
-  try {
-    const reclamo_id = parseInt(req.params.reclamo_id, 10);
-
-    // Buscar el reclamo por ID
-    const reclamo = await Reclamo.query()
-      .findById(reclamo_id)
-      .withGraphFetched("[profesional, company]");
-
-    if (!reclamo) {
-      return res.status(404).json({ error: "Reclamo no encontrado" });
-    }
-
-    // Obtener el profesional
-    const profesional = await User.query().findById(reclamo.profesional_id);
-
-    if (!profesional) {
-      return res.status(404).json({ error: "Profesional no encontrado" });
-    }
-
-    // Obtener config de la empresa
-    const companyConfig = await CompaniesConfig.query()
-      .select()
-      .where("company_id", reclamo.company_id)
-      .first();
-
-    // Crear mensaje de recordatorio
-    const mensajeRecordatorio = `Recordatorio de ${companyConfig.sing_heading_reclamos} pendiente de atender.` +
-      "\n\n" +
-      "ID: " +
-      reclamo.reclamo_id +
-      " - " +
-      reclamo.reclamo_titulo +
-      "\n\n" +
-      `Revisa tus ${companyConfig.plu_heading_reclamos} en curso ` + `<a class="font-medium text-primary hover:underline" href="/dashboard/profesional/trabajar-reclamos">aquí</a>.`;
-
-    // Enviar mensaje personalizado
-    await messageController.createMessageCustom({
-      platform_message_title: "Recordatorio de " + companyConfig.sing_heading_reclamos,
-      platform_message_content: mensajeRecordatorio,
-      user_id: profesional.user_id,
-      company_id: profesional.company_id,
-      company_name: reclamo.company?.company_nombre || "Fast Track",
-    });
-
-    sendNotificationToUser(profesional.user_id,
-      `Recordatorio de ${companyConfig.sing_heading_reclamos}`,
-      `Detalle: ${reclamo.reclamo_titulo}`,
-      { title: "Fast Track" },
-      `/dashboard/profesional/trabajar-reclamos`);
-
-    /*LOGGER*/ await registrarNuevoLog(
-        reclamo.company_id,
-        `Se ha enviado recordatorio de reclamo con el ID: ${reclamo.reclamo_id}`
-      );
-
-    return res.json({
-      success: true,
-      message: "Recordatorio enviado al profesional correctamente",
-    });
-  } catch (error) {
-    console.error("Error enviando recordatorio:", error);
-    return res.status(500).json({ error: "Error interno del servidor" });
-  }
-}
-
 
 module.exports = {
   getReclamosAsAdmin,

@@ -1,25 +1,35 @@
-const webpush = require('web-push');
+// -----------------
+// CONTROLADOR DE NOTIFICACIONES
+// -----------------
 const UserNotificationSubscription = require('../models/UserNotificationSubscription');
+const { enviarExito, enviarError, enviarNoEncontrado } = require("../helpers/responseHelpers");
+const webpush = require('web-push');
 
-// Configurar VAPID
+// -----------------
+// CONFIGURAR VAPID
+// -----------------
 webpush.setVapidDetails(
-  'mailto:admin@fasttrack.com', // Cambia por tu email
+  'mailto:admin@fasttrack.com',
   process.env.PUSH_KEY_PUBLIC,
   process.env.PUSH_KEY_PRIVATE
 );
 
-// GET /customersApi/notifications/vapid-public-key
+// -----------------
+// OBTENER CLAVE PÚBLICA VAPID
+// -----------------
 async function getVapidPublicKey(req, res) {
   try {
     res.json({
       publicKey: process.env.PUSH_KEY_PUBLIC
     });
   } catch (error) {
-    res.status(500).json({ error: 'Error obteniendo clave pública' });
+    return enviarError(res, 'Error obteniendo clave pública', 500);
   }
 }
 
-// POST /customersApi/notifications/register-token
+// -----------------
+// REGISTRAR TOKEN DE NOTIFICACIÓN
+// -----------------
 async function registerToken(req, res) {
   try {
     const { subscription, platform } = req.body;
@@ -31,7 +41,7 @@ async function registerToken(req, res) {
       .first();
 
     if (existing) {
-      return res.json({ success: true, message: 'Token ya registrado' });
+      return enviarExito(res, 'Token ya registrado');
     }
 
     await UserNotificationSubscription.query().insert({
@@ -40,14 +50,16 @@ async function registerToken(req, res) {
       platform: platform || 'web'
     });
 
-    res.json({ success: true, message: 'Token registrado exitosamente' });
+    return enviarExito(res, 'Token registrado exitosamente');
   } catch (error) {
     console.error('Error registrando token:', error);
-    res.status(500).json({ error: 'Error registrando token' });
+    return enviarError(res, 'Error registrando token', 500);
   }
 }
 
-// POST /customersApi/notifications/send (para testing)
+// -----------------
+// ENVIAR NOTIFICACIÓN (PARA TESTING)
+// -----------------
 async function sendNotification(req, res) {
   try {
     const { userId, message, options } = req.body;
@@ -56,11 +68,13 @@ async function sendNotification(req, res) {
     res.json(result);
   } catch (error) {
     console.error('Error enviando notificación:', error);
-    res.status(500).json({ error: 'Error enviando notificación' });
+    return enviarError(res, 'Error enviando notificación', 500);
   }
 }
 
-// DELETE /customersApi/notifications/unregister-token
+// -----------------
+// ELIMINAR TODAS LAS SUSCRIPCIONES
+// -----------------
 async function unregisterToken(req, res) {
   try {
     const { user_id } = req.user;
@@ -69,14 +83,16 @@ async function unregisterToken(req, res) {
       .where('user_id', user_id)
       .delete();
 
-    res.json({ success: true, message: 'Todas las suscripciones eliminadas' });
+    return enviarExito(res, 'Todas las suscripciones eliminadas');
   } catch (error) {
     console.error('Error eliminando suscripciones:', error);
-    res.status(500).json({ error: 'Error eliminando suscripciones' });
+    return enviarError(res, 'Error eliminando suscripciones', 500);
   }
 }
 
-// DELETE /customersApi/notifications/unregister-specific-token
+// -----------------
+// ELIMINAR SUSCRIPCIÓN ESPECÍFICA
+// -----------------
 async function unregisterSpecificToken(req, res) {
   try {
     const { user_id } = req.user;
@@ -88,17 +104,19 @@ async function unregisterSpecificToken(req, res) {
       .delete();
 
     if (deleted === 0) {
-      return res.status(404).json({ error: 'Suscripción no encontrada' });
+      return enviarNoEncontrado(res, 'Suscripción');
     }
 
-    res.json({ success: true, message: 'Suscripción eliminada' });
+    return enviarExito(res, 'Suscripción eliminada');
   } catch (error) {
     console.error('Error eliminando suscripción específica:', error);
-    res.status(500).json({ error: 'Error eliminando suscripción' });
+    return enviarError(res, 'Error eliminando suscripción', 500);
   }
 }
 
-// FUNCIÓN PRINCIPAL QUE USARÁS
+// -----------------
+// FUNCIÓN PRINCIPAL PARA ENVIAR NOTIFICACIÓN A USUARIO
+// -----------------
 async function sendNotificationToUser(userId, titleMessage, message, options = {}, path = null) {
   const title = titleMessage.length >= 30
     ? `${titleMessage.slice(0, 30)}...`

@@ -1,33 +1,40 @@
-const SiteBanner = require("../models/Banner");
+// -----------------
+// CONTROLADOR DE BANNERS DEL SITIO
+// -----------------
 
-// get banner
+const SiteBanner = require("../models/Banner");
+const { enviarLista, enviarExito, enviarError, enviarNoEncontrado, enviarSolicitudInvalida } = require("../helpers/responseHelpers");
+const { obtenerPorId } = require("../helpers/registroHelpers");
+
+// -----------------
+// OBTENER TODOS LOS BANNERS (ADMIN)
+// -----------------
 async function getBannersAsAdmin(req, res) {
   try {
     const banners = await SiteBanner.query().select();
-
-    return res.json(banners);
+    return enviarLista(res, banners);
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: "Error interno del servidor" });
+    return enviarError(res, "Error interno del servidor", 500);
   }
 }
 
-// editar un banner
+// -----------------
+// EDITAR UN BANNER
+// -----------------
 async function editBanner(req, res) {
   const bannerId = req.params.banner_id;
   const { banner_text, banner_limit } = req.body;
 
   // Verifica que venga al menos uno de los dos campos
   if (!banner_text && !banner_limit) {
-    return res
-      .status(400)
-      .json({ error: "Debes enviar al menos el texto del banner o la fecha límite" });
+    return enviarSolicitudInvalida(res, "Debes enviar al menos el texto del banner o la fecha límite");
   }
 
   try {
-    const bannerExist = await SiteBanner.query().findById(bannerId);
+    const bannerExist = await obtenerPorId(SiteBanner, bannerId);
     if (!bannerExist) {
-      return res.status(404).json({ error: "El banner no existe" });
+      return enviarNoEncontrado(res, "Banner");
     }
 
     const updateData = {};
@@ -39,15 +46,11 @@ async function editBanner(req, res) {
     if (banner_limit) {
       const limitDate = new Date(banner_limit);
       if (isNaN(limitDate.getTime())) {
-        return res
-          .status(400)
-          .json({ error: "La fecha límite no tiene un formato válido" });
+        return enviarSolicitudInvalida(res, "La fecha límite no tiene un formato válido");
       }
 
       if (limitDate < new Date()) {
-        return res
-          .status(400)
-          .json({ error: "La fecha límite no puede ser en el pasado" });
+        return enviarSolicitudInvalida(res, "La fecha límite no puede ser en el pasado");
       }
 
       updateData.banner_limit = limitDate;
@@ -55,70 +58,65 @@ async function editBanner(req, res) {
 
     await SiteBanner.query().findById(bannerId).patch(updateData);
 
-    return res.json({
-      success: true,
-      message: "Banner actualizado correctamente",
-    });
+    return enviarExito(res, "Banner actualizado correctamente");
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: "Error interno del servidor" });
+    return enviarError(res, "Error interno del servidor", 500);
   }
 }
 
-
-// get active banner (for any user)
+// -----------------
+// OBTENER BANNER ACTIVO (PARA CUALQUIER USUARIO)
+// -----------------
 async function getActiveBanner(req, res) {
   try {
     const banners = await SiteBanner.query()
       .select()
       .where("banner_active", true);
 
-
     if (!banners.length) {
-      return res.status(404).json({ error: "No hay banners" });
+      return enviarNoEncontrado(res, "Banner");
     }
 
-    return res.json(banners);
+    return enviarLista(res, banners);
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: "Error interno del servidor" });
+    return enviarError(res, "Error interno del servidor", 500);
   }
 }
 
+// -----------------
+// ELIMINAR BANNER
+// -----------------
 async function deleteBanner(req, res) {
   const bannerId = req.params.banner_id;
   try {
-    const bannerExist = await SiteBanner.query().findById(bannerId);
+    const bannerExist = await obtenerPorId(SiteBanner, bannerId);
     if (!bannerExist) {
-      return res.status(404).json({ error: "El banner no existe" });
+      return enviarNoEncontrado(res, "Banner");
     }
 
     await SiteBanner.query().deleteById(bannerId);
 
-    return res.json({
-      success: true,
-      message: "Banner eliminado correctamente",
-    });
+    return enviarExito(res, "Banner eliminado correctamente");
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: "Error interno del servidor" });
+    return enviarError(res, "Error interno del servidor", 500);
   }
 }
 
-// create banner
+// -----------------
+// CREAR BANNER
+// -----------------
 async function createBanner(req, res) {
   const { banner_text, banner_limit } = req.body;
 
   if (!banner_text || !banner_limit) {
-    return res
-      .status(400)
-      .json({ error: "El banner y la fecha limite son requeridos" });
+    return enviarSolicitudInvalida(res, "El banner y la fecha limite son requeridos");
   }
 
   if (banner_limit < new Date()) {
-    return res
-      .status(400)
-      .json({ error: "La fecha limite no puede ser en el pasado" });
+    return enviarSolicitudInvalida(res, "La fecha limite no puede ser en el pasado");
   }
 
   try {
@@ -128,25 +126,27 @@ async function createBanner(req, res) {
       banner_active: false,
     });
 
-    return res.json({ success: true, message: "Banner creado correctamente" });
+    return enviarExito(res, "Banner creado correctamente");
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: "Error interno del servidor" });
+    return enviarError(res, "Error interno del servidor", 500);
   }
 }
 
-// enable banner
+// -----------------
+// ACTIVAR BANNER
+// -----------------
 async function enableBanner(req, res) {
   const bannerId = req.params.banner_id;
 
   try {
-    const bannerExist = await SiteBanner.query().findById(bannerId);
+    const bannerExist = await obtenerPorId(SiteBanner, bannerId);
     if (!bannerExist) {
-      return res.status(404).json({ error: "El banner no existe" });
+      return enviarNoEncontrado(res, "Banner");
     }
 
     if (bannerExist.banner_active === 1) {
-      return res.status(400).json({ error: "El banner ya está activado" });
+      return enviarSolicitudInvalida(res, "El banner ya está activado");
     }
 
     const banners = await SiteBanner.query()
@@ -156,40 +156,40 @@ async function enableBanner(req, res) {
     const activeCount = parseInt(banners[0].total, 10);
 
     if (activeCount >= 1) {
-      return res
-        .status(400)
-        .json({ error: "Solo puede haber un banner activo a la vez" });
+      return enviarSolicitudInvalida(res, "Solo puede haber un banner activo a la vez");
     }
 
     await SiteBanner.query().findById(bannerId).patch({ banner_active: true });
 
-    return res.json({ message: "Banner activado correctamente" });
+    return enviarExito(res, "Banner activado correctamente");
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: "Error interno del servidor" });
+    return enviarError(res, "Error interno del servidor", 500);
   }
 }
 
-// disable banner
+// -----------------
+// DESACTIVAR BANNER
+// -----------------
 async function disableBanner(req, res) {
   const bannerId = req.params.banner_id;
 
   try {
-    const bannerExist = await SiteBanner.query().findById(bannerId);
+    const bannerExist = await obtenerPorId(SiteBanner, bannerId);
     if (!bannerExist) {
-      return res.status(404).json({ error: "El banner no existe" });
+      return enviarNoEncontrado(res, "Banner");
     }
 
     if (bannerExist.banner_active === 0) {
-      return res.status(400).json({ error: "El banner ya está desactivado" });
+      return enviarSolicitudInvalida(res, "El banner ya está desactivado");
     }
 
     await SiteBanner.query().findById(bannerId).patch({ banner_active: false });
 
-    return res.json({ message: "Banner desactivado correctamente" });
+    return enviarExito(res, "Banner desactivado correctamente");
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: "Error interno del servidor" });
+    return enviarError(res, "Error interno del servidor", 500);
   }
 }
 

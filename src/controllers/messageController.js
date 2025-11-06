@@ -1,19 +1,24 @@
+// -----------------
+// CONTROLADOR DE MENSAJES
+// -----------------
 const knex = require("../db/knex");
-
 const PlatformMessage = require("../models/PlatformMessage");
 const PlatformMessageUser = require("../models/PlatformMessageUser");
 const User = require("../models/User");
-
 const { registrarNuevoLog } = require("../controllers/globalLogController");
-
 const { sendNotificationToUser } = require("./notificationController");
+const { enviarLista, enviarExito, enviarError, enviarNoEncontrado, enviarSolicitudInvalida } = require("../helpers/responseHelpers");
+const { obtenerPorId } = require("../helpers/registroHelpers");
 
 const sistemaSender = "Fast Track Updates";
 
+// -----------------
 // CONTROLADORES PARA ADMIN:
-// ---------------------------------------------------------
-// Enviar mensaje para todos los usuarios
-// ---------------------------------------------------------
+// -----------------
+
+// -----------------
+// ENVIAR MENSAJE PARA TODOS LOS USUARIOS
+// -----------------
 async function createMessageForAllAsAdmin(req, res) {
   const { platform_message_title, platform_message_content } = req.body;
   const message_sender = sistemaSender;
@@ -39,22 +44,21 @@ async function createMessageForAllAsAdmin(req, res) {
     await knex.batchInsert("platform_messages_users", entries);
 
     for (const entry of entries) {
-      const user = await User.query().findById(entry.user_id);
+      const user = await obtenerPorId(User, entry.user_id);
       if (user) {
         await sendNotificationToUser(entry.user_id, "Nuevo mensaje", platform_message_title, { title: "Fast Track", role: user.user_role }, `/dashboard/${user.user_role}/mensajes`);
       }
     }
 
-    res
-      .status(201)
-      .json({ message: "Mensaje creado para todos los usuarios." });
+    return enviarExito(res, "Mensaje creado para todos los usuarios.", 201);
   } catch (error) {
-    res.status(500).json({ error: "Error creando mensaje para todos." });
+    return enviarError(res, "Error creando mensaje para todos.", 500);
   }
 }
-// ---------------------------------------------------------
-// Enviar mensaje para owner de empresa
-// ---------------------------------------------------------
+
+// -----------------
+// ENVIAR MENSAJE PARA OWNER DE EMPRESA
+// -----------------
 async function createMessageForCompanyAsAdmin(req, res) {
   const { platform_message_title, platform_message_content } = req.body;
   const { company_id } = req.params;
@@ -75,7 +79,6 @@ async function createMessageForCompanyAsAdmin(req, res) {
       .where("company_id", company_id)
       .andWhere("user_role", "owner",).groupBy("user_id");
 
-
     const entries = users.map((user) => ({
       platform_message_id: message.platform_message_id,
       user_id: user.user_id,
@@ -85,7 +88,7 @@ async function createMessageForCompanyAsAdmin(req, res) {
     await knex.batchInsert("platform_messages_users", entries);
 
     for (const userSelected of users) {
-      const user = await User.query().findById(userSelected.user_id);
+      const user = await obtenerPorId(User, userSelected.user_id);
       if (user) {
         await sendNotificationToUser(userSelected.user_id, "Nuevo mensaje", platform_message_title, {
           title: "Fast Track", role: user.user_role
@@ -95,26 +98,25 @@ async function createMessageForCompanyAsAdmin(req, res) {
       }
     }
 
-    res.status(201).json({ message: "Mensaje creado unicamente para owners." });
+    return enviarExito(res, "Mensaje creado unicamente para owners.", 201);
   } catch (error) {
-
-    res.status(500).json({ error: "Error creando mensaje para todos." });
+    return enviarError(res, "Error creando mensaje para todos.", 500);
   }
 }
 
-// ---------------------------------------------------------
-// Enviar mensaje para usuario puntual
-// ---------------------------------------------------------
+// -----------------
+// ENVIAR MENSAJE PARA USUARIO PUNTUAL
+// -----------------
 async function createMessageForUserAsAdmin(req, res) {
   const { platform_message_title, platform_message_content } = req.body;
   const { user_id } = req.params;
   const message_sender = sistemaSender;
 
   try {
-    const user = await User.query().findById(user_id);
+    const user = await obtenerPorId(User, user_id);
 
     if (!user) {
-      return res.status(404).json({ error: "Usuario no encontrado." });
+      return enviarNoEncontrado(res, "Usuario");
     }
 
     const message = await PlatformMessage.query().insert({
@@ -134,43 +136,40 @@ async function createMessageForUserAsAdmin(req, res) {
 
     sendNotificationToUser(user.user_id, "Nuevo mensaje", platform_message_title, { title: "Fast Track" }, `/dashboard/${user.user_role}/mensajes`);
 
-    res.status(201).json({ message: "Mensaje creado para el usuario." });
+    return enviarExito(res, "Mensaje creado para el usuario.", 201);
   } catch (error) {
-
-    res.status(500).json({ error: "Error creando mensaje para el usuario." });
+    return enviarError(res, "Error creando mensaje para el usuario.", 500);
   }
 }
 
-// ---------------------------------------------------------
-// Borrar masivamente mensajes generales
-// ---------------------------------------------------------
+// -----------------
+// ELIMINAR MENSAJE
+// -----------------
 async function deleteMessageAsAdmin(req, res) {
   const { platform_message_id } = req.params;
 
   try {
-    const validateMessage = await PlatformMessage.query().findById(
-      platform_message_id
-    );
+    const validateMessage = await obtenerPorId(PlatformMessage, platform_message_id);
 
     if (!validateMessage) {
-      return res
-        .status(404)
-        .json({ error: "Mensaje no se pudo encontrar o ya estaba borrado." });
+      return enviarNoEncontrado(res, "Mensaje");
     }
 
     await PlatformMessage.query().deleteById(platform_message_id);
 
-    res.status(200).json({ message: "Mensaje eliminado." });
+    return enviarExito(res, "Mensaje eliminado.");
   } catch (error) {
-
-    res.status(500).json({ error: "Error al eliminar mensaje." });
+    return enviarError(res, "Error al eliminar mensaje.", 500);
   }
 }
 
-// CONTROLADORES PARA CLIENT:
-// ---------------------------------------------------------
-// Enviar mensaje para todos los usuarios
-// ---------------------------------------------------------
+// -----------------
+// CONTROLADORES PARA USUARIO COMUN (CON SUS ROLES):
+// -----------------
+
+// -----------------
+// ENVIAR MENSAJE PARA TODOS LOS USUARIOS DE LA EMPRESA
+// -----------------
 async function createMessageForCompanyAsClient(req, res) {
   const { platform_message_title, platform_message_content } = req.body;
   const company_id = req.user.company_id;
@@ -188,7 +187,7 @@ async function createMessageForCompanyAsClient(req, res) {
 
     const users = await User.query()
       .select()
-      .where("company_id", company_id);
+      .where("company_id", company_id).where("user_id", "!=", req.user.user_id);
 
     const entries = users.map((user) => ({
       platform_message_id: message.platform_message_id,
@@ -206,7 +205,7 @@ async function createMessageForCompanyAsClient(req, res) {
     );
 
     for (const userSelected of users) {
-      const user = await User.query().findById(userSelected.user_id);
+      const user = await obtenerPorId(User, userSelected.user_id);
       if (user) {
         await sendNotificationToUser(userSelected.user_id, "Nuevo mensaje", platform_message_title, {
           title: "Fast Track", role: user.user_role
@@ -215,18 +214,15 @@ async function createMessageForCompanyAsClient(req, res) {
         );
       }
     }
-    res
-      .status(201)
-      .json({ message: "Mensaje creado para todos los usuarios." });
+    return enviarExito(res, "Mensaje creado para todos los usuarios.", 201);
   } catch (error) {
-
-    res.status(500).json({ error: "Error creando mensaje para todos." });
+    return enviarError(res, "Error creando mensaje para todos.", 500);
   }
 }
 
-// ---------------------------------------------------------
-// Enviar mensaje para usuario puntual
-// ---------------------------------------------------------
+// -----------------
+// ENVIAR MENSAJE PARA USUARIO PUNTUAL
+// -----------------
 async function createMessageForUserAsClient(req, res) {
   const { platform_message_title, platform_message_content } = req.body;
   const { user_id } = req.params;
@@ -238,7 +234,7 @@ async function createMessageForUserAsClient(req, res) {
       .where("company_id", req.user.company_id);
 
     if (!user) {
-      return res.status(404).json({ error: "Usuario no encontrado." });
+      return enviarNoEncontrado(res, "Usuario");
     }
 
     const message = await PlatformMessage.query().insert({
@@ -262,16 +258,15 @@ async function createMessageForUserAsClient(req, res) {
     );
 
     sendNotificationToUser(user.user_id, "Nuevo mensaje", platform_message_title, { title: "Fast Track" }, `/dashboard/${user.user_role}/mensajes`);
-    res.status(201).json({ message: "Mensaje creado para el usuario." });
+    return enviarExito(res, "Mensaje creado para el usuario.", 201);
   } catch (error) {
-
-    res.status(500).json({ error: "Error creando mensaje para el usuario." });
+    return enviarError(res, "Error creando mensaje para el usuario.", 500);
   }
 }
 
-// ---------------------------------------------------------
-// Borrar masivamente mensajes generales
-// ---------------------------------------------------------
+// -----------------
+// ELIMINAR MENSAJES DE LA EMPRESA
+// -----------------
 async function deleteCompanyMessagesAsClient(req, res) {
   const { platform_message_id } = req.params;
 
@@ -281,9 +276,7 @@ async function deleteCompanyMessagesAsClient(req, res) {
       .where("company_id", req.user.company_id);
 
     if (!validateMessage) {
-      return res
-        .status(404)
-        .json({ error: "Mensaje no se pudo encontrar o ya estaba borrado." });
+      return enviarNoEncontrado(res, "Mensaje");
     }
 
     await PlatformMessage.query().deleteById(platform_message_id);
@@ -297,17 +290,15 @@ async function deleteCompanyMessagesAsClient(req, res) {
       "."
     );
 
-    res.status(200).json({ message: "Mensaje eliminado." });
+    return enviarExito(res, "Mensaje eliminado.");
   } catch (error) {
-
-    res.status(500).json({ error: "Error al eliminar mensaje." });
+    return enviarError(res, "Error al eliminar mensaje.", 500);
   }
 }
 
-// ---------------------------------------------------------
-// Borrar  mensaje puntual por usuario
-// ---------------------------------------------------------
-
+// -----------------
+// ELIMINAR MENSAJE PUNTUAL POR USUARIO
+// -----------------
 async function deleteSpecificMessagesAsClient(req, res) {
   const { specific_message_id } = req.params;
 
@@ -320,23 +311,20 @@ async function deleteSpecificMessagesAsClient(req, res) {
       .first();
 
     if (!validMessage) {
-      return res.status(404).json({
-        error: "Mensaje no se pudo encontrar o ya estaba borrado.",
-      });
+      return enviarNoEncontrado(res, "Mensaje");
     }
 
     await PlatformMessageUser.query().deleteById(validMessage.id);
 
-    res.status(200).json({ message: "Mensaje eliminado." });
+    return enviarExito(res, "Mensaje eliminado.");
   } catch (error) {
-
-    res.status(500).json({ error: "Error al eliminar mensaje." });
+    return enviarError(res, "Error al eliminar mensaje.", 500);
   }
 }
 
-// ---------------------------------------------------------
-// Marcar mensaje como leido
-// ---------------------------------------------------------
+// -----------------
+// MARCAR MENSAJE COMO LEÍDO
+// -----------------
 async function marAsReadMessageAsClient(req, res) {
   const { specific_message_id } = req.params;
 
@@ -349,15 +337,11 @@ async function marAsReadMessageAsClient(req, res) {
       .first();
 
     if (!validMessage) {
-      return res.status(404).json({
-        error: "El mensaje no ha sido encontrado.",
-      });
+      return enviarNoEncontrado(res, "Mensaje");
     }
 
     if (validMessage.is_read) {
-      return res.status(404).json({
-        error: "El mensaje ya estaba leido.",
-      });
+      return enviarSolicitudInvalida(res, "El mensaje ya estaba leido.");
     }
 
     await PlatformMessageUser.query()
@@ -367,16 +351,15 @@ async function marAsReadMessageAsClient(req, res) {
       })
       .update({ is_read: 1 });
 
-    res.status(200).json({ message: "Mensaje marcado como leido." });
+    return enviarExito(res, "Mensaje marcado como leido.");
   } catch (error) {
-
-    res.status(500).json({ error: "Error al marcando mensaje como leido." });
+    return enviarError(res, "Error al marcando mensaje como leido.", 500);
   }
 }
 
-// ---------------------------------------------------------
-// Marcar mensaje como leido
-// ---------------------------------------------------------
+// -----------------
+// MARCAR MENSAJE COMO NO LEÍDO
+// -----------------
 async function marAsUnreadMessageAsClient(req, res) {
   const { specific_message_id } = req.params;
 
@@ -389,15 +372,11 @@ async function marAsUnreadMessageAsClient(req, res) {
       .first();
 
     if (!validMessage) {
-      return res.status(404).json({
-        error: "El mensaje no ha sido encontrado.",
-      });
+      return enviarNoEncontrado(res, "Mensaje");
     }
 
     if (!validMessage.is_read) {
-      return res.status(404).json({
-        error: "El mensaje ya estaba como no leido.",
-      });
+      return enviarSolicitudInvalida(res, "El mensaje ya estaba como no leido.");
     }
 
     await PlatformMessageUser.query()
@@ -407,16 +386,15 @@ async function marAsUnreadMessageAsClient(req, res) {
       })
       .update({ is_read: 0 });
 
-    res.status(200).json({ message: "Mensaje marcado como no leido." });
+    return enviarExito(res, "Mensaje marcado como no leido.");
   } catch (error) {
-
-    res.status(500).json({ error: "Error al marcando mensaje como no leido." });
+    return enviarError(res, "Error al marcando mensaje como no leido.", 500);
   }
 }
 
-// ---------------------------------------------------------
-// Ver todos los mensajes
-// ---------------------------------------------------------
+// -----------------
+// VER TODOS LOS MENSAJES
+// -----------------
 async function getAllMesagesAsClient(req, res) {
   const requestUser = req.user.user_id;
   try {
@@ -426,16 +404,16 @@ async function getAllMesagesAsClient(req, res) {
       .orderBy("created_at", "desc")
       .withGraphFetched("platformMessage");
 
-    return res.json(messages);
+    return enviarLista(res, messages);
   } catch (error) {
-
-    res.status(500).json({ error: "Error al obtener los mensajes" });
+    return enviarError(res, "Error al obtener los mensajes", 500);
   }
 }
 
-
-// envio de mensajes flexible (helper function)
-async function createMessageCustom({platform_message_title, platform_message_content, user_id, company_id, company_name}) {
+// -----------------
+// ENVÍO DE MENSAJES FLEXIBLE (HELPER FUNCTION)
+// -----------------
+async function createMessageCustom({ platform_message_title, platform_message_content, user_id, company_id, company_name }) {
 
   try {
     const user = await User.query()

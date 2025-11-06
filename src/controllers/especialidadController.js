@@ -1,28 +1,33 @@
+// -----------------
+// CONTROLADOR DE ESPECIALIDADES
+// -----------------
+
 const Company = require("../models/Company");
 const companyController = require("./companyController");
-
 const Especialidad = require("../models/Especialidad");
-
 const { registrarNuevoLog } = require("../controllers/globalLogController");
+const { enviarLista, enviarExito, enviarError, enviarNoEncontrado, enviarSolicitudInvalida, enviarConflicto } = require("../helpers/responseHelpers");
+const { obtenerPorId } = require("../helpers/registroHelpers");
 
+// -----------------
 // CONTROLADORES PARA ADMIN:
-// ---------------------------------------------------------
-// Crear especialidad
-// ---------------------------------------------------------
+// -----------------
+
+// -----------------
+// CREAR ESPECIALIDAD
+// -----------------
 async function createEspecialidadAsAdmin(req, res) {
   try {
     const { company_id, nombre_especialidad } = req.body;
 
     if (!nombre_especialidad || !company_id) {
-      return res
-        .status(400)
-        .json({ error: "nombre_especialidad y company_id son requeridos" });
+      return enviarSolicitudInvalida(res, "nombre_especialidad y company_id son requeridos");
     }
 
-    const companyExist = await Company.query().findById(company_id);
+    const companyExist = await obtenerPorId(Company, company_id);
 
     if (!companyExist) {
-      return res.status(400).json({ error: "No existe empresa bajo ese ID" });
+      return enviarSolicitudInvalida(res, "No existe empresa bajo ese ID");
     }
 
     const existing = await Especialidad.query()
@@ -30,9 +35,7 @@ async function createEspecialidadAsAdmin(req, res) {
       .first();
 
     if (existing) {
-      return res
-        .status(409)
-        .json({ error: "La especialidad ya existe para esta empresa" });
+      return enviarConflicto(res, "La especialidad ya existe para esta empresa");
     }
 
     await Especialidad.query().insert({
@@ -47,33 +50,32 @@ async function createEspecialidadAsAdmin(req, res) {
         " (Ejecutado por Sistema)."
     );
 
-    return res
-      .status(201)
-      .json({ success: true, message: "Especialidad creada correctamente" });
+    return enviarExito(res, "Especialidad creada correctamente", 201);
   } catch (error) {
-    return res.status(500).json({ error: "Error interno del servidor" });
+    return enviarError(res, "Error interno del servidor", 500);
   }
 }
 
-// ---------------------------------------------------------
-// Update especialidad
-// ---------------------------------------------------------
+// -----------------
+// ACTUALIZAR ESPECIALIDAD
+// -----------------
 async function updateEspecialidadAsAdmin(req, res) {
   try {
     const { especialidadId } = req.params;
     const { nombre_especialidad } = req.body;
 
     if (!nombre_especialidad || !especialidadId) {
-      return res
-        .status(400)
-        .json({ error: "El campo nombre_especialidad es requerido" });
+      return enviarSolicitudInvalida(res, "El campo nombre_especialidad es requerido");
     }
 
     const especialidadExiste = await Especialidad.query()
       .where({ id_especialidad: especialidadId })
       .first();
 
-          
+    if (!especialidadExiste) {
+      return enviarNoEncontrado(res, "Especialidad");
+    }
+
     const existente = await Especialidad.query()
       .where({
         company_id: especialidadExiste.company_id,
@@ -82,22 +84,15 @@ async function updateEspecialidadAsAdmin(req, res) {
       .first();
 
     if (existente) {
-      return res
-        .status(409)
-        .json({ error: "La especialidad ya existe para esta empresa" });
+      return enviarConflicto(res, "La especialidad ya existe para esta empresa");
     }
 
-    if (!especialidadExiste) {
-      return res.status(404).json({ error: "Especialidad no encontrada" });
-    } else {
-      await Especialidad.query()
-        .where({ id_especialidad: especialidadId })
-        .update({
-          nombre_especialidad: nombre_especialidad,
-          company_id: especialidadExiste.company_id,
-        });
-    }
-
+    await Especialidad.query()
+      .where({ id_especialidad: especialidadId })
+      .update({
+        nombre_especialidad: nombre_especialidad,
+        company_id: especialidadExiste.company_id,
+      });
 
     /*LOGGER*/ await registrarNuevoLog(
       especialidadExiste.company_id,
@@ -106,30 +101,27 @@ async function updateEspecialidadAsAdmin(req, res) {
         " (Ejecutado por Sistema)."
     );
 
-    return res.status(200).json({
-      success: true,
-      message: "Especialidad actualizada correctamente",
-    });
+    return enviarExito(res, "Especialidad actualizada correctamente");
   } catch (error) {
-    return res.status(500).json({ error: "Error interno del servidor" });
+    return enviarError(res, "Error interno del servidor", 500);
   }
 }
 
-// ---------------------------------------------------------
-// Get all especialidades
-// ---------------------------------------------------------
+// -----------------
+// OBTENER TODAS LAS ESPECIALIDADES
+// -----------------
 async function getAllEspecialidadesAsAdmin(req, res) {
   try {
     const especialidades = await Especialidad.query().select("*");
-    return res.json(especialidades);
+    return enviarLista(res, especialidades);
   } catch (error) {
-    return res.status(500).json({ error: "Error interno del servidor" });
+    return enviarError(res, "Error interno del servidor", 500);
   }
 }
 
-// ---------------------------------------------------------
-// Get all especialidades by company
-// ---------------------------------------------------------
+// -----------------
+// OBTENER ESPECIALIDADES POR EMPRESA
+// -----------------
 async function getAllEspecialidadesByCompanyAsAdmin(req, res) {
   try {
     const { company_id } = req.params;
@@ -137,23 +129,21 @@ async function getAllEspecialidadesByCompanyAsAdmin(req, res) {
     const especialidades = await Especialidad.query()
       .where({ company_id })
       .select("*");
-    return res.json(especialidades);
+    return enviarLista(res, especialidades);
   } catch (error) {
-    return res.status(500).json({ error: "Error interno del servidor" });
+    return enviarError(res, "Error interno del servidor", 500);
   }
 }
 
-// ---------------------------------------------------------
-// Disable Especialidad
-// ---------------------------------------------------------
+// -----------------
+// DESACTIVAR ESPECIALIDAD
+// -----------------
 async function disableEspecialidadAsAdmin(req, res) {
   try {
     const { especialidadId } = req.params;
 
     if (!especialidadId) {
-      return res
-        .status(400)
-        .json({ error: "El campo id_especialidad es requerido" });
+      return enviarSolicitudInvalida(res, "El campo id_especialidad es requerido");
     }
 
     const especialidadExiste = await Especialidad.query()
@@ -161,13 +151,11 @@ async function disableEspecialidadAsAdmin(req, res) {
       .first();
 
     if (!especialidadExiste) {
-      return res.status(404).json({ error: "Especialidad no encontrada" });
+      return enviarNoEncontrado(res, "Especialidad");
     }
 
     if (especialidadExiste.estado_especialidad === 0) {
-      return res
-        .status(400)
-        .json({ error: "Especialidad ya esta desactivada" });
+      return enviarSolicitudInvalida(res, "Especialidad ya esta desactivada");
     }
 
     await Especialidad.query()
@@ -185,26 +173,21 @@ async function disableEspecialidadAsAdmin(req, res) {
         " (Ejecutado por Sistema)."
     );
 
-    return res.status(200).json({
-      success: true,
-      message: "Especialidad desactivada correctamente",
-    });
+    return enviarExito(res, "Especialidad desactivada correctamente");
   } catch (error) {
-    return res.status(500).json({ error: "Error interno del servidor" });
+    return enviarError(res, "Error interno del servidor", 500);
   }
 }
 
-// ---------------------------------------------------------
-// Enable Especialidad
-// ---------------------------------------------------------
+// -----------------
+// ACTIVAR ESPECIALIDAD
+// -----------------
 async function enableEspecialidadAsAdmin(req, res) {
   try {
     const { especialidadId } = req.params;
 
     if (!especialidadId) {
-      return res
-        .status(400)
-        .json({ error: "El campo id_especialidad es requerido" });
+      return enviarSolicitudInvalida(res, "El campo id_especialidad es requerido");
     }
 
     const especialidadExiste = await Especialidad.query()
@@ -212,11 +195,11 @@ async function enableEspecialidadAsAdmin(req, res) {
       .first();
 
     if (!especialidadExiste) {
-      return res.status(404).json({ error: "Especialidad no encontrada" });
+      return enviarNoEncontrado(res, "Especialidad");
     }
 
     if (especialidadExiste.estado_especialidad === 1) {
-      return res.status(400).json({ error: "Especialidad ya esta activada" });
+      return enviarSolicitudInvalida(res, "Especialidad ya esta activada");
     }
 
     await Especialidad.query()
@@ -234,39 +217,32 @@ async function enableEspecialidadAsAdmin(req, res) {
         " (Ejecutado por Sistema)."
     );
 
-    return res.status(200).json({
-      success: true,
-      message: "Especialidad activada correctamente",
-    });
+    return enviarExito(res, "Especialidad activada correctamente");
   } catch (error) {
-    return res.status(500).json({ error: "Error interno del servidor" });
+    return enviarError(res, "Error interno del servidor", 500);
   }
 }
 
-// ==========================================================
-// ==========================================================
-// ==========================================================
-// ==========================================================
-// ==========================================================
-// ==========================================================
-// ==========================================================
-
+// -----------------
 // CONTROLADORES PARA USER:
-// ---------------------------------------------------------
-// Get all especialidades
-// ---------------------------------------------------------
+// -----------------
+
+// -----------------
+// OBTENER TODAS LAS ESPECIALIDADES
+// -----------------
 async function getAllEspecialidades(req, res) {
   try {
     const company_id = req.user?.company_id;
     const especialidades = await Especialidad.query().where({ company_id });
-    return res.json(especialidades);
+    return enviarLista(res, especialidades);
   } catch (error) {
-    return res.status(500).json({ error: "Error interno del servidor" });
+    return enviarError(res, "Error interno del servidor", 500);
   }
 }
-// ---------------------------------------------------------
-// Crear especialidad
-// ---------------------------------------------------------
+
+// -----------------
+// CREAR ESPECIALIDAD
+// -----------------
 async function createEspecialidadAsClient(req, res) {
   let limiteEspecialidades;
   let currentTotalEspecialidades;
@@ -276,9 +252,7 @@ async function createEspecialidadAsClient(req, res) {
     const comp_id = req.user?.company_id;
 
     if (!nombre_especialidad) {
-      return res
-        .status(400)
-        .json({ error: "nombre_especialidad son requeridos" });
+      return enviarSolicitudInvalida(res, "nombre_especialidad son requeridos");
     }
 
     const existing = await Especialidad.query()
@@ -286,9 +260,7 @@ async function createEspecialidadAsClient(req, res) {
       .first();
 
     if (existing) {
-      return res
-        .status(409)
-        .json({ error: "La especialidad ya existe para esta empresa" });
+      return enviarConflicto(res, "La especialidad ya existe para esta empresa");
     }
 
     limiteEspecialidades = await companyController.getLimitEspecialidades(
@@ -298,9 +270,7 @@ async function createEspecialidadAsClient(req, res) {
     currentTotalEspecialidades = await getCurrentTotalEspecialidades(comp_id);
 
     if (currentTotalEspecialidades >= limiteEspecialidades) {
-      return res
-        .status(400)
-        .json({ error: "Has alcanzado el limite de especialidades" });
+      return enviarSolicitudInvalida(res, "Has alcanzado el limite de especialidades");
     }
 
     await Especialidad.query().insert({
@@ -317,17 +287,15 @@ async function createEspecialidadAsClient(req, res) {
         ")."
     );
 
-    return res
-      .status(201)
-      .json({ success: true, message: "Especialidad creada correctamente" });
+    return enviarExito(res, "Especialidad creada correctamente", 201);
   } catch (error) {
-    return res.status(500).json({ error: "Error interno del servidor" });
+    return enviarError(res, "Error interno del servidor", 500);
   }
 }
 
-// ---------------------------------------------------------
-// Update especialidad
-// ---------------------------------------------------------
+// -----------------
+// ACTUALIZAR ESPECIALIDAD
+// -----------------
 async function updateEspecialidadAsClient(req, res) {
   try {
     const { especialidadId } = req.params;
@@ -335,9 +303,7 @@ async function updateEspecialidadAsClient(req, res) {
     const company_id = req.user?.company_id;
 
     if (!nombre_especialidad) {
-      return res
-        .status(400)
-        .json({ error: "El campo nombre_especialidad es requerido" });
+      return enviarSolicitudInvalida(res, "El campo nombre_especialidad es requerido");
     }
 
     const especialidad = await Especialidad.query()
@@ -345,7 +311,7 @@ async function updateEspecialidadAsClient(req, res) {
       .where("company_id", company_id);
 
     if (!especialidad) {
-      return res.status(404).json({ error: "Especialidad no encontrada" });
+      return enviarNoEncontrado(res, "Especialidad");
     }
 
     const existente = await Especialidad.query()
@@ -357,9 +323,7 @@ async function updateEspecialidadAsClient(req, res) {
       .first();
 
     if (existente) {
-      return res
-        .status(409)
-        .json({ error: "Ya existe una especialidad con ese nombre" });
+      return enviarConflicto(res, "Ya existe una especialidad con ese nombre");
     }
 
     await Especialidad.query().patchAndFetchById(especialidadId, {
@@ -375,18 +339,15 @@ async function updateEspecialidadAsClient(req, res) {
         ")."
     );
 
-    return res.status(200).json({
-      success: true,
-      message: "Especialidad actualizada correctamente",
-    });
+    return enviarExito(res, "Especialidad actualizada correctamente");
   } catch (error) {
-    return res.status(500).json({ error: "Error interno del servidor" });
+    return enviarError(res, "Error interno del servidor", 500);
   }
 }
 
-// ---------------------------------------------------------
-// Disable espacialidad
-// ---------------------------------------------------------
+// -----------------
+// DESACTIVAR ESPECIALIDAD
+// -----------------
 async function disableEspecialidadAsClient(req, res) {
   const company_id = req.user?.company_id;
 
@@ -398,13 +359,11 @@ async function disableEspecialidadAsClient(req, res) {
       .where("company_id", company_id);
 
     if (!especialidadToManage) {
-      return res.status(404).json({ error: "Especialidad no encontrada" });
+      return enviarNoEncontrado(res, "Especialidad");
     }
 
     if (especialidadToManage.estado_especialidad === 0) {
-      return res
-        .status(400)
-        .json({ error: "Especialidad ya esta desactivada" });
+      return enviarSolicitudInvalida(res, "Especialidad ya esta desactivada");
     }
 
     await Especialidad.query().patchAndFetchById(especialidadId, {
@@ -422,18 +381,15 @@ async function disableEspecialidadAsClient(req, res) {
         ")."
     );
 
-    return res.status(200).json({
-      success: true,
-      message: "Especialidad desactivada correctamente",
-    });
+    return enviarExito(res, "Especialidad desactivada correctamente");
   } catch (error) {
-    return res.status(500).json({ error: "Error interno del servidor" });
+    return enviarError(res, "Error interno del servidor", 500);
   }
 }
 
-// ---------------------------------------------------------
-// Disable espacialidad
-// ---------------------------------------------------------
+// -----------------
+// ACTIVAR ESPECIALIDAD
+// -----------------
 async function enableEspecialidadAsClient(req, res) {
   const company_id = req.user?.company_id;
 
@@ -445,11 +401,11 @@ async function enableEspecialidadAsClient(req, res) {
       .where("company_id", company_id);
 
     if (!especialidadToManage) {
-      return res.status(404).json({ error: "Especialidad no encontrada" });
+      return enviarNoEncontrado(res, "Especialidad");
     }
 
     if (especialidadToManage.estado_especialidad === 1) {
-      return res.status(400).json({ error: "Especialidad ya esta activada" });
+      return enviarSolicitudInvalida(res, "Especialidad ya esta activada");
     }
 
     await Especialidad.query().patchAndFetchById(especialidadId, {
@@ -467,19 +423,19 @@ async function enableEspecialidadAsClient(req, res) {
         ")."
     );
 
-    return res.status(200).json({
-      success: true,
-      message: "Especialidad activada correctamente",
-    });
+    return enviarExito(res, "Especialidad activada correctamente");
   } catch (error) {
-    return res.status(500).json({ error: "Error interno del servidor" });
+    return enviarError(res, "Error interno del servidor", 500);
   }
 }
 
-// ==========================================================
+// -----------------
 // HELPERS
-// ==========================================================
-// Obtener total de operadores actual por empresa
+// -----------------
+
+// -----------------
+// OBTENER TOTAL DE ESPECIALIDADES ACTUALES POR EMPRESA
+// -----------------
 async function getCurrentTotalEspecialidades(company_id) {
   const result = await Especialidad.query()
     .where({ company_id })

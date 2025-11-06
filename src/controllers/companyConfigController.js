@@ -1,10 +1,17 @@
+// -----------------
+// CONTROLADOR DE CONFIGURACIÓN DE EMPRESA
+// -----------------
 const CompaniesConfig = require("../models/CompaniesConfig");
 const { registrarNuevoLog } = require("../controllers/globalLogController");
+const { enviarExito, enviarError, enviarNoEncontrado, enviarSolicitudInvalida } = require("../helpers/responseHelpers");
 
+// -----------------
 // CONTROLADORES PARA ADMIN:
-// ---------------------------------------------------------
-// Set configuración de empresa
-// ---------------------------------------------------------
+// -----------------
+
+// -----------------
+// CREAR CONFIGURACIÓN DE EMPRESA
+// -----------------
 async function createCompanyConfigAsAdmin(data) {
   try {
     const companyConfig = await CompaniesConfig.query().insert(data);
@@ -14,53 +21,51 @@ async function createCompanyConfigAsAdmin(data) {
   }
 }
 
-// CONTROLADORES PARA CLIENT:
-// ---------------------------------------------------------
-// Get configuración de empresa para Owner
-// ---------------------------------------------------------
+// -----------------
+// CONTROLADORES PARA USUARIO COMUN (CON SUS ROLES):
+// -----------------
+
+// -----------------
+// OBTENER CONFIGURACIÓN DE EMPRESA PARA OWNER
+// -----------------
 async function getCompanySettingsByClientForOwner(req, res) {
   const company_id = req.user.company_id;
 
   try {
-    // const companyConfig = await CompaniesConfig.query()
-    //   .findOne({ company_id })
-    // .withGraphFetched("company");
     const companyConfig = await fetchCompanySettingsByCompanyId(company_id);
 
     if (!companyConfig) {
-      return res
-        .status(404)
-        .json({ error: "Configuración de empresa no encontrada" });
+      return enviarNoEncontrado(res, "Configuración de empresa");
     }
 
     return res.json(companyConfig);
   } catch (error) {
-    return res.status(500).json({ error: "Error interno del servidor" });
+    return enviarError(res, "Error interno del servidor", 500);
   }
 }
-// ---------------------------------------------------------
 
-// Get configuración de empresa
-// ---------------------------------------------------------
+// -----------------
+// OBTENER CONFIGURACIÓN DE EMPRESA
+// -----------------
 async function getCompanySettingsByClient(req, res) {
   const company_id = req.user.company_id;
 
   try {
-    // const companyConfig = await CompaniesConfig.query().findOne({ company_id });
     const companyConfig = await fetchCompanySettingsByCompanyId(company_id);
 
     if (!companyConfig) {
-      return res
-        .status(404)
-        .json({ error: "Configuración de empresa no encontrada" });
+      return enviarNoEncontrado(res, "Configuración de empresa");
     }
 
     return res.json(companyConfig);
   } catch (error) {
-    return res.status(500).json({ error: "Error interno del servidor" });
+    return enviarError(res, "Error interno del servidor", 500);
   }
 }
 
+// -----------------
+// ACTUALIZAR CONFIGURACIÓN DE EMPRESA
+// -----------------
 async function updateCompanySettingsByClient(req, res) {
   const company_id = req.user.company_id;
   const data = { ...req.body };
@@ -89,9 +94,7 @@ async function updateCompanySettingsByClient(req, res) {
   for (const field of requiredNonEmptyFields) {
     if (field in data) {
       if (typeof data[field] === "string" && data[field].trim() === "") {
-        return res
-          .status(400)
-          .json({ error: `Se han recibido campos vacios. Revalidar` });
+        return enviarSolicitudInvalida(res, "Se han recibido campos vacios. Revalidar");
       }
     }
   }
@@ -122,7 +125,7 @@ async function updateCompanySettingsByClient(req, res) {
       .where("company_id", company_id);
 
     if (updatedCount === 0) {
-      return res.status(404).json({ error: "Configuración no encontrada." });
+      return enviarNoEncontrado(res, "Configuración");
     }
 
     const updatedConfig = await CompaniesConfig.query().findOne({ company_id });
@@ -135,26 +138,28 @@ async function updateCompanySettingsByClient(req, res) {
         ` (Ejecutado por ${req.user.user_name}).`
     );
 
-    res
-      .status(200)
-      .json({ success: true, message: "Configuración actualizada." });
+    return enviarExito(res, "Configuración actualizada.");
   } catch (error) {
-    res.status(500).json({ error: "Error interno del servidor." });
+    return enviarError(res, "Error interno del servidor.", 500);
   }
 }
 
-// ---------------------------------------------------------
+// -----------------
 // HELPERS
-// ---------------------------------------------------------
-// Metodo reutilizable para obtener
+// -----------------
+
+// -----------------
+// OBTENER CONFIGURACIÓN DE EMPRESA POR ID
+// -----------------
 async function fetchCompanySettingsByCompanyId(company_id) {
   return CompaniesConfig.query()
     .findOne({ company_id })
     .withGraphFetched("company");
 }
 
-// metodo para pluralizar
-// PENDIENTE: Revisar bien esto y hacer muchos experimentos
+// -----------------
+// CONVERTIR PALABRA A PLURAL
+// -----------------
 function convertirAPlural(word) {
   if (!word || typeof word !== "string") return word;
   const lower = word.toLowerCase();

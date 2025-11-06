@@ -1,40 +1,51 @@
-const ClienteRecurrente = require("../models/ClienteRecurrente");
-const Company = require("../models/Company");
-const companyConfigController = require("./companyConfigController");
+// -----------------
+// CONTROLADOR DE CLIENTES RECURRENTES
+// -----------------
 
+const companyConfigController = require("./companyConfigController");
+const Company = require("../models/Company");
+const ClienteRecurrente = require("../models/ClienteRecurrente");
+const { enviarLista, enviarExito, enviarError, enviarNoEncontrado, enviarSolicitudInvalida, enviarConflicto } = require("../helpers/responseHelpers");
+const { obtenerPorId } = require("../helpers/registroHelpers");
+
+// -----------------
 // CONTROLADORES PARA ADMIN:
-// ---------------------------------------------------------
-// Obtener clientes recurrentes
-// ---------------------------------------------------------
+// -----------------
+
+// -----------------
+// OBTENER TODOS LOS CLIENTES RECURRENTES
+// -----------------
 async function getAllClientesRecurrentesAsAdmin(req, res) {
   try {
     const clientesRecurrentes = await ClienteRecurrente.query();
-    return res.json(clientesRecurrentes);
+    return enviarLista(res, clientesRecurrentes);
   } catch (error) {
-    return res.status(500).json({ error: "Error interno del servidor" });
+    return enviarError(res, "Error interno del servidor", 500);
   }
 }
 
-// CONTROLADORES PARA CLIENTE:
-// ---------------------------------------------------------
-// Obtener clientes recurrentes
-// ---------------------------------------------------------
+// -----------------
+// CONTROLADORES PARA USUARIO COMUN (CON SUS ROLES)E:
+// -----------------
+
+// -----------------
+// OBTENER CLIENTES RECURRENTES DE LA EMPRESA
+// -----------------
 async function getAllClientesRecurrentesAsClient(req, res) {
   const company_id = req.user.company_id;
   try {
     const clientesRecurrentes = await ClienteRecurrente.query().where({
       company_id,
     });
-    return res.json(clientesRecurrentes);
+    return enviarLista(res, clientesRecurrentes);
   } catch (error) {
-    return res.status(500).json({ error: "Error interno del servidor" });
+    return enviarError(res, "Error interno del servidor", 500);
   }
 }
 
-// ---------------------------------------------------------
-// Crear cliente recurrente
-// ---------------------------------------------------------
-
+// -----------------
+// CREAR CLIENTE RECURRENTE
+// -----------------
 async function createClienteRecurrenteAsClient(req, res) {
   const company_id = req.user.company_id;
   const {
@@ -48,18 +59,16 @@ async function createClienteRecurrenteAsClient(req, res) {
   } = req.body;
 
   try {
-    const company = await Company.query().findById(company_id);
+    const company = await obtenerPorId(Company, company_id);
     if (!company) {
-      return res.status(400).json({ error: "No existe empresa bajo ese ID" });
+      return enviarSolicitudInvalida(res, "No existe empresa bajo ese ID");
     }
 
     const requiereDomicilio =
       await companyConfigController.fetchCompanySettingsByCompanyId(company_id);
 
     if (requiereDomicilio.requiere_domicilio && !cliente_direccion) {
-      return res
-        .status(400)
-        .json({ error: "El campo domicilio es obligatorio." });
+      return enviarSolicitudInvalida(res, "El campo domicilio es obligatorio.");
     }
     if (
       !cliente_complete_name ||
@@ -70,11 +79,7 @@ async function createClienteRecurrenteAsClient(req, res) {
       (requiereDomicilio.requiere_domicilio && !cliente_lat) ||
       (requiereDomicilio.requiere_domicilio && !cliente_lng)
     ) {
-      return res.status(400).json({
-        status: 400,
-        error:
-          "Los campos cliente_complete_name, cliente_dni, cliente_phone, cliente_email, cliente_direccion, cliente_lat y cliente_lng son obligatorios.",
-      });
+      return enviarSolicitudInvalida(res, "Los campos cliente_complete_name, cliente_dni, cliente_phone, cliente_email, cliente_direccion, cliente_lat y cliente_lng son obligatorios.");
     }
 
     const clienteExiste = await ClienteRecurrente.query()
@@ -87,12 +92,10 @@ async function createClienteRecurrenteAsClient(req, res) {
       .first();
 
     if (clienteExiste) {
-      return res
-        .status(400)
-        .json({ error: "Ya existe un cliente recurrente con ese DNI o email" });
+      return enviarConflicto(res, "Ya existe un cliente recurrente con ese DNI o email");
     }
 
-    const clienteRecurrente = await ClienteRecurrente.query().insertAndFetch({
+    await ClienteRecurrente.query().insertAndFetch({
       company_id,
       cliente_complete_name,
       cliente_dni,
@@ -103,19 +106,16 @@ async function createClienteRecurrenteAsClient(req, res) {
       cliente_lng,
     });
 
-    return res.status(200).json({
-      success: true,
-      message: "Cliente recurrente creado correctamente",
-    });
+    return enviarExito(res, "Cliente recurrente creado correctamente");
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: "Error interno del servidor" });
+    return enviarError(res, "Error interno del servidor", 500);
   }
 }
 
-//  ---------------------------------------------------------
-// Actualizar cliente recurrente
-// ---------------------------------------------------------
+// -----------------
+// ACTUALIZAR CLIENTE RECURRENTE
+// -----------------
 async function editarClienteAsClient(req, res) {
   const company_id = req.user.company_id;
   const { cliente_id } = req.params;
@@ -138,7 +138,7 @@ async function editarClienteAsClient(req, res) {
       .first();
 
     if (!cliente) {
-      return res.status(404).json({ error: "Cliente no encontrado" });
+      return enviarNoEncontrado(res, "Cliente");
     }
 
     // Construyo objeto con solo los campos válidos y no vacíos
@@ -149,9 +149,7 @@ async function editarClienteAsClient(req, res) {
 
         // Valido que no sea null, undefined ni string vacío
         if (valor === null || valor === undefined || valor === "") {
-          return res.status(400).json({
-            error: `El campo '${campo}' no puede estar vacío si se envía.`,
-          });
+          return enviarSolicitudInvalida(res, `El campo '${campo}' no puede estar vacío si se envía.`);
         }
 
         datosActualizables[campo] = valor;
@@ -160,28 +158,23 @@ async function editarClienteAsClient(req, res) {
 
     // Si no se envió ningún campo válido, corto
     if (Object.keys(datosActualizables).length === 0) {
-      return res
-        .status(400)
-        .json({ error: "No se enviaron campos para actualizar." });
+      return enviarSolicitudInvalida(res, "No se enviaron campos para actualizar.");
     }
 
     await ClienteRecurrente.query()
       .patch(datosActualizables)
       .where({ cliente_id, company_id });
 
-    return res.status(200).json({
-      success: true,
-      message: "Cliente actualizado correctamente",
-    });
+    return enviarExito(res, "Cliente actualizado correctamente");
   } catch (error) {
     console.error("editarCliente error:", error);
-    return res.status(500).json({ error: "Error interno del servidor" });
+    return enviarError(res, "Error interno del servidor", 500);
   }
 }
 
-// ---------------------------------------------------------
-// Desactivar cliente recurrente
-// ---------------------------------------------------------
+// -----------------
+// DESACTIVAR CLIENTE RECURRENTE
+// -----------------
 async function desactivarClienteAsClient(req, res) {
   const company_id = req.user.company_id;
   const { cliente_id } = req.params;
@@ -192,27 +185,23 @@ async function desactivarClienteAsClient(req, res) {
       .first();
 
     if (!cliente) {
-      return res.status(404).json({ error: "Cliente no encontrado" });
+      return enviarNoEncontrado(res, "Cliente");
     }
 
     await ClienteRecurrente.query()
       .patch({ cliente_active: false })
       .where({ cliente_id, company_id });
 
-    return res.status(200).json({
-      success: true,
-      message: "Cliente desactivado correctamente",
-    });
+    return enviarExito(res, "Cliente desactivado correctamente");
   } catch (error) {
     console.error("desactivarCliente error:", error);
-    return res.status(500).json({ error: "Error interno del servidor" });
+    return enviarError(res, "Error interno del servidor", 500);
   }
 }
 
-// ---------------------------------------------------------
-// Activar cliente recurrente
-// ---------------------------------------------------------
-
+// -----------------
+// ACTIVAR CLIENTE RECURRENTE
+// -----------------
 async function activarClienteAsClient(req, res) {
   const company_id = req.user.company_id;
   const { cliente_id } = req.params;
@@ -223,20 +212,17 @@ async function activarClienteAsClient(req, res) {
       .first();
 
     if (!cliente) {
-      return res.status(404).json({ error: "Cliente no encontrado" });
+      return enviarNoEncontrado(res, "Cliente");
     }
 
     await ClienteRecurrente.query()
       .patch({ cliente_active: true })
       .where({ cliente_id, company_id });
 
-    return res.status(200).json({
-      success: true,
-      message: "Cliente activado correctamente",
-    });
+    return enviarExito(res, "Cliente activado correctamente");
   } catch (error) {
     console.error("activarCliente error:", error);
-    return res.status(500).json({ error: "Error interno del servidor" });
+    return enviarError(res, "Error interno del servidor", 500);
   }
 }
 

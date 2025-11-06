@@ -13,7 +13,6 @@ const profesionalEspecialidadController = require("../controllers/profesionalEsp
 
 const reclamoController = require("../controllers/reclamoController");
 const clientesRecurrentesController = require("../controllers/clientesRecurrentesController");
-const agendaBloquedaController = require("../controllers/agendaBloquedaController");
 const agendaReclamoController = require("../controllers/agendaReclamoController");
 const disponibilidadController = require("../controllers/disponibilidadController");
 
@@ -182,12 +181,6 @@ router.put(
   clientesRecurrentesController.desactivarClienteAsClient
 );
 
-// Bloqueo de horarios en agenda
-router.get(
-  "/agenda",
-  authUserWithStatus("owner", "operador"),
-  agendaBloquedaController.getAllAgendaBloqueadaAsClient
-);
 
 router.get(
   "/reclamos/agendaReclamo",
@@ -195,14 +188,9 @@ router.get(
   agendaReclamoController.getAgendaReclamo
 );
 router.post(
-  "/agendaBloqueada/:user_id",
+  "/disponibilidad/:user_id",
   authUserWithStatus("owner", "operador"),
   disponibilidadController.getDisponibilidadBloqueadaByProfesioanlAsAdmin
-);
-router.post(
-  "/agenda/:user_id",
-  authUserWithStatus("owner", "operador"),
-  agendaBloquedaController.createAgendaBloqueadaAsClient
 );
 
 // Reclamos como owner / operador
@@ -250,17 +238,6 @@ router.put(
   reclamoController.updateReclamoAsProfesional
 );
 
-// bloqueo manual de agenda
-router.post(
-  "/profesional/agenda",
-  authUserWithStatus("profesional"),
-  agendaBloquedaController.createAgendaBloqueadaAsProfesional
-);
-router.get(
-  "/agenda/vista/profesional",
-  authUserWithStatus("owner", "operador", "profesional"),
-  agendaBloquedaController.getAllAgendaBloqueadaAsProfesional
-);
 
 // deshabilita/habilita la poisibilidad de recibir trabajo
 router.get(
@@ -554,7 +531,7 @@ module.exports = router;
  *             properties:
  *               requiere_domicilio:
  *                 type: boolean
- *                 description: Requiere domicilio para clientes
+ *                 description: Requiere domicilio PARA USUARIO COMUN (CON SUS ROLES)es
  *                 example: true
  *               requiere_url:
  *                 type: boolean
@@ -1347,29 +1324,12 @@ module.exports = router;
 
 /**
  * @swagger
- * /customersApi/agenda:
- *   get:
- *     summary: AGENDA - Listar agenda bloqueada
- *     description: Obtiene la agenda bloqueada de la empresa (Owner/Operador)
- *     tags:
- *       - Customer API - AGENDA
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Agenda bloqueada obtenida exitosamente
- *       500:
- *         description: Error interno del servidor
- */
-
-/**
- * @swagger
- * /customersApi/agendaBloqueada/{user_id}:
+ * /customersApi/disponibilidad/{user_id}:
  *   post:
- *     summary: AGENDA - Obtener disponibilidad bloqueada por profesional
+ *     summary: DISPONIBILIDAD - Obtener disponibilidad por profesional
  *     description: Obtiene la disponibilidad bloqueada de un profesional (Owner/Operador)
  *     tags:
- *       - Customer API - AGENDA
+ *       - Customer API - DISPONIBILIDAD
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -1381,125 +1341,7 @@ module.exports = router;
  *         example: 1
  *     responses:
  *       200:
- *         description: Disponibilidad bloqueada obtenida exitosamente
- *       500:
- *         description: Error interno del servidor
- */
-
-/**
- * @swagger
- * /customersApi/agenda/{user_id}:
- *   post:
- *     summary: AGENDA - Crear bloqueo (Owner/Operador)
- *     description: Crea un bloqueo de agenda para un profesional
- *     tags:
- *       - Customer API - AGENDA
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: user_id
- *         required: true
- *         schema:
- *           type: integer
- *         example: 1
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - agenda_fecha
- *               - agenda_hora_desde
- *               - agenda_hora_hasta
- *             properties:
- *               agenda_fecha:
- *                 type: string
- *                 format: date
- *                 description: "* Fecha del bloqueo"
- *                 example: "2024-01-15"
- *               agenda_hora_desde:
- *                 type: string
- *                 description: "* Hora de inicio"
- *                 example: "09:00"
- *               agenda_hora_hasta:
- *                 type: string
- *                 description: "* Hora de fin"
- *                 example: "10:00"
- *               agenda_notas:
- *                 type: string
- *                 description: Notas del bloqueo
- *                 example: "Reunión importante"
- *     responses:
- *       201:
- *         description: Bloqueo creado exitosamente
- *       400:
- *         description: Datos obligatorios faltantes
- *       500:
- *         description: Error interno del servidor
- */
-
-/**
- * @swagger
- * /customersApi/profesional/agenda:
- *   post:
- *     summary: AGENDA - Crear bloqueo (Profesional)
- *     description: Permite al profesional crear bloqueos en su propia agenda
- *     tags:
- *       - Customer API - AGENDA
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - agenda_fecha
- *               - agenda_hora_desde
- *               - agenda_hora_hasta
- *             properties:
- *               agenda_fecha:
- *                 type: string
- *                 format: date
- *                 description: "* Fecha del bloqueo"
- *                 example: "2024-01-15"
- *               agenda_hora_desde:
- *                 type: string
- *                 description: "* Hora de inicio"
- *                 example: "09:00"
- *               agenda_hora_hasta:
- *                 type: string
- *                 description: "* Hora de fin"
- *                 example: "10:00"
- *               agenda_notas:
- *                 type: string
- *                 description: Notas del bloqueo
- *                 example: "Descanso personal"
- *     responses:
- *       201:
- *         description: Bloqueo creado exitosamente
- *       400:
- *         description: Datos obligatorios faltantes
- *       500:
- *         description: Error interno del servidor
- */
-
-/**
- * @swagger
- * /customersApi/agenda/vista/profesional:
- *   get:
- *     summary: AGENDA - Vista de agenda para profesional
- *     description: Obtiene la vista de agenda bloqueada (Todos los roles)
- *     tags:
- *       - Customer API - AGENDA
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Vista de agenda obtenida exitosamente
+ *         description: Disponibilidad obtenida exitosamente
  *       500:
  *         description: Error interno del servidor
  */

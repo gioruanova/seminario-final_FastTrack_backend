@@ -1,42 +1,59 @@
+// -----------------
+// CONTROLADOR DE CATEGORÍAS DE MENSAJES PÚBLICOS
+// -----------------
 const PublicMessageCategory = require("../../models/cfv/PublicMessageCategory");
+const { enviarLista, enviarExito, enviarError, enviarNoEncontrado, enviarSolicitudInvalida, enviarConflicto } = require("../../helpers/responseHelpers");
+const { obtenerPorId } = require("../../helpers/registroHelpers");
 
+// -----------------
 // CONTROLADORES ADMIN:
-// ---------------------------------------------------------
-// Ver todas las categorias de mensajes
-// ---------------------------------------------------------
+// -----------------
+
+// -----------------
+// OBTENER TODAS LAS CATEGORÍAS DE MENSAJES
+// -----------------
 async function getAllMessagesCategoriesAsAdmin(req, res) {
   try {
-    const categories = await PublicMessageCategory.query().where("category_status", true).select("*");
-    return res.json(categories);
+    const categories = await PublicMessageCategory.query()
+      .where("category_status", true)
+      .select("*");
+    return enviarLista(res, categories);
   } catch (error) {
-     
-    return res.status(500).json({ error: "Error al obtener las categorias" });
+    return enviarError(res, "Error al obtener las categorias", 500);
   }
 }
 
+// -----------------
+// OBTENER TODAS LAS CATEGORÍAS DE MENSAJES (PÚBLICO)
+// -----------------
 async function getAllMessagesCategoriesAsPublic(req, res) {
   try {
-    const categories = await PublicMessageCategory.query().select("*").where("category_status", true);
-    return res.json(categories);
+    const categories = await PublicMessageCategory.query()
+      .select("*")
+      .where("category_status", true);
+    return enviarLista(res, categories);
   } catch (error) {
-     
-    return res.status(500).json({ error: "Error al obtener las categorias" });
+    return enviarError(res, "Error al obtener las categorias", 500);
   }
 }
 
-// ---------------------------------------------------------
-// Crear nueva categoria de mensajes
-// ---------------------------------------------------------
+// -----------------
+// CREAR NUEVA CATEGORÍA DE MENSAJES
+// -----------------
 async function createMessageCategoryAsAdmin(req, res) {
   try {
     const { category_name } = req.body;
+
+    if (!category_name) {
+      return enviarSolicitudInvalida(res, "category_name es requerido");
+    }
 
     const validateCategory = await PublicMessageCategory.query()
       .select("*")
       .where({ category_name });
 
     if (validateCategory.length > 0) {
-      return res.status(400).json({ error: "La categoria ya existe" });
+      return enviarConflicto(res, "La categoria ya existe");
     }
 
     const newCategory = await PublicMessageCategory.query().insert({
@@ -44,31 +61,26 @@ async function createMessageCategoryAsAdmin(req, res) {
     });
     return res.status(200).json(newCategory);
   } catch (error) {
-     
-    return res.status(500).json({ error: "Error al crear la categoria" });
+    return enviarError(res, "Error al crear la categoria", 500);
   }
 }
 
-// ---------------------------------------------------------
-// Editar categoria de mensajes
-// ---------------------------------------------------------
+// -----------------
+// EDITAR CATEGORÍA DE MENSAJES
+// -----------------
 async function updateMessageCategoryAsAdmin(req, res) {
   try {
     const { category_id } = req.params;
     const { category_name } = req.body;
 
-    const categoriaActual = await PublicMessageCategory.query().findById(
-      category_id
-    );
+    const categoriaActual = await obtenerPorId(PublicMessageCategory, category_id);
 
     if (!categoriaActual) {
-      return res.status(404).json({ error: "Categoría no encontrada" });
+      return enviarNoEncontrado(res, "Categoría");
     }
 
     if (categoriaActual.category_name === category_name) {
-      return res
-        .status(400)
-        .json({ error: "El nombre de categoría es el mismo." });
+      return enviarSolicitudInvalida(res, "El nombre de categoría es el mismo.");
     }
 
     const categoriaDuplicada = await PublicMessageCategory.query()
@@ -77,102 +89,90 @@ async function updateMessageCategoryAsAdmin(req, res) {
       .first();
 
     if (categoriaDuplicada) {
-      return res.status(400).json({ error: "La categoría ya existe." });
+      return enviarConflicto(res, "La categoría ya existe.");
     }
 
     await PublicMessageCategory.query()
       .patch({ category_name })
       .where({ category_id });
 
-    return res
-      .status(200)
-      .json({ success: true, message: "Categoría editada correctamente." });
+    return enviarExito(res, "Categoría editada correctamente.");
   } catch (error) {
-     
-    return res.status(500).json({ error: "Error al editar la categoría" });
+    return enviarError(res, "Error al editar la categoría", 500);
   }
 }
 
-// ---------------------------------------------------------
-// Desactivar una categoria
-// ---------------------------------------------------------
+// -----------------
+// DESACTIVAR CATEGORÍA
+// -----------------
 async function disableMessageCategoryAsAdmin(req, res) {
   try {
     const { category_id } = req.params;
-    const category = await PublicMessageCategory.query().findById(category_id);
-    if (!category) {
-      return res.status(404).json({ error: "Categoría no encontrada" });
+    const category = await obtenerPorId(PublicMessageCategory, category_id);
 
+    if (!category) {
+      return enviarNoEncontrado(res, "Categoría");
     }
-    if (category.category_status === 0)
-      return res
-        .status(400)
-        .json({ error: "La categoría ya esta desactivada." });
+
+    if (category.category_status === 0) {
+      return enviarSolicitudInvalida(res, "La categoría ya esta desactivada.");
+    }
 
     await PublicMessageCategory.query()
       .patch({ category_status: false })
-      .where({
-        category_id,
-      });
-    return res
-      .status(200)
-      .json({ success: true, message: "Categoría desactivada correctamente." });
+      .where({ category_id });
+
+    return enviarExito(res, "Categoría desactivada correctamente.");
   } catch (error) {
-     
-    return res.status(500).json({ error: "Error al desactivar la categoría" });
+    return enviarError(res, "Error al desactivar la categoría", 500);
   }
 }
 
-// ---------------------------------------------------------
-// Reactivar una categoria
-// ---------------------------------------------------------
+// -----------------
+// REACTIVAR CATEGORÍA
+// -----------------
 async function enableMessageCategoryAsAdmin(req, res) {
   try {
     const { category_id } = req.params;
-    const category = await PublicMessageCategory.query().findById(category_id);
+    const category = await obtenerPorId(PublicMessageCategory, category_id);
+
     if (!category) {
-      return res.status(404).json({ error: "Categoría no encontrada" });
+      return enviarNoEncontrado(res, "Categoría");
     }
-    if (category.category_status === 1)
-      return res
-        .status(400)
-        .json({ error: "La categoría ya estaba activada." });
+
+    if (category.category_status === 1) {
+      return enviarSolicitudInvalida(res, "La categoría ya estaba activada.");
+    }
 
     await PublicMessageCategory.query()
       .patch({ category_status: true })
-      .where({
-        category_id,
-      });
+      .where({ category_id });
 
-    return res
-      .status(200)
-      .json({ success: true, message: "Categoría reactivada correctamente." });
+    return enviarExito(res, "Categoría reactivada correctamente.");
   } catch (error) {
-     
-    return res.status(500).json({ error: "Error al reactivar la categoría" });
+    return enviarError(res, "Error al reactivar la categoría", 500);
   }
 }
 
-// ---------------------------------------------------------
-// Borrar una categoria
-// ---------------------------------------------------------
+// -----------------
+// ELIMINAR CATEGORÍA
+// -----------------
 async function deleteCategoryMessageAsAdmin(req, res) {
   try {
     const { category_id } = req.params;
-    const category = await PublicMessageCategory.query().findById(category_id);
+    const category = await obtenerPorId(PublicMessageCategory, category_id);
+
     if (!category) {
-      return res.status(404).json({ error: "Categoría no encontrada" });
+      return enviarNoEncontrado(res, "Categoría");
     }
+
     await PublicMessageCategory.query().deleteById(category_id);
-    return res
-      .status(200)
-      .json({ success: true, message: "Categoría eliminada correctamente." });
+
+    return enviarExito(res, "Categoría eliminada correctamente.");
   } catch (error) {
-     
-    return res.status(500).json({ error: "Error al eliminar la categoría" });
+    return enviarError(res, "Error al eliminar la categoría", 500);
   }
 }
-
 
 module.exports = {
   getAllMessagesCategoriesAsAdmin,

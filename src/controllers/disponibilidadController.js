@@ -1,44 +1,41 @@
-const AgendaBloqueada = require("../models/AgendaBloqueada");
-const AgendaReclamo = require("../models/AgendaReclamo");
+// -----------------
+// CONTROLADOR DE DISPONIBILIDAD
+// -----------------
 
+const AgendaReclamo = require("../models/AgendaReclamo");
+const { enviarError, enviarExitoConDatos } = require("../helpers/responseHelpers");
+
+// -----------------
+// OBTENER DISPONIBILIDAD BLOQUEADA POR PROFESIONAL
+// -----------------
 async function getDisponibilidadBloqueadaByProfesioanlAsAdmin(req, res) {
   const companyId = req.user.company_id;
   const userId = req.params.user_id;
 
   try {
-    // Traer bloqueos manuales
-    const bloqueosManuales = await AgendaBloqueada.query()
-      .where("company_id", companyId)
-      .andWhere("profesional_id", userId);
-
     // Traer reclamos agendados (ya validados)
     const bloqueosPorReclamo = await AgendaReclamo.query()
       .where("company_id", companyId)
       .andWhere("profesional_id", userId);
 
     // Unir resultados
-    const bloqueos = [
-      ...bloqueosManuales.map((b) => ({
-        origen: "manual",
-        fecha: b.agenda_fecha,
-        desde: b.agenda_hora_desde,
-        hasta: b.agenda_hora_hasta,
-      })),
-      ...bloqueosPorReclamo.map((b) => ({
-        origen: "reclamo",
-        fecha: b.agenda_fecha,
-        desde: b.agenda_hora_desde,
-        hasta: b.agenda_hora_hasta,
-      })),
-    ];
+    const bloqueos = bloqueosPorReclamo.map((b) => ({
+      origen: "reclamo",
+      fecha: b.agenda_fecha,
+      desde: b.agenda_hora_desde,
+      hasta: b.agenda_hora_hasta,
+    }));
 
-    return res.status(200).json({ bloqueos });
+    return enviarExitoConDatos(res, { bloqueos }, "", 200);
   } catch (error) {
     console.error("Error obteniendo disponibilidad bloqueada:", error);
-    return res.status(500).json({ error: "Error interno del servidor" });
+    return enviarError(res, "Error interno del servidor", 500);
   }
 }
 
+// -----------------
+// VALIDAR DISPONIBILIDAD
+// -----------------
 async function validarDisponibilidad({
   profesional_id,
   company_id,
@@ -48,24 +45,6 @@ async function validarDisponibilidad({
 }) {
   if (!agenda_fecha || !agenda_hora_desde || !agenda_hora_hasta) {
     throw new Error("Faltan datos obligatorios para validar disponibilidad");
-  }
-
-  // Chequeo cruce en AgendaBloqueada
-  const bloqueoExistente = await AgendaBloqueada.query()
-    .where("profesional_id", profesional_id)
-    .andWhere("company_id", company_id)
-    .andWhere("agenda_fecha", agenda_fecha)
-    .andWhere((qb) => {
-      qb.where("agenda_hora_desde", "<", agenda_hora_hasta).andWhere(
-        "agenda_hora_hasta",
-        ">",
-        agenda_hora_desde
-      );
-    })
-    .first();
-
-  if (bloqueoExistente) {
-    return { disponible: false, motivo: "Bloqueo existente en AgendaBloqueada" };
   }
 
   // Chequeo cruce en AgendaReclamo

@@ -1,22 +1,28 @@
-const jwt = require("jsonwebtoken");
-const { loginUser, refreshUserToken } = require("../services/authUserService");
+// -----------------
+// CONTROLADOR DE AUTENTICACIÓN
+// -----------------
 const User = require("../models/User");
+const { loginUser, refreshUserToken } = require("../services/authUserService");
+const { enviarExito, enviarExitoConDatos, enviarError, enviarNoEncontrado, enviarNoAutenticado, enviarSolicitudInvalida, enviarSinPermiso } = require("../helpers/responseHelpers");
+const { obtenerPorId } = require("../helpers/registroHelpers");
+const jwt = require("jsonwebtoken");
 const ms = require("ms");
 
-
+// -----------------
+// LOGIN
+// -----------------
 async function login(req, res) {
-  
   try {
     const { email, password } = req.body;
     if (!email || !password)
-      return res.status(400).json({ error: "Email y password son requeridos" });
+      return enviarSolicitudInvalida(res, "Email y password son requeridos");
 
     const result = await loginUser(email, password);
     if (!result)
-      return res.status(401).json({ error: "Credenciales inválidas" });
+      return enviarNoAutenticado(res, "Credenciales inválidas");
 
     if (result.error === "blocked") {
-      return res.status(403).json({ error: "Contacte a su administrador" });
+      return enviarSinPermiso(res, "Contacte a su administrador");
     }
 
     // envioo tokens en cookies HTTP-only
@@ -39,28 +45,24 @@ async function login(req, res) {
     // tomo  userData y devuelvo solo info pública
     const { accessToken, refreshToken, ...userData } = result;
 
-    return res.json({
-      ...userData,
-      status: 200,
-      success: true,
-      message: "Login exitoso",
-    });
+    return enviarExitoConDatos(res, userData, "Login exitoso", 200);
   } catch (error) {
-    return res.status(500).json({ error: "Error interno del servidor" });
+    return enviarError(res, "Error interno del servidor", 500);
   }
 }
 
+// -----------------
+// REFRESH TOKEN
+// -----------------
 function refreshToken(req, res) {
   try {
     const tokenFromCookie = req.cookies.refreshToken;
     if (!tokenFromCookie)
-      return res.status(400).json({ error: "Refresh token es requerido" });
+      return enviarSolicitudInvalida(res, "Refresh token es requerido");
 
     const tokenObject = refreshUserToken(tokenFromCookie);
     if (!tokenObject || !tokenObject.accessToken)
-      return res
-        .status(401)
-        .json({ error: "Refresh token inválido o expirado" });
+      return enviarNoAutenticado(res, "Refresh token inválido o expirado");
 
     // actualizo cookie
     res.cookie("accessToken", tokenObject.accessToken, {
@@ -71,28 +73,27 @@ function refreshToken(req, res) {
       maxAge: ms(process.env.JWT_EXPIRATION), // 30m
     });
 
-    return res.json({
-      success: true,
-      message: "Refresh token actualizado",
-      status: 200,
-    }); // sin token
+    return enviarExitoConDatos(res, {}, "Refresh token actualizado", 200);
   } catch {
-    return res.status(500).json({ error: "Error interno del servidor" });
+    return enviarError(res, "Error interno del servidor", 500);
   }
 }
 
+// -----------------
+// OBTENER PERFIL
+// -----------------
 async function getProfile(req, res) {
   try {
     const token = req.cookies.accessToken;
     if (!token) {
-      return res.status(401).json({ error: "No autenticado" });
+      return enviarNoAutenticado(res, "No autenticado");
     }
 
     const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
 
-    const user = await User.query().findById(decoded.user_id);
+    const user = await obtenerPorId(User, decoded.user_id);
     if (!user) {
-      return res.status(404).json({ error: "Usuario no encontrado" });
+      return enviarNoEncontrado(res, "Usuario");
     }
 
     let company = null;
@@ -119,11 +120,13 @@ async function getProfile(req, res) {
       });
     }
   } catch (error) {
-    return res.status(401).json({ error: "Token inválido o expirado" });
+    return enviarNoAutenticado(res, "Token inválido o expirado");
   }
 }
 
-// POST /logout
+// -----------------
+// LOGOUT
+// -----------------
 function logout(req, res) {
   // Borrar cookies HTTP-only
   res.clearCookie("accessToken", {
@@ -140,7 +143,7 @@ function logout(req, res) {
     path: "/",
   });
 
-  return res.json({ success: true, message: "Logout exitoso" });
+  return enviarExito(res, "Logout exitoso");
 }
 
 module.exports = { login, refreshToken, logout, getProfile };

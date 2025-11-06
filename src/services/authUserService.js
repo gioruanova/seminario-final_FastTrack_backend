@@ -1,7 +1,7 @@
 const bcrypt = require("bcrypt");
 const User = require("../models/User");
 const { generateTokens, refreshAccessToken } = require("./tokenService");
-const userLogController = require("../controllers/UserLogController");
+const userLoggerController = require("../controllers/userLoggerController");
 const userController = require("../controllers/userController");
 const messageController = require("../controllers/cfv/publicMessagesController");
 
@@ -21,19 +21,19 @@ async function loginUser(email, password) {
   const valid = await bcrypt.compare(password, user.user_password);
 
   if (!valid) {
-    let fallosPrevios = await userLogController.contarLogsPorUsuario(
+    let fallosPrevios = await userLoggerController.contarLogsPorUsuario(
       user.user_id
     );
 
     if (fallosPrevios < 3) {
-      await userLogController.registrarIntentoFallido(user.user_id);
-      fallosPrevios = await userLogController.contarLogsPorUsuario(
+      await userLoggerController.registrarIntentoFallido(user.user_id);
+      fallosPrevios = await userLoggerController.contarLogsPorUsuario(
         user.user_id
       );
       return null;
     }
 
-    fallosPrevios = await userLogController.contarLogsPorUsuario(user.user_id);
+    fallosPrevios = await userLoggerController.contarLogsPorUsuario(user.user_id);
 
 
 
@@ -69,7 +69,7 @@ async function loginUser(email, password) {
   };
 
   const { accessToken, refreshToken } = generateTokens(payload);
-  await userLogController.eliminarLogsPorUsuario(user.user_id);
+  await userLoggerController.eliminarLogsPorUsuario(user.user_id);
 
 
   return {

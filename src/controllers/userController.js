@@ -5,7 +5,7 @@ const bcrypt = require("bcrypt");
 const saltRounds = 10;
 
 const User = require("../models/User");
-const userLogController = require("./userLogController");
+const userLoggerController = require("./userLoggerController");
 const Company = require("../models/Company");
 const companyController = require("./companyController");
 const companyConfigController = require("./companyConfigController");
@@ -838,7 +838,7 @@ async function desbloquearUsuarioPorId(user_id) {
 // HABILITAR USUARIO POR ID
 // -----------------
 async function habilitarUsuarioPorId(user_id) {
-  await userLogController.eliminarLogsPorUsuario(user_id);
+  await userLoggerController.eliminarLogsPorUsuario(user_id);
   return await User.query().patchAndFetchById(user_id, {
     user_status: true,
   });

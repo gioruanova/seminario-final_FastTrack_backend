@@ -83,7 +83,6 @@ async function deleteFeedbackById(feedback_id, user_role) {
     throw new Error("Feedback no encontrado");
   }
 
-  // Solo superadmin puede eliminar feedbacks
   if (user_role !== "superadmin") {
     throw new Error("No tienes permiso para eliminar este feedback");
   }

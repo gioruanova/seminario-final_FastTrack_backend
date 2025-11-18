@@ -30,13 +30,24 @@ async function getToken(userId) {
     return tokenRow ? tokenRow.expo_push_token : null;
 }
 
-// Obtener todos los tokens registrados (para enviar notificaciones masivas)    
 async function getAllTokens() {
     const tokens = await UserPushToken.query().select("expo_push_token");
     return tokens.map((t) => t.expo_push_token);
 }
 
-// Enviar notificación a un usuario
+async function deleteToken(userId, expoPushToken = null) {
+    if (expoPushToken) {
+        await UserPushToken.query()
+            .where({ user_id: userId, expo_push_token: expoPushToken })
+            .delete();
+    } else {
+        await UserPushToken.query()
+            .where({ user_id: userId })
+            .delete();
+    }
+    return true;
+}
+
 async function sendNotificationToUser(userId, title, body) {
     const expoPushToken = await getToken(userId);
 
@@ -50,6 +61,7 @@ async function sendNotificationToUser(userId, title, body) {
         title,
         body,
         data: { extraData: "Información adicional opcional" },
+        priority: "high"
     };
 
     const response = await fetch("https://exp.host/--/api/v2/push/send", {
@@ -67,10 +79,10 @@ async function sendNotificationToUser(userId, title, body) {
     return data;
 }
 
-// Exportar cada función individualmente
 module.exports = {
     saveToken,
     getToken,
     getAllTokens,
     sendNotificationToUser,
+    deleteToken,
 };

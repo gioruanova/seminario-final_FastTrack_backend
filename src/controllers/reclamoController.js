@@ -157,8 +157,7 @@ async function recordatorioReclamo(req, res) {
   try {
     const reclamo_id = parseInt(req.params.reclamo_id, 10);
 
-    // necesito que este endpoint reciba el reclamo_id y a traves de ese reclamo, si esta distinto a CANCELADO o CERRADO, 
-    // validando que el reclamo corresponda a la empresa del usuario que esta haciendo la peticion
+
     const reclamo = await Reclamo.query().findById(reclamo_id);
     if (!reclamo) {
       return enviarNoEncontrado(res, "Reclamo");
@@ -167,7 +166,6 @@ async function recordatorioReclamo(req, res) {
       return enviarError(res, "Reclamo no puede ser recordatorio", 400);
     }
 
-    // envie la notificacion que esta aca:
 
     const companyConfig = await companyConfigController.fetchCompanySettingsByCompanyId(reclamo.company_id);
     const profesionalUser = await User.query().findById(reclamo.profesional_id);
@@ -269,7 +267,6 @@ async function updateReclamoAsClient(req, res) {
       profesionalUser.user_id,
       `Actualizacion en Incidencia`,
       companyConfig.string_actualizacion_reclamo_profesional,
-
     );
 
 

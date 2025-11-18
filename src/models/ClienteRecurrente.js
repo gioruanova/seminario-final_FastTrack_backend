@@ -1,4 +1,4 @@
-// BaseModels/ClienteRecurrente.js
+
 const BaseModel = require("../db/BaseModel");
 
 class ClienteRecurrente extends BaseModel {

@@ -2,7 +2,7 @@ const jwt = require("jsonwebtoken");
 const { ACCESS_TOKEN_SECRET } = process.env;
 
 function authSuperadmin(req, res, next) {
-  // ✅ Leer accessToken desde cookie
+  //  leer accessToken desde cookie
   const token = req.cookies.accessToken;
 
   if (!token) {

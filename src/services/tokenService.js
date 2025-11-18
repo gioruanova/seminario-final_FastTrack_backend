@@ -38,7 +38,7 @@ function refreshAccessToken(refreshToken) {
       expiresIn: JWT_EXPIRATION,
     });
 
-    // Nuevo refreshToken si querés rotación
+    // Nuevo refreshToken si se rota
     const newRefreshToken = jwt.sign(payload, REFRESH_TOKEN_SECRET, {
       expiresIn: JWT_REFRESH_EXPIRATION,
     });

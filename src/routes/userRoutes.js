@@ -107,6 +107,7 @@ router.get("/vistas/reclamos/:status", authUserWithStatus({ roles: ["owner", "op
 // =========================================================
 // Notificaciones para mobile
 router.post("/notifications", authUserWithStatus({ roles: ["profesional"] }), notificationsController.registerToken);
+router.delete("/notifications", authUserWithStatus({ roles: ["profesional"] }), notificationsController.unregisterToken);
 router.post("/send-notifications", authUserWithStatus({ roles: ["profesional"] }), notificationsController.sendNotification);
 
 

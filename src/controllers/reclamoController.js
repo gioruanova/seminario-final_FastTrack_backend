@@ -11,12 +11,7 @@ const ClienteRecurrente = require("../models/ClienteRecurrente");
 const disponibilidadController = require("./disponibilidadController");
 const AgendaReclamo = require("../models/AgendaReclamo");
 const companyConfigController = require("./companyConfigController");
-
-const { registrarNuevoLog } = require("../controllers/globalLogController");
-const { update } = require("../db/knex");
-const { sendNotificationToUser } = require("./notificationController");
 const CompaniesConfig = require("../models/CompaniesConfig");
-const messageController = require("./messageController");
 const { enviarLista, enviarError, enviarErrorReclamo, enviarExitoReclamo, enviarExito, enviarNoEncontrado } = require("../helpers/responseHelpers");
 const { obtenerPorId } = require("../helpers/registroHelpers");
 
@@ -144,18 +139,6 @@ async function createReclamo(req, res) {
 
     const profesionalUser = await User.query().findById(data.profesional_id);
     notificacionNuevoReclamo(nuevoReclamo, profesionalUser, creator);
-    sendNotificationToUser(nuevoReclamo.profesional_id,
-      `Asignacion de ${companyConfig.sing_heading_reclamos}`,
-      `Detalle: ${nuevoReclamo.reclamo_titulo} - 
-      Programado para ${data.agenda_fecha} a las ${data.agenda_hora_desde}
-      `,
-      { title: "Fast Track" },
-      `/dashboard/profesional/trabajar-reclamos`);
-
-    /*LOGGER*/ await registrarNuevoLog(
-      company_id,
-      `Se ha generado un nuevo reclamo con el ID: ${nuevoReclamo.reclamo_id}`
-    );
 
     return enviarExitoReclamo(res, "Reclamo creado exitosamente", 201);
   } catch (error) {
@@ -243,13 +226,6 @@ async function updateReclamoAsClient(req, res) {
 
     const profesionalUser = await User.query().findById(reclamoExiste.profesional_id);
     actualizacionReclamo(reclamoExiste, profesionalUser, req.user, reclamoActualizado.reclamo_estado);
-
-    sendNotificationToUser(
-      reclamoExiste.profesional_id,
-      `Actualizaciones en  ${companyConfig.sing_heading_reclamos}`,
-      `Detalle ${companyConfig.sing_heading_reclamos} nro: ${reclamoExiste.reclamo_id} - ${reclamoExiste.reclamo_titulo}`,
-      { title: "Fast Track" },
-      `/dashboard/profesional/trabajar-reclamos`);
 
     return enviarExitoReclamo(res, "Reclamo actualizado correctamente", 200);
   } catch (error) {
@@ -344,12 +320,6 @@ async function updateReclamoAsProfesional(req, res) {
       for (const cu of compUsers) {
         const user = await User.query().findById(cu.user_id);
         if (user) {
-          await sendNotificationToUser(
-            cu.user_id,
-            `Actualizaciones en ${companyConfig.sing_heading_reclamos}`,
-            `${companyConfig.sing_heading_reclamos} nro: ${reclamoExiste.reclamo_id} - ${reclamoExiste.reclamo_titulo}`,
-            { title: "Fast Track" },
-            `${reclamoActualizado.reclamo_estado == "CERRADO" || reclamoActualizado.reclamo_estado == "CANCELADO" ? `/dashboard/operador/historial-reclamos` : `/dashboard/operador/trabajar-reclamos`}`);
           actualizacionReclamoOperador(reclamoExiste, user, req.user, reclamoActualizado.reclamo_estado);
         }
       }
@@ -399,26 +369,6 @@ async function sendReminderToProfesional(req, res) {
       reclamo.reclamo_titulo +
       "\n\n" +
       `Revisa tus ${companyConfig.plu_heading_reclamos} en curso ` + `<a class="font-medium text-primary hover:underline" href="/dashboard/profesional/trabajar-reclamos">aquí</a>.`;
-
-    // Enviar mensaje personalizado
-    await messageController.createMessageCustom({
-      platform_message_title: "Recordatorio de " + companyConfig.sing_heading_reclamos,
-      platform_message_content: mensajeRecordatorio,
-      user_id: profesional.user_id,
-      company_id: profesional.company_id,
-      company_name: reclamo.company?.company_nombre || "Fast Track",
-    });
-
-    sendNotificationToUser(profesional.user_id,
-      `Recordatorio de ${companyConfig.sing_heading_reclamos}`,
-      `Detalle: ${reclamo.reclamo_titulo}`,
-      { title: "Fast Track" },
-      `/dashboard/profesional/trabajar-reclamos`);
-
-    /*LOGGER*/ await registrarNuevoLog(
-      reclamo.company_id,
-      `Se ha enviado recordatorio de reclamo con el ID: ${reclamo.reclamo_id}`
-    );
 
     return enviarExito(res, "Recordatorio enviado al profesional correctamente");
   } catch (error) {
@@ -603,13 +553,6 @@ async function notificacionNuevoReclamo(reclamo, user, creator) {
     "\n\n" +
     `Revisa tus ${companyConfig.plu_heading_reclamos} en curso ` + `<a class="font-medium text-primary hover:underline" href="/dashboard/profesional/trabajar-reclamos">aquí</a>.`;
 
-  await messageController.createMessageCustom({
-    platform_message_title: "Nueva asignacion de " + companyConfig.sing_heading_reclamos,
-    platform_message_content: nuevoReclamoMensaje,
-    user_id: user.user_id,
-    company_id: user.company_id,
-    company_name: creator.company_name,
-  });
 }
 
 // -----------------
@@ -631,13 +574,6 @@ async function actualizacionReclamo(reclamo, user, creator, nuevoEstado) {
     "\n\n" +
     `${estadoReclamo.estado} ` + `<a class="font-medium text-primary hover:underline" href="${estadoReclamo.path}">aquí</a>.`;
 
-  await messageController.createMessageCustom({
-    platform_message_title: "Actualizacion de  " + companyConfig.sing_heading_reclamos,
-    platform_message_content: nuevoReclamoMensaje,
-    user_id: user.user_id,
-    company_id: user.company_id,
-    company_name: creator.company_name,
-  });
 }
 
 // -----------------
@@ -662,13 +598,6 @@ async function actualizacionReclamoOperador(reclamo, user, creator, nuevoEstado)
     "\n\n" +
     `${estadoReclamo.estado} ` + `<a class="font-medium text-primary hover:underline" href="${estadoReclamo.path}">aquí</a>.`;
 
-  await messageController.createMessageCustom({
-    platform_message_title: "Accionamiento de   " + companyConfig.sing_heading_reclamos,
-    platform_message_content: nuevoReclamoMensaje,
-    user_id: user.user_id,
-    company_id: user.company_id,
-    company_name: creator.company_name,
-  });
 }
 
 module.exports = {

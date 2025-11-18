@@ -49,7 +49,6 @@ class User extends BaseModel {
 
   static get relationMappings() {
     const Company = require("./Company");
-    const PlatformMessageUser = require("./PlatformMessageUser");
 
     return {
       company: {
@@ -66,15 +65,6 @@ class User extends BaseModel {
         join: {
           from: "users.user_id",
           to: "profesionales_especialidad.id_usuario",
-        },
-      },
-
-      platformMessageUsers: {
-        relation: BaseModel.HasManyRelation,
-        modelClass: PlatformMessageUser,
-        join: {
-          from: "users.user_id",
-          to: "platform_messages_users.user_id",
         },
       },
     };

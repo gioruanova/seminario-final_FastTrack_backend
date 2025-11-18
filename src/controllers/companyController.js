@@ -3,7 +3,6 @@
 // -----------------
 const Company = require("../models/Company");
 const companyConfigController = require("./companyConfigController");
-const { registrarNuevoLog } = require("../controllers/globalLogController");
 const { enviarLista, enviarExito, enviarError, enviarNoEncontrado, enviarSolicitudInvalida } = require("../helpers/responseHelpers");
 const { obtenerPorId } = require("../helpers/registroHelpers");
 const { validarCamposObligatorios } = require("../helpers/validationHelpers");
@@ -62,13 +61,6 @@ async function updateCompanyAsAdmin(req, res) {
 
     await Company.query().patchAndFetchById(company_id, updateData);
 
-    /*LOGGER*/ await registrarNuevoLog(
-      company.company_id,
-      "La empresa " +
-      company.company_nombre +
-      " se ha editado con exito. " +
-      " (Ejecutado por Sistema)."
-    );
 
     return enviarExito(res, "Empresa actualizada exitosamente");
   } catch (error) {
@@ -139,13 +131,6 @@ async function createCompany(req, res) {
 
     await companyConfigController.createCompanyConfigAsAdmin(newConfigData);
 
-    /*LOGGER*/ await registrarNuevoLog(
-      newCompany.company_id,
-      "La empresa " +
-      newCompany.company_nombre +
-      " se ha creado con exito. " +
-      " (Ejecutado por Sistema)."
-    );
 
     return enviarExito(res, "Empresa creada exitosamente", 201);
   } catch (error) {
@@ -213,13 +198,6 @@ async function updateCompanyAsClient(req, res) {
       updateData
     );
 
-    /*LOGGER*/ await registrarNuevoLog(
-      updatedCompany.company_id,
-      "La empresa " +
-      updatedCompany.company_nombre +
-      " se ha editado con éxito. " +
-      ` (Ejecutado por ${req.user.user_name}).`
-    );
 
     return enviarExito(res, "Empresa actualizada exitosamente");
   } catch (error) {

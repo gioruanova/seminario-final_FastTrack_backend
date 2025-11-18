@@ -11,10 +11,11 @@ async function loginUser(email, password) {
 
   let company = null;
   if (user.user_role !== "superadmin") {
-    company = await user.$relatedQuery("company");
+    company = await user.$relatedQuery("company").first();
   }
 
   const valid = await bcrypt.compare(password, user.user_password);
+  if (!valid) return null;
 
   const payload = {
     user_id: user.user_id,
@@ -30,6 +31,12 @@ async function loginUser(email, password) {
   return {
     accessToken,
     refreshToken,
+    user: {
+      user_id: user.user_id,
+      user_email: user.user_email,
+      user_role: user.user_role.toLowerCase(),
+      company_id: company?.company_id || null,
+    },
   };
 }
 

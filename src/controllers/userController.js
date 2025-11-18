@@ -5,13 +5,9 @@ const bcrypt = require("bcrypt");
 const saltRounds = 10;
 
 const User = require("../models/User");
-const userLoggerController = require("./userLoggerController");
 const Company = require("../models/Company");
 const companyController = require("./companyController");
 const companyConfigController = require("./companyConfigController");
-const messageController = require("./messageController");
-
-const { registrarNuevoLog } = require("../controllers/globalLogController");
 const {
   enviarLista,
   enviarExito,
@@ -111,14 +107,6 @@ async function createUserAsAdmin(req, res) {
         validacionRole.normalized === "superadmin" ? null : company_id,
     });
 
-    /*LOGGER*/ await registrarNuevoLog(
-      newUser.company_id,
-      "El usuario " +
-        newUser.user_complete_name +
-        " ha sido creado" +
-        " (Ejecutado por Sistema)"
-    );
-
     return enviarExito(res, "Usuario creado correctamente", 201);
   } catch (error) {
     return enviarError(res, "Error interno del servidor", 500);
@@ -211,14 +199,6 @@ async function editUserAsAdmin(req, res) {
 
     await User.query().findById(user_id).patch(patchData);
 
-    /*LOGGER*/ await registrarNuevoLog(
-      user.company_id,
-      "El usuario " +
-        user.user_complete_name +
-        " ha sido editado." +
-        " (Ejecutado por Sistema)"
-    );
-
     return enviarExito(res, "Usuario editado correctamente");
   } catch (e) {
     return enviarError(res, "Error interno del servidor", 500);
@@ -279,14 +259,6 @@ async function blockUserAsAdmin(req, res) {
 
     await bloquearUsuarioPorId(user_id);
 
-    /*LOGGER*/ await registrarNuevoLog(
-      userToBlock.company_id,
-      "El usuario " +
-        userToBlock.user_complete_name +
-        " ha sido bloqueado." +
-        " (Ejecutado por Sistema)"
-    );
-
     return enviarExito(res, "Usuario bloqueado correctamente");
   } catch (error) {
     return enviarError(res, "Error interno del servidor", 500);
@@ -307,14 +279,6 @@ async function unblockUserAsAdmin(req, res) {
       return enviarSolicitudInvalida(res, "El usuario ya estaba desbloqueado");
     }
     await desbloquearUsuarioPorId(user_id);
-
-    /*LOGGER*/ await registrarNuevoLog(
-      userToUnblock.company_id,
-      "El usuario " +
-        userToUnblock.user_complete_name +
-        " ha sido desbloqueado." +
-        " (Ejecutado por Sistema)"
-    );
 
     return enviarExito(res, "Usuario desbloqueado correctamente");
   } catch (error) {
@@ -351,23 +315,6 @@ async function restoreUserAsAdmin(req, res) {
 
     await resetPassword(user_id, new_password);
     habilitarUsuarioPorId(user_id);
-
-    await messageController.createMessageCustom({
-      platform_message_title: "Cuenta reestablecida",
-      platform_message_content:
-        "Hemos restablecido tu cuenta con una contraseña provisoria. Te recomendamos cambiarla por una más segura desde la seccion de tu Perfil.",
-      user_id: userToRestore.user_id,
-      company_id: userToRestore.company_id,
-      company_name: userToRestore.company_name,
-    });
-
-    /*LOGGER*/ await registrarNuevoLog(
-      userToRestore.company_id,
-      "El usuario " +
-        userToRestore.user_complete_name +
-        " ha sido desbloqueado y la contraseña ha sido reestablecida." +
-        " (Ejecutado por Sistema)"
-    );
 
     return enviarExito(res, "Usuario restaurado correctamente");
   } catch (error) {
@@ -459,16 +406,6 @@ async function createUserAsClient(req, res) {
       user_role,
       company_id,
     });
-
-    /*LOGGER*/ await registrarNuevoLog(
-      newUser.company_id,
-      "El usuario " +
-        newUser.user_complete_name +
-        " ha sido creado" +
-        ". (Ejecutado por " +
-        req.user.user_name +
-        ")."
-    );
 
     return enviarExito(res, "Usuario creado correctamente", 201);
   } catch (error) {
@@ -599,16 +536,6 @@ async function editUserAsClient(req, res) {
 
     await User.query().findById(user_id).patch(patchData);
 
-    /*LOGGER*/ await registrarNuevoLog(
-      user.company_id,
-      "El usuario " +
-        user.user_complete_name +
-        " ha sido editado." +
-        " (Ejecutado por " +
-        creator.user_name +
-        ")."
-    );
-
     return enviarExito(res, "Usuario editado correctamente");
   } catch (e) {
     return enviarError(res, "Error interno del servidor", 500);
@@ -685,16 +612,6 @@ async function blockUserAsClient(req, res) {
 
     await bloquearUsuarioPorId(user_id);
 
-    /*LOGGER*/ await registrarNuevoLog(
-      userToBlock.company_id,
-      "El usuario " +
-        userToBlock.user_complete_name +
-        " ha sido bloqueado." +
-        ". (Ejecutado por " +
-        req.user.user_name +
-        ")."
-    );
-
     return enviarExito(res, "Usuario bloqueado correctamente");
   } catch (error) {
     return enviarError(res, "Error interno del servidor", 500);
@@ -734,16 +651,6 @@ async function unblockUserAsClient(req, res) {
       return enviarSolicitudInvalida(res, "El usuario ya estaba desbloqueado");
 
     await desbloquearUsuarioPorId(user_id);
-
-    /*LOGGER*/ await registrarNuevoLog(
-      userToUnblock.company_id,
-      "El usuario " +
-        userToUnblock.user_complete_name +
-        " ha sido bloqueado." +
-        ". (Ejecutado por " +
-        req.user.user_name +
-        ")."
-    );
 
     return enviarExito(res, "Usuario desbloqueado correctamente");
   } catch (error) {
@@ -790,24 +697,6 @@ async function restoreUserAsClient(req, res) {
 
     await resetPassword(user_id, new_password);
     habilitarUsuarioPorId(user_id);
-
-    await messageController.createMessageCustom({
-      platform_message_title: "Cuenta habilitada",
-      platform_message_content:
-        "Hemos reestablecido tu cuenta con una contraseña provisoria. Te recomendamos cambiarla por una más segura desde la seccion de tu Perfil.",
-      user_id: userToRestore.user_id,
-      company_id: userToRestore.company_id,
-    });
-
-    /*LOGGER*/ await registrarNuevoLog(
-      userToRestore.company_id,
-      "El usuario " +
-        userToRestore.user_complete_name +
-        " ha sido desbloqueado y la contraseña ha sido reestablecida." +
-        ". (Ejecutado por " +
-        req.user.user_name +
-        ")."
-    );
 
     return enviarExito(res, "Usuario restaurado correctamente");
   } catch (error) {
@@ -964,7 +853,6 @@ async function desbloquearUsuarioPorId(user_id) {
 // HABILITAR USUARIO POR ID
 // -----------------
 async function habilitarUsuarioPorId(user_id) {
-  await userLoggerController.eliminarLogsPorUsuario(user_id);
   return await User.query().patchAndFetchById(user_id, {
     user_status: true,
   });

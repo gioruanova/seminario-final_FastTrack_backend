@@ -2,7 +2,6 @@
 // CONTROLADOR DE CONFIGURACIÓN DE EMPRESA
 // -----------------
 const CompaniesConfig = require("../models/CompaniesConfig");
-const { registrarNuevoLog } = require("../controllers/globalLogController");
 const { enviarExito, enviarError, enviarNoEncontrado, enviarSolicitudInvalida } = require("../helpers/responseHelpers");
 
 // -----------------
@@ -130,13 +129,6 @@ async function updateCompanySettingsByClient(req, res) {
 
     const updatedConfig = await CompaniesConfig.query().findOne({ company_id });
 
-    /*LOGGER*/ await registrarNuevoLog(
-      company_id,
-      "La empresa " +
-        req.user.company_name +
-        " ha editado con éxito la configuracion inicial del sistema. " +
-        ` (Ejecutado por ${req.user.user_name}).`
-    );
 
     return enviarExito(res, "Configuración actualizada.");
   } catch (error) {

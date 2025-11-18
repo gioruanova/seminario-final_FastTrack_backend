@@ -1,21 +1,23 @@
 const BaseModel = require("../db/BaseModel");
 
-class UserLog extends BaseModel {
+class UserPushToken extends BaseModel {
   static get tableName() {
-    return "user_logs";
+    return "user_push_tokens";
   }
 
   static get idColumn() {
-    return "user_log_id";
+    return "id";
   }
 
   static get jsonSchema() {
     return {
       type: "object",
-
+      required: ["user_id", "expo_push_token"],
       properties: {
-        user_log_id: { type: "integer" },
-        user_id: { type: ["integer", "null"] },
+        id: { type: "integer" },
+        user_id: { type: "integer" },
+        expo_push_token: { type: "string", maxLength: 255 },
+        platform: { type: ["string", "null"], maxLength: 50 },
         created_at: { type: "string", format: "date-time" },
         updated_at: { type: "string", format: "date-time" },
       },
@@ -34,7 +36,7 @@ class UserLog extends BaseModel {
         relation: BaseModel.BelongsToOneRelation,
         modelClass: User,
         join: {
-          from: "user_logs.user_id",
+          from: "user_push_tokens.user_id",
           to: "users.user_id",
         },
       },
@@ -42,4 +44,5 @@ class UserLog extends BaseModel {
   }
 }
 
-module.exports = UserLog;
+module.exports = UserPushToken;
+

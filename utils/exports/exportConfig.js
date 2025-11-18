@@ -1,8 +1,5 @@
 const ExcelJS = require("exceljs");
 
-const {
-  registrarNuevoLog,
-} = require("../../src/controllers/globalLogController");
 
 async function exportToExcel(
   res,
@@ -80,10 +77,6 @@ async function exportToExcel(
     await workbook.xlsx.write(res);
     res.end();
 
-    /*LOGGER*/  await registrarNuevoLog(
-      user.company_id,
-      `Reporte: ${sheetName}, fue generado con éxito y exportado por ${user.user_name}.`
-    );
   } catch (error) {
     res.status(500).json({ error: "Error al generar el archivo Excel" });
   }

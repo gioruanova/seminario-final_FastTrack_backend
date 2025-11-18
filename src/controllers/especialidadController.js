@@ -5,7 +5,6 @@
 const Company = require("../models/Company");
 const companyController = require("./companyController");
 const Especialidad = require("../models/Especialidad");
-const { registrarNuevoLog } = require("../controllers/globalLogController");
 const { enviarLista, enviarExito, enviarError, enviarNoEncontrado, enviarSolicitudInvalida, enviarConflicto } = require("../helpers/responseHelpers");
 const { obtenerPorId } = require("../helpers/registroHelpers");
 
@@ -43,12 +42,6 @@ async function createEspecialidadAsAdmin(req, res) {
       nombre_especialidad,
     });
 
-    /*LOGGER*/ await registrarNuevoLog(
-      company_id,
-      "Se ha creado una nueva especialidad: " +
-        nombre_especialidad +
-        " (Ejecutado por Sistema)."
-    );
 
     return enviarExito(res, "Especialidad creada correctamente", 201);
   } catch (error) {
@@ -94,12 +87,6 @@ async function updateEspecialidadAsAdmin(req, res) {
         company_id: especialidadExiste.company_id,
       });
 
-    /*LOGGER*/ await registrarNuevoLog(
-      especialidadExiste.company_id,
-      "Se ha actualizado la especialidad: " +
-        nombre_especialidad +
-        " (Ejecutado por Sistema)."
-    );
 
     return enviarExito(res, "Especialidad actualizada correctamente");
   } catch (error) {
@@ -166,12 +153,6 @@ async function disableEspecialidadAsAdmin(req, res) {
         company_id: especialidadExiste.company_id,
       });
 
-    /*LOGGER*/ await registrarNuevoLog(
-      especialidadExiste.company_id,
-      "Se ha desactivo la especialidad: " +
-        especialidadExiste.nombre_especialidad +
-        " (Ejecutado por Sistema)."
-    );
 
     return enviarExito(res, "Especialidad desactivada correctamente");
   } catch (error) {
@@ -210,12 +191,6 @@ async function enableEspecialidadAsAdmin(req, res) {
         company_id: especialidadExiste.company_id,
       });
 
-    /*LOGGER*/ await registrarNuevoLog(
-      especialidadExiste.company_id,
-      "Se ha reactivo la especialidad: " +
-        especialidadExiste.nombre_especialidad +
-        " (Ejecutado por Sistema)."
-    );
 
     return enviarExito(res, "Especialidad activada correctamente");
   } catch (error) {
@@ -278,14 +253,6 @@ async function createEspecialidadAsClient(req, res) {
       company_id: comp_id,
     });
 
-    /*LOGGER*/ await registrarNuevoLog(
-      comp_id,
-      "Se ha creado la especialidad: " +
-        nombre_especialidad +
-        ". (Ejecutado por " +
-        req.user.user_name +
-        ")."
-    );
 
     return enviarExito(res, "Especialidad creada correctamente", 201);
   } catch (error) {
@@ -330,14 +297,6 @@ async function updateEspecialidadAsClient(req, res) {
       nombre_especialidad,
     });
 
-    /*LOGGER*/ await registrarNuevoLog(
-      company_id,
-      "Se ha actualizado la especialidad: " +
-        nombre_especialidad +
-        ". (Ejecutado por " +
-        req.user.user_name +
-        ")."
-    );
 
     return enviarExito(res, "Especialidad actualizada correctamente");
   } catch (error) {
@@ -372,14 +331,6 @@ async function disableEspecialidadAsClient(req, res) {
       company_id: especialidadToManage.company_id,
     });
 
-    /*LOGGER*/ await registrarNuevoLog(
-      company_id,
-      "Se ha desactivado la especialidad: " +
-        especialidadToManage.nombre_especialidad +
-        ". (Ejecutado por " +
-        req.user.user_name +
-        ")."
-    );
 
     return enviarExito(res, "Especialidad desactivada correctamente");
   } catch (error) {
@@ -414,14 +365,6 @@ async function enableEspecialidadAsClient(req, res) {
       company_id: especialidadToManage.company_id,
     });
 
-    /*LOGGER*/ await registrarNuevoLog(
-      company_id,
-      "Se ha reactivado la especialidad: " +
-        especialidadToManage.nombre_especialidad +
-        ". (Ejecutado por " +
-        req.user.user_name +
-        ")."
-    );
 
     return enviarExito(res, "Especialidad activada correctamente");
   } catch (error) {

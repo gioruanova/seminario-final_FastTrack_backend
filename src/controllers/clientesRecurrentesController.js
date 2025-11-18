@@ -75,11 +75,9 @@ async function createClienteRecurrenteAsClient(req, res) {
       !cliente_dni ||
       !cliente_phone ||
       !cliente_email ||
-      (requiereDomicilio.requiere_domicilio && !cliente_direccion) ||
-      (requiereDomicilio.requiere_domicilio && !cliente_lat) ||
-      (requiereDomicilio.requiere_domicilio && !cliente_lng)
+      (requiereDomicilio.requiere_domicilio && !cliente_direccion)
     ) {
-      return enviarSolicitudInvalida(res, "Los campos cliente_complete_name, cliente_dni, cliente_phone, cliente_email, cliente_direccion, cliente_lat y cliente_lng son obligatorios.");
+      return enviarSolicitudInvalida(res, "Los campos cliente_complete_name, cliente_dni, cliente_phone, cliente_email y cliente_direccion (si requiere domicilio) son obligatorios.");
     }
 
     const clienteExiste = await ClienteRecurrente.query()
@@ -120,7 +118,6 @@ async function editarClienteAsClient(req, res) {
   const company_id = req.user.company_id;
   const { cliente_id } = req.params;
 
-  // Lista de campos que se pueden editar
   const camposEditables = [
     "cliente_complete_name",
     "cliente_dni",
@@ -141,22 +138,32 @@ async function editarClienteAsClient(req, res) {
       return enviarNoEncontrado(res, "Cliente");
     }
 
-    // Construyo objeto con solo los campos válidos y no vacíos
     const datosActualizables = {};
+    const camposOpcionales = ["cliente_lat", "cliente_lng"];
+    
+    if (!req.body || typeof req.body !== 'object') {
+      return enviarSolicitudInvalida(res, "El cuerpo de la solicitud debe ser un objeto válido.");
+    }
+    
     for (const campo of camposEditables) {
-      if (req.body.hasOwnProperty(campo)) {
+      if (req.body[campo] !== undefined) {
         const valor = req.body[campo];
+        const esOpcional = camposOpcionales.includes(campo);
 
-        // Valido que no sea null, undefined ni string vacío
-        if (valor === null || valor === undefined || valor === "") {
-          return enviarSolicitudInvalida(res, `El campo '${campo}' no puede estar vacío si se envía.`);
+        if (esOpcional) {
+          if (valor === "" || (typeof valor === "string" && valor.trim() === "")) {
+            return enviarSolicitudInvalida(res, `El campo '${campo}' no puede ser un string vacío. Use null para eliminarlo.`);
+          }
+          datosActualizables[campo] = (valor === null || valor === undefined) ? null : valor;
+        } else {
+          if (valor === null || valor === undefined || valor === "") {
+            return enviarSolicitudInvalida(res, `El campo '${campo}' no puede estar vacío si se envía.`);
+          }
+          datosActualizables[campo] = valor;
         }
-
-        datosActualizables[campo] = valor;
       }
     }
 
-    // Si no se envió ningún campo válido, corto
     if (Object.keys(datosActualizables).length === 0) {
       return enviarSolicitudInvalida(res, "No se enviaron campos para actualizar.");
     }

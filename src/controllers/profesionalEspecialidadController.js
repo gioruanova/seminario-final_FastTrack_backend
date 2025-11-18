@@ -4,7 +4,6 @@
 
 const ProfesionalEspecialidad = require("../models/ProfesionalesEspecialidad");
 const Especialidad = require("../models/Especialidad");
-const { registrarNuevoLog } = require("../controllers/globalLogController");
 const User = require("../models/User");
 const { enviarLista, enviarExito, enviarError, enviarNoEncontrado, enviarSolicitudInvalida, enviarConflicto } = require("../helpers/responseHelpers");
 
@@ -62,15 +61,6 @@ async function assignEspecialidadAsAdmin(req, res) {
       id_especialidad: especialidad_id,
     });
 
-    /*LOGGER*/ await registrarNuevoLog(
-      profesionalExiste.company_id,
-      "Se ha asignado la especialidad: " +
-      especialidadExiste.nombre_especialidad +
-      " al profesional: " +
-      profesionalExiste.first_name +
-      " " +
-      profesionalExiste.last_name
-    );
     return enviarExito(res, "Especialidad asignada correctamente", 201);
   } catch (error) {
     return enviarError(res, "Error al asignar la especialidad", 500);
@@ -98,13 +88,6 @@ async function deleteEspecialidadAsAdmin(req, res) {
 
     await ProfesionalEspecialidad.query().where({ id_asignacion }).delete();
 
-    /*LOGGER*/ await registrarNuevoLog(
-      profesionalEspecialidadExiste.company_id,
-      "Se ha eliminado la especialidad: " +
-      profesionalEspecialidadExiste.id_especialidad +
-      " del profesional: " +
-      profesionalEspecialidadExiste.id_usuario
-    );
     return enviarExito(res, "Especialidad eliminada correctamente", 201);
   } catch (error) {
     return enviarError(res, "Error al eliminar la especialidad", 500);
@@ -164,13 +147,6 @@ async function editAsignacionEspecialidadAsAdmin(req, res) {
       .where({ id_asignacion })
       .patch({ id_especialidad: especialidad_id });
 
-    /*LOGGER*/ await registrarNuevoLog(
-      profesionalEspecialidadExiste.company_id,
-      "Se ha actualizado la especialidad: " +
-      profesionalEspecialidadExiste.id_especialidad +
-      " del profesional: " +
-      profesionalEspecialidadExiste.id_usuario
-    );
     return enviarExito(res, "Asignacion actualizada correctamente", 201);
   } catch (error) {
     return enviarError(res, "Error al actualizar la asignacion", 500);
@@ -241,16 +217,6 @@ async function assignEspecialidadAsClient(req, res) {
       company_id,
     });
 
-    /*LOGGER*/ await registrarNuevoLog(
-      company_id,
-      "Se ha asignado la especialidad: " +
-      especialidad_id +
-      " al profesional: " +
-      profesional_id +
-      ". (Ejecutado por " +
-      req.user.user_name +
-      ")."
-    );
     return enviarExito(res, "Especialidad asignada correctamente", 201);
   } catch (error) {
     return enviarError(res, "Error al asignar la especialidad", 500);
@@ -275,16 +241,6 @@ async function deleteEspecialidadAsClient(req, res) {
 
     await ProfesionalEspecialidad.query().where({ id_asignacion }).delete();
 
-    /*LOGGER*/ await registrarNuevoLog(
-      company_id,
-      "Se ha eliminado la especialidad: " +
-      profesionalEspecialidadExiste.id_especialidad +
-      " del profesional: " +
-      profesionalEspecialidadExiste.id_usuario +
-      ". (Ejecutado por " +
-      req.user.user_name +
-      ")."
-    );
     return enviarExito(res, "Asignacion eliminada correctamente", 201);
   } catch (error) {
     return enviarError(res, "Error al eliminar la asignacion", 500);
@@ -342,16 +298,6 @@ async function editAsignacionEspecialidadAsClient(req, res) {
       .where({ id_asignacion })
       .patch({ id_especialidad: especialidad_id });
 
-    /*LOGGER*/ await registrarNuevoLog(
-      company_id,
-      "Se ha editado la especialidad: " +
-      profesionalEspecialidadExiste.id_especialidad +
-      " del profesional: " +
-      profesionalEspecialidadExiste.id_usuario +
-      ". (Ejecutado por " +
-      req.user.user_name +
-      ")."
-    );
     return enviarExito(res, "Asignacion editada correctamente", 201);
   } catch (error) {
     return enviarError(res, "Error al editar la asignacion", 500);

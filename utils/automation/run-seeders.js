@@ -22,9 +22,7 @@ const seeders = [
   "seed_companies_config.js",
   "seed_users.js",
   "seed_especialidades.js",
-  "seed_messages_categories.js",
   "seed_clientes-recurrentes.js",
-  "seed_site-banner.js",
 ];
 
 async function runSeeders() {

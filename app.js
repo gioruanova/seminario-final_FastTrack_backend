@@ -35,9 +35,9 @@ if (missingEnvVars.length > 0) {
 // CORS Configuration
 const corsOptions = {
   origin: [
-    process.env.BACK_TEST_SITE, 
-    process.env.BACK_TEST_SITE_2, 
-    process.env.BACK_TEST_SITE_3, 
+    process.env.BACK_TEST_SITE,
+    process.env.BACK_TEST_SITE_2,
+    process.env.BACK_TEST_SITE_3,
     process.env.BACK_TEST_SITE_4,
     process.env.BACK_TEST_SITE_5,
 
@@ -80,7 +80,17 @@ app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(swaggerSpec, {
     filter: true,
   }
 }));
-app.use("/publicApi", require("./src/routes/publicRoutes"));
+
+
+// =====================================================================
+// Rutas NUEVAS (Por entidad con consolidadores - Comentar si hay problemas)
+// =====================================================================
+const configureRoutes = require("./src/routes");
+configureRoutes(app);
+
+// =====================================================================
+// Rutas ANTIGUAS
+// =====================================================================
 app.use("/superApi", require("./src/routes/superRoutes"));
 app.use("/customersApi", require("./src/routes/userRoutes"));
 

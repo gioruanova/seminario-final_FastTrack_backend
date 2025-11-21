@@ -1,10 +1,7 @@
-const Feedback = require("../models/Feedback");
-const User = require("../models/User");
-const Company = require("../models/Company");
+const Feedback = require("../../models/Feedback");
+const User = require("../../models/User");
+const Company = require("../../models/Company");
 
-// -----------------
-// CREAR FEEDBACK
-// -----------------
 async function createFeedback(user_id, company_id, message_content, user_role, user_email) {
   if (!message_content || typeof message_content !== "string" || message_content.trim() === "") {
     throw new Error("El campo message_content es obligatorio y no puede estar vacío");
@@ -38,8 +35,6 @@ async function createFeedback(user_id, company_id, message_content, user_role, u
 }
 
 // -----------------
-// OBTENER FEEDBACKS
-// -----------------
 async function getFeedbacks(user_id, company_id, user_role) {
   let feedbacks;
 
@@ -57,8 +52,6 @@ async function getFeedbacks(user_id, company_id, user_role) {
 }
 
 // -----------------
-// OBTENER FEEDBACK POR ID
-// -----------------
 async function getFeedbackById(feedback_id, user_id, company_id, user_role) {
   const feedback = await Feedback.query().findById(feedback_id);
 
@@ -73,8 +66,6 @@ async function getFeedbackById(feedback_id, user_id, company_id, user_role) {
   return feedback;
 }
 
-// -----------------
-// ELIMINAR FEEDBACK POR ID
 // -----------------
 async function deleteFeedbackById(feedback_id, user_role) {
   const feedback = await Feedback.query().findById(feedback_id);
@@ -91,10 +82,5 @@ async function deleteFeedbackById(feedback_id, user_role) {
   return true;
 }
 
-module.exports = {
-  createFeedback,
-  getFeedbacks,
-  getFeedbackById,
-  deleteFeedbackById,
-};
+module.exports = { createFeedback, getFeedbacks, getFeedbackById, deleteFeedbackById, };
 

@@ -24,6 +24,8 @@ async function obtenerPorId(Model, id, whereConditions = {}, withGraph = null) {
 // -----------------
 // OBTENER REGISTRO POR ID O ERROR 404
 // -----------------
+// NOTA: Esta función tiene dependencia de responseHelpers.
+// Si necesitas evitar esta dependencia, usa obtenerPorId directamente y maneja el error en el controlador.
 async function obtenerPorIdOError(Model, id, options = {}) {
   const {
     errorMessage = null,

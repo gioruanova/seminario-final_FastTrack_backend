@@ -1,4 +1,4 @@
-const { saveToken, sendNotificationToUser, deleteToken } = require('../services/NotificationsService');
+const { saveToken, sendNotificationToUser, deleteToken } = require('../services/notifications/NotificationsService');
 
 
 async function registerToken(req, res) {

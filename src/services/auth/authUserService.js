@@ -1,5 +1,5 @@
 const bcrypt = require("bcrypt");
-const User = require("../models/User");
+const User = require("../../models/User");
 const { generateTokens, refreshAccessToken } = require("./tokenService");
 
 async function loginUser(email, password) {

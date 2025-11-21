@@ -1,4 +1,4 @@
-const UserPushToken = require("../models/UserPushToken");
+const UserPushToken = require("../../models/UserPushToken");
 const fetch = require("node-fetch");
 
 async function saveToken(userId, expoPushToken, platform = "android") {
@@ -79,10 +79,4 @@ async function sendNotificationToUser(userId, title, body) {
     return data;
 }
 
-module.exports = {
-    saveToken,
-    getToken,
-    getAllTokens,
-    sendNotificationToUser,
-    deleteToken,
-};
+module.exports = { saveToken, getToken, getAllTokens, sendNotificationToUser, deleteToken };

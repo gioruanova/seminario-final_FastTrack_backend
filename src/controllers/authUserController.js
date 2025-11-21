@@ -1,19 +1,6 @@
-// -----------------
-// CONTROLADOR DE AUTENTICACIÓN
-// -----------------
-const User = require("../models/User");
-const { loginUser, refreshUserToken } = require("../services/authUserService");
-const {
-  enviarExito,
-  enviarExitoConDatos,
-  enviarError,
-  enviarNoEncontrado,
-  enviarNoAutenticado,
-  enviarSolicitudInvalida,
-  enviarSinPermiso,
-} = require("../helpers/responseHelpers");
-const { obtenerPorId } = require("../helpers/registroHelpers");
-const jwt = require("jsonwebtoken");
+
+const { enviarExito, enviarExitoConDatos, enviarError, enviarNoAutenticado, enviarSolicitudInvalida, enviarSinPermiso, } = require("../helpers/responseHelpers");
+const { loginUser, refreshUserToken } = require("../services/auth/authUserService");
 const ms = require("ms");
 
 // -----------------
@@ -87,57 +74,6 @@ function refreshToken(req, res) {
 }
 
 // -----------------
-// OBTENER PERFIL
-// -----------------
-async function getProfile(req, res) {
-  try {
-    const token = req.cookies.accessToken;
-    if (!token) {
-      return enviarNoAutenticado(res, "No autenticado");
-    }
-
-    const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-
-    const user = await obtenerPorId(User, decoded.user_id);
-    if (!user) {
-      return enviarNoEncontrado(res, "Usuario");
-    }
-
-    let company = null;
-    if (user.user_role !== "superadmin") {
-      company = await user.$relatedQuery("company").first();
-    }
-
-    if (user.user_role == "superadmin") {
-      return res.json({
-        user_id: user.user_id,
-        user_email: user.user_email,
-        user_name: user.user_complete_name,
-        user_role: user.user_role,
-      });
-    } else {
-      return res.json({
-        user_id: user.user_id,
-        user_email: user.user_email,
-        user_name: user.user_complete_name,
-        user_role: user.user_role,
-        company_id: company.company_id || null,
-        company_name: company.company_nombre || null,
-        company_status: company.company_estado || null,
-        user_phone: user.user_phone || null,
-        company_phone: company.company_phone || null,
-        company_email: company.company_email || null,
-        company_whatsapp: company.company_whatsapp || null,
-        company_telegram: company.company_telegram || null,
-        user_dni: user.user_dni || null,
-      });
-    }
-  } catch (error) {
-    return enviarNoAutenticado(res, "Token inválido o expirado");
-  }
-}
-
-// -----------------
 // LOGOUT
 // -----------------
 function logout(req, res) {
@@ -159,4 +95,4 @@ function logout(req, res) {
   return enviarExito(res, "Logout exitoso");
 }
 
-module.exports = { login, refreshToken, logout, getProfile };
+module.exports = { login, refreshToken, logout };

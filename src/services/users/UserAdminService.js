@@ -1,6 +1,3 @@
-// -----------------
-// SERVICIO DE USUARIOS PARA SUPERADMIN
-// -----------------
 const bcrypt = require("bcrypt");
 const User = require("../../models/User");
 const Company = require("../../models/Company");
@@ -8,9 +5,6 @@ const UserService = require("./UserService");
 const { obtenerPorId, verificarDuplicado } = require("../../helpers/registroHelpers");
 const { validarCamposObligatorios, validarUserRole, filtrarCamposPermitidos } = require("../../helpers/validationHelpers");
 
-// -----------------
-// CREAR USUARIO
-// -----------------
 async function createUser(data) {
   const {
     user_complete_name,
@@ -79,9 +73,6 @@ async function createUser(data) {
   return newUser;
 }
 
-// -----------------
-// ACTUALIZAR USUARIO
-// -----------------
 async function updateUser(userId, data) {
   const allowedFields = [
     "user_complete_name",
@@ -152,9 +143,6 @@ async function updateUser(userId, data) {
   return true;
 }
 
-// -----------------
-// OBTENER TODOS LOS USUARIOS
-// -----------------
 async function getAllUsers() {
   const users = await User.query().select(
     "user_id",
@@ -171,18 +159,10 @@ async function getAllUsers() {
   return users;
 }
 
-// -----------------
-// OBTENER USUARIOS POR EMPRESA
-// -----------------
 async function getUsersByCompany(companyId) {
   const users = await User.query().where("company_id", companyId);
   return users;
 }
 
-module.exports = {
-  createUser,
-  updateUser,
-  getAllUsers,
-  getUsersByCompany,
-};
+module.exports = { createUser, updateUser, getAllUsers, getUsersByCompany, };
 

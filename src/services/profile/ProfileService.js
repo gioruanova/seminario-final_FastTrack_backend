@@ -4,9 +4,6 @@ const bcrypt = require("bcrypt");
 const User = require("../../models/User");
 const UserService = require("../users/UserService");
 
-// -----------------
-// OBTENER PERFIL PROPIO
-// -----------------
 async function getProfile(userId) {
   const user = await obtenerPorId(User, userId);
 
@@ -45,9 +42,6 @@ async function getProfile(userId) {
   }
 }
 
-// -----------------
-// ACTUALIZAR PERFIL PROPIO
-// -----------------
 async function updateProfile(userId, data, companyId) {
   const allowedFields = [
     "user_complete_name",

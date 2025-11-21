@@ -5,7 +5,6 @@ const router = express.Router();
 const authSuperadmin = require("../middlewares/authSuperadmin");
 
 // controllers
-const companyController = require("../controllers/companyController");
 const clienteRecurrenteController = require("../controllers/clientesRecurrentesController");
 const especialidadController = require("../controllers/especialidadController");
 const profesionalEspecialidadController = require("../controllers/profesionalEspecialidadController");
@@ -36,28 +35,11 @@ router.put("/profesionalEspecialidad/:id_asignacion", profesionalEspecialidadCon
 // --------------------------------------------------------------------------------------------------------------
 router.get("/clientes-recurrentes", clienteRecurrenteController.getAllClientesRecurrentesAsAdmin);
 
-// Manejo de empresas
-router.get("/companies", companyController.getAllCompanies);
-router.post("/companies/:company_id", companyController.getCompanyById);
-
-router.post("/companies", companyController.createCompany);
-router.put("/companies/:company_id", companyController.updateCompanyAsAdmin);
-
 // --------------------------------------------------------------------------------------------------------------
 // Reclamos
 router.get("/reclamos", reclamoController.getReclamosAsAdmin);
 router.get("/reclamos/:company_id", reclamoController.getReclamosByCompanyAsAdmin);
 
 
-// =====================================================================
-// Manejo de feedbacks (COMENTADO - Ahora se usa routes/feedback/feedbackRoutes.js)
-// =====================================================================
-// router.get("/platform/feedbacks", feedbackController.getFeedbacks);
-// router.get("/platform/feedbacks/:feedback_id", feedbackController.getFeedbackById);
-// router.delete("/platform/feedbacks/:feedback_id", feedbackController.deleteFeedback);
 
 module.exports = router;
-
-// =========================================================
-// DOCUMENTACION SWAGGER
-// =========================================================

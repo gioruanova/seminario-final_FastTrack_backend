@@ -1,8 +1,6 @@
 const { enviarExito, enviarError, enviarSolicitudInvalida, } = require("../helpers/responseHelpers");
 const WorkloadService = require("../services/workload/WorkloadService");
 
-// HELPER PARA MANEJAR ERRORES
-// -----------------
 function manejarError(error, res) {
   const mensajesConocidos = {
     "Usuario no encontrado": () => enviarSolicitudInvalida(res, error.message),
@@ -19,9 +17,6 @@ function manejarError(error, res) {
   return enviarError(res, "Error interno del servidor", 500);
 }
 
-// -----------------
-// OBTENER ESTADO DE CARGA DE TRABAJO
-// -----------------
 async function getWorkloadState(req, res) {
   try {
     const userId = req.user.user_id;
@@ -32,9 +27,6 @@ async function getWorkloadState(req, res) {
   }
 }
 
-// -----------------
-// HABILITAR RECEPCIÓN DE TRABAJO
-// -----------------
 async function enableWorkload(req, res) {
   try {
     const userId = req.user.user_id;
@@ -45,9 +37,6 @@ async function enableWorkload(req, res) {
   }
 }
 
-// -----------------
-// DESHABILITAR RECEPCIÓN DE TRABAJO
-// -----------------
 async function disableWorkload(req, res) {
   try {
     const userId = req.user.user_id;

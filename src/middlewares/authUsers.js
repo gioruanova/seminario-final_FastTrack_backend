@@ -9,23 +9,22 @@ const User = require("../models/User");
 function authUsers({ roles = [], skipCompanyCheck = false } = {}) {
   return async function (req, res, next) {
     const token = req.cookies?.accessToken;
-    if (!token) return res.status(401).json({ error: "Token no provisto" });
+    if (!token) {
+      return res.status(401).json({ error: "Token no provisto" });
+    }
 
     try {
       const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
       req.user = decoded;
 
-      // Validar rol si se especifica
       if (roles.length && !roles.includes(req.user.user_role)) {
         return res.status(403).json({ error: "No autorizado" });
       }
 
-      // Para superadmin, no validar company (puede ser null)
       if (req.user.user_role === "superadmin") {
         return next();
       }
 
-      // Para otros roles, validar company
       const { company_id, user_id } = req.user;
 
       if (!skipCompanyCheck && company_id) {
@@ -47,7 +46,7 @@ function authUsers({ roles = [], skipCompanyCheck = false } = {}) {
       }
 
       next();
-    } catch {
+    } catch (error) {
       return res.status(401).json({ error: "Token inválido o expirado" });
     }
   };

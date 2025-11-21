@@ -1,10 +1,10 @@
 const { enviarLista, enviarExito, enviarError, enviarSolicitudInvalida, enviarSinPermiso, enviarConflicto, } = require("../helpers/responseHelpers");
+
 const UserAdminService = require("../services/users/UserAdminService");
 const UserOwnerService = require("../services/users/UserOwnerService");
 const UserOperadorService = require("../services/users/UserOperadorService");
 const UserService = require("../services/users/UserService");
 
-// HELPER PARA MANEJAR ERRORES
 function manejarError(error, res) {
   const mensajesConocidos = {
     "El email ya está registrado": () => enviarConflicto(res, error.message),
@@ -32,8 +32,6 @@ function manejarError(error, res) {
   return enviarError(res, "Error interno del servidor", 500);
 }
 
-
-// DISPATCHER: Obtener usuarios
 async function getUsers(req, res) {
   try {
     const role = req.user?.user_role || "superadmin";
@@ -53,7 +51,6 @@ async function getUsers(req, res) {
   }
 }
 
-// DISPATCHER: Obtener usuarios por empresa
 async function getUsersByCompany(req, res) {
   try {
     const role = req.user?.user_role || "superadmin";
@@ -68,7 +65,6 @@ async function getUsersByCompany(req, res) {
   }
 }
 
-// DISPATCHER: Crear usuario
 async function createUser(req, res) {
   try {
     const role = req.user?.user_role || "superadmin";
@@ -88,7 +84,6 @@ async function createUser(req, res) {
   }
 }
 
-// DISPATCHER: Actualizar usuario
 async function updateUser(req, res) {
   try {
     const role = req.user?.user_role || "superadmin";
@@ -108,7 +103,6 @@ async function updateUser(req, res) {
   }
 }
 
-// DISPATCHER: Bloquear usuario
 async function blockUser(req, res) {
   try {
     const role = req.user?.user_role || "superadmin";
@@ -128,7 +122,6 @@ async function blockUser(req, res) {
   }
 }
 
-// DISPATCHER: Desbloquear usuario
 async function unblockUser(req, res) {
   try {
     const role = req.user?.user_role || "superadmin";
@@ -148,7 +141,6 @@ async function unblockUser(req, res) {
   }
 }
 
-// DISPATCHER: Restaurar usuario
 async function restoreUser(req, res) {
   try {
     const role = req.user?.user_role || "superadmin";
@@ -168,7 +160,6 @@ async function restoreUser(req, res) {
   }
 }
 
-// MÉTODOS ESPECÍFICOS POR ROL: SUPERADMIN
 async function getUsersAsAdmin(req, res) {
   try {
     const users = await UserAdminService.getAllUsers();
@@ -244,7 +235,6 @@ async function restoreUserAsAdmin(req, res) {
   }
 }
 
-// MÉTODOS ESPECÍFICOS POR ROL: OWNER
 async function getUsersAsOwner(req, res) {
   try {
     const companyId = req.user.company_id;
@@ -320,8 +310,6 @@ async function restoreUserAsOwner(req, res) {
   }
 }
 
-
-// MÉTODOS ESPECÍFICOS POR ROL: OPERADOR
 async function getUsersAsOperador(req, res) {
   try {
     const companyId = req.user.company_id;

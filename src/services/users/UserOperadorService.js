@@ -1,6 +1,3 @@
-// -----------------
-// SERVICIO DE USUARIOS PARA OPERADOR
-// -----------------
 const bcrypt = require("bcrypt");
 const User = require("../../models/User");
 const Company = require("../../models/Company");
@@ -8,9 +5,6 @@ const UserService = require("./UserService");
 const { obtenerPorId, verificarDuplicado } = require("../../helpers/registroHelpers");
 const { validarCamposObligatorios, filtrarCamposPermitidos } = require("../../helpers/validationHelpers");
 
-// -----------------
-// VERIFICAR SI SE PUEDE CREAR ROL
-// -----------------
 function canCreateRole(creatorRole, newUserRole) {
   const permissions = {
     owner: ["operador", "profesional"],
@@ -20,9 +14,6 @@ function canCreateRole(creatorRole, newUserRole) {
   return permissions[creatorRole]?.includes(newUserRole);
 }
 
-// -----------------
-// VERIFICAR SI SE PUEDE GESTIONAR ACCESO
-// -----------------
 function canManageAccess(actorRole, targetRole) {
   const permissions = {
     owner: ["operador", "profesional"],
@@ -32,9 +23,6 @@ function canManageAccess(actorRole, targetRole) {
   return permissions[actorRole]?.includes(targetRole);
 }
 
-// -----------------
-// OBTENER TOTAL DE PROFESIONALES ACTUAL POR EMPRESA
-// -----------------
 async function getCurrentTotalProfesionales(company_id) {
   const result = await User.query()
     .where({ company_id, user_role: "profesional" })
@@ -43,9 +31,6 @@ async function getCurrentTotalProfesionales(company_id) {
   return parseInt(result["count(*)"], 10);
 }
 
-// -----------------
-// CREAR USUARIO
-// -----------------
 async function createUser(data, creator) {
   const {
     user_complete_name,
@@ -111,9 +96,6 @@ async function createUser(data, creator) {
   return newUser;
 }
 
-// -----------------
-// ACTUALIZAR USUARIO
-// -----------------
 async function updateUser(userId, data, creator) {
   const company_id = creator.company_id;
 
@@ -194,9 +176,6 @@ async function updateUser(userId, data, creator) {
   return true;
 }
 
-// -----------------
-// OBTENER USUARIOS POR EMPRESA
-// -----------------
 async function getUsersByCompany(companyId) {
   const users = await User.query()
     .select(
@@ -305,12 +284,5 @@ async function restoreUser(userId, newPassword, creator) {
   return true;
 }
 
-module.exports = {
-  createUser,
-  updateUser,
-  getUsersByCompany,
-  blockUser,
-  unblockUser,
-  restoreUser,
-};
+module.exports = { createUser, updateUser, getUsersByCompany, blockUser, unblockUser, restoreUser, };
 

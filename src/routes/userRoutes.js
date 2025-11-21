@@ -5,8 +5,6 @@ const router = express.Router();
 const authUserWithStatus = require("../middlewares/authUserWithStatus");
 
 
-const companyController = require("../controllers/companyController");
-const companyConfigController = require("../controllers/companyConfigController");
 const especialidadController = require("../controllers/especialidadController");
 const profesionalEspecialidadController = require("../controllers/profesionalEspecialidadController");
 
@@ -22,14 +20,6 @@ const notificationsController = require("../controllers/NotificationsController"
 
 // =======================
 // Rutas protegidas
-
-// Manejo de company
-router.get("/company/companyInfo", authUserWithStatus({ roles: ["owner"] }), companyController.getCompanyInfoAsClientForOnwer);
-router.get("/company/companyStatus", authUserWithStatus({ roles: ["owner"] }), companyConfigController.getCompanySettingsByClientForOwner);
-router.get("/company/config", authUserWithStatus({ roles: ["owner", "operador", "profesional"], skipCompanyCheck: true, }), companyConfigController.getCompanySettingsByClient);
-
-router.put("/company", authUserWithStatus({ roles: ["owner"] }), companyController.updateCompanyAsClient);
-router.put("/company/config", authUserWithStatus({ roles: ["owner"] }), companyConfigController.updateCompanySettingsByClient);
 
 
 // Manejo de especialidades
@@ -78,13 +68,6 @@ router.get("/reclamos/profesional", authUserWithStatus({ roles: ["profesional"] 
 router.get("/reclamos/profesional/gestion/:reclamo_id", authUserWithStatus({ roles: ["profesional"] }), reclamoController.getReclamosAsProfesionalById);
 router.put("/reclamos/profesional/gestion/:reclamo_id", authUserWithStatus({ roles: ["profesional"] }), reclamoController.updateReclamoAsProfesional);
 
-// =====================================================================
-// Manejo de workload (COMENTADO - Ahora se usa routes/workload/workloadRoutes.js)
-// =====================================================================
-// router.get("/workload/estado", authUserWithStatus({ roles: ["profesional"] }), userController.getWorkloadState);
-// router.put("/workload/enable", authUserWithStatus({ roles: ["profesional"] }), userController.enableReceiveWork);
-// router.put("/workload/disable", authUserWithStatus({ roles: ["profesional"] }), userController.disableReceiveWork);
-
 // --------------------------------------------------------------------------------------------------------------
 // Manejo de features especiales
 // VISTAS
@@ -96,12 +79,6 @@ router.get("/vistas/reclamos/:status", authUserWithStatus({ roles: ["owner", "op
 router.post("/notifications", authUserWithStatus({ roles: ["profesional"] }), notificationsController.registerToken);
 router.delete("/notifications", authUserWithStatus({ roles: ["profesional"] }), notificationsController.unregisterToken);
 router.post("/send-notifications", authUserWithStatus({ roles: ["profesional"] }), notificationsController.sendNotification);
-
-
-// =====================================================================
-// Manejo de feedbacks (COMENTADO - Ahora se usa routes/feedback/feedbackRoutes.js)
-// =====================================================================
-// router.post("/platform/feedback", authUserWithStatus({ roles: ["owner", "operador", "profesional"] }), feedbackController.createFeedback);
 
 
 module.exports = router;

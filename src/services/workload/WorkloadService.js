@@ -1,26 +1,17 @@
-// -----------------
-// SERVICIO DE CARGA DE TRABAJO PROFESIONAL
-// -----------------
 const User = require("../../models/User");
 const { obtenerPorId } = require("../../helpers/registroHelpers");
 
-// -----------------
-// OBTENER ESTADO DE CARGA DE TRABAJO
-// -----------------
 async function getWorkloadState(userId) {
   const user = await obtenerPorId(User, userId);
   if (!user) {
     throw new Error("Usuario no encontrado");
   }
-  
+
   return {
     enabled: user.apto_recibir == 1,
   };
 }
 
-// -----------------
-// HABILITAR RECEPCIÓN DE TRABAJO
-// -----------------
 async function enableWorkload(userId) {
   const user = await obtenerPorId(User, userId);
   if (!user) {
@@ -35,9 +26,6 @@ async function enableWorkload(userId) {
   return true;
 }
 
-// -----------------
-// DESHABILITAR RECEPCIÓN DE TRABAJO
-// -----------------
 async function disableWorkload(userId) {
   const user = await obtenerPorId(User, userId);
   if (!user) {
@@ -52,9 +40,4 @@ async function disableWorkload(userId) {
   return true;
 }
 
-module.exports = {
-  getWorkloadState,
-  enableWorkload,
-  disableWorkload,
-};
-
+module.exports = { getWorkloadState, enableWorkload, disableWorkload, };

@@ -238,7 +238,8 @@ async function createEspecialidadAsClient(req, res) {
       return enviarConflicto(res, "La especialidad ya existe para esta empresa");
     }
 
-    limiteEspecialidades = await companyController.getLimitEspecialidades(
+    const CompanyService = require("../services/company/CompanyService");
+    limiteEspecialidades = await CompanyService.getLimitEspecialidades(
       comp_id
     );
 

@@ -1,7 +1,6 @@
 const { enviarLista, enviarExito, enviarError, enviarSolicitudInvalida } = require("../helpers/responseHelpers");
 const FeedbackService = require("../services/feedback/FeedbackService");
 
-// OBTENER FEEDBACKS
 async function getFeedbacks(req, res) {
   try {
     const { user_id, company_id, user_role } = req.user;
@@ -18,7 +17,6 @@ async function getFeedbacks(req, res) {
   }
 }
 
-// OBTENER FEeEDBACK POR ID
 async function getFeedbackById(req, res) {
   try {
     const { feedback_id } = req.params;
@@ -41,7 +39,6 @@ async function getFeedbackById(req, res) {
   }
 }
 
-// CREAR FEEDBACKs
 async function createFeedback(req, res) {
   try {
     const { user_id, company_id, user_role, user_email } = req.user;
@@ -65,7 +62,6 @@ async function createFeedback(req, res) {
   }
 }
 
-// ELIMINAR FEEDBACK
 async function deleteFeedback(req, res) {
   try {
     const { feedback_id } = req.params;

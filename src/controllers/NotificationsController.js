@@ -39,7 +39,7 @@ async function sendNotification(req, res) {
 
 async function auxiliarNotificationMethod(userId, title, body) {
     const result = await sendNotificationToUser(userId, title, body);
-    
+
     return result;
 }
 
@@ -57,9 +57,4 @@ async function unregisterToken(req, res) {
     }
 }
 
-module.exports = {
-    registerToken,
-    sendNotification,
-    auxiliarNotificationMethod,
-    unregisterToken
-};
+module.exports = { registerToken, sendNotification, auxiliarNotificationMethod, unregisterToken };

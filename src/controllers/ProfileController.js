@@ -1,9 +1,6 @@
 const { enviarExito, enviarError, enviarSolicitudInvalida, enviarConflicto, enviarNoEncontrado, } = require("../helpers/responseHelpers");
 const ProfileService = require("../services/profile/ProfileService");
 
-// -----------------
-// HELPER PARA MANEJAR ERRORES
-// -----------------
 function manejarError(error, res) {
   const mensajesConocidos = {
     "El email ya está registrado": () => enviarConflicto(res, error.message),
@@ -18,9 +15,6 @@ function manejarError(error, res) {
   return enviarError(res, "Error interno del servidor", 500);
 }
 
-// -----------------
-// OBTENER PERFIL PROPIO
-// -----------------
 async function getProfile(req, res) {
   try {
     const userId = req.user.user_id;
@@ -34,9 +28,6 @@ async function getProfile(req, res) {
   }
 }
 
-// -----------------
-// ACTUALIZAR PERFIL PROPIO
-// -----------------
 async function updateProfile(req, res) {
   try {
     const userId = req.user.user_id;

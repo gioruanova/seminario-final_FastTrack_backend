@@ -13,7 +13,15 @@ const options = {
       { name: "Login y sesiones", description: "Rutas para login y session" },
       { name: "User Profile", description: "Rutas para autogestion de perfil" },
       { name: "Users", description: "Rutas para Users" },
+      { name: "Company", description: "Gestion de company" },
+      { name: "Company Config", description: "Gestion de la configuracion de la empresa" },
+      { name: "Especialidades", description: "Gestion de especialidades" },
+      { name: "Profesional-Especialidad", description: "Gestion de especialidades a profesionales" },
+
+
+      
       { name: "Feedbacks", description: "Gestion de feedbacks" },
+
     ],
     servers: [
       {
@@ -27,7 +35,7 @@ const options = {
   },
   apis: [
     "./src/routes/*.js",
-    "./src/routes/**/*.js"  // Incluir subcarpetas (users/, profile/, workload/, feedback/)
+    "./src/routes/**/*.js"
   ],
 };
 

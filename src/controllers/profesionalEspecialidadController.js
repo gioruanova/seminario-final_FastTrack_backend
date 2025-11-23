@@ -1,344 +1,149 @@
-// -----------------
-// CONTROLADOR DE ASIGNACIONES PROFESIONAL-ESPECIALIDAD
-// -----------------
+const { enviarLista, enviarExito, enviarError, enviarSolicitudInvalida, enviarNoEncontrado, enviarConflicto } = require("../helpers/responseHelpers");
+const ProfesionalEspecialidadAdminService = require("../services/profesionalEspecialidad/ProfesionalEspecialidadAdminService");
+const ProfesionalEspecialidadOwnerService = require("../services/profesionalEspecialidad/ProfesionalEspecialidadOwnerService");
 
-const ProfesionalEspecialidad = require("../models/ProfesionalesEspecialidad");
-const Especialidad = require("../models/Especialidad");
-const User = require("../models/User");
-const { enviarLista, enviarExito, enviarError, enviarNoEncontrado, enviarSolicitudInvalida, enviarConflicto } = require("../helpers/responseHelpers");
+function manejarError(error, res) {
+  const mensajesConocidos = {
+    "La especialidad ya esta asignada al profesional": () => enviarConflicto(res, error.message),
+    "Especialidad inactiva": () => enviarSolicitudInvalida(res, error.message),
+    "Profesional no encontrado": () => enviarNoEncontrado(res, "Profesional"),
+    "Especialidad no encontrada": () => enviarNoEncontrado(res, "Especialidad"),
+    "Asignación de Especialidad-Profesional no encontrada": () => enviarNoEncontrado(res, "Asignación de Especialidad-Profesional"),
+    "El profesional y la especialidad son requeridos": () => enviarSolicitudInvalida(res, error.message),
+    "Es necesario el id del profesional y la especialidad": () => enviarSolicitudInvalida(res, error.message),
+    "Es necesario el id de la asignacion": () => enviarSolicitudInvalida(res, error.message),
+    "Es necesario el id de la especialidad": () => enviarSolicitudInvalida(res, error.message),
+    "Company ID no encontrado": () => enviarSolicitudInvalida(res, error.message),
+  };
 
-const permitirAsignacionInactiva = false;
+  if (mensajesConocidos[error.message]) {
+    return mensajesConocidos[error.message]();
+  }
 
-// -----------------
-// CONTROLADORES PARA ADMIN:
-// -----------------
+  console.error("Error en profesionalEspecialidadController:", error);
+  return enviarError(res, "Error interno del servidor", 500);
+}
 
-// -----------------
-// ASIGNAR ESPECIALIDAD A PROFESIONAL
-// -----------------
+async function getAsignaciones(req, res) {
+  try {
+    const role = req.user?.user_role || "superadmin";
+
+    if (role === "superadmin") {
+      return enviarError(res, "Superadmin no tiene endpoint para obtener asignaciones", 403);
+    }
+
+    if (role === "owner" || role === "operador") {
+      return await getAsignacionesAsOwner(req, res);
+    }
+
+    return enviarError(res, "Rol no autorizado", 403);
+  } catch (error) {
+    return manejarError(error, res);
+  }
+}
+
+async function assignEspecialidad(req, res) {
+  try {
+    const role = req.user?.user_role || "superadmin";
+
+    switch (role) {
+      case "superadmin":
+        return await assignEspecialidadAsAdmin(req, res);
+      case "owner":
+      case "operador":
+        return await assignEspecialidadAsOwner(req, res);
+      default:
+        return enviarError(res, "Rol no autorizado", 403);
+    }
+  } catch (error) {
+    return manejarError(error, res);
+  }
+}
+
+async function deleteAsignacion(req, res) {
+  try {
+    const role = req.user?.user_role || "superadmin";
+
+    switch (role) {
+      case "superadmin":
+        return await deleteAsignacionAsAdmin(req, res);
+      case "owner":
+      case "operador":
+        return await deleteAsignacionAsOwner(req, res);
+      default:
+        return enviarError(res, "Rol no autorizado", 403);
+    }
+  } catch (error) {
+    return manejarError(error, res);
+  }
+}
+
+async function updateAsignacion(req, res) {
+  try {
+    const role = req.user?.user_role || "superadmin";
+
+    switch (role) {
+      case "superadmin":
+        return await updateAsignacionAsAdmin(req, res);
+      case "owner":
+      case "operador":
+        return await updateAsignacionAsOwner(req, res);
+      default:
+        return enviarError(res, "Rol no autorizado", 403);
+    }
+  } catch (error) {
+    return manejarError(error, res);
+  }
+}
+
 async function assignEspecialidadAsAdmin(req, res) {
-  try {
-    const { profesional_id, especialidad_id } = req.body;
-
-    if (!profesional_id || !especialidad_id) {
-      return enviarSolicitudInvalida(res, "El profesional y la especialidad son requeridos");
-    }
-
-    const profesionalExiste = await User.query()
-      .findById(profesional_id)
-      .where("user_role", "profesional");
-
-    if (!profesionalExiste) {
-      return enviarNoEncontrado(res, "Profesional");
-    }
-
-    const especialidadExiste = await Especialidad.query()
-      .findById(especialidad_id)
-      .where("company_id", profesionalExiste.company_id);
-
-    if (!especialidadExiste) {
-      return enviarNoEncontrado(res, "Especialidad");
-    }
-
-    if (
-      !permitirAsignacionInactiva &&
-      especialidadExiste.estado_especialidad === 0
-    ) {
-      return enviarSolicitudInvalida(res, "Especialidad inactiva");
-    }
-
-    const asignacion = await ProfesionalEspecialidad.query()
-      .where({ id_usuario: profesional_id, id_especialidad: especialidad_id })
-      .first();
-
-    if (asignacion) {
-      return enviarConflicto(res, "La especialidad ya esta asignada al profesional");
-    }
-
-    await ProfesionalEspecialidad.query().insert({
-      id_usuario: profesional_id,
-      company_id: profesionalExiste.company_id,
-      id_especialidad: especialidad_id,
-    });
-
-    return enviarExito(res, "Especialidad asignada correctamente", 201);
-  } catch (error) {
-    return enviarError(res, "Error al asignar la especialidad", 500);
-  }
+  const data = req.body;
+  await ProfesionalEspecialidadAdminService.assignEspecialidad(data);
+  return enviarExito(res, "Especialidad asignada correctamente", 201);
 }
 
-// -----------------
-// ELIMINAR ESPECIALIDAD DE UN PROFESIONAL
-// -----------------
-async function deleteEspecialidadAsAdmin(req, res) {
-  try {
-    const { id_asignacion } = req.params;
-
-    if (!id_asignacion) {
-      return enviarSolicitudInvalida(res, "Es necesario el id de la asignacion");
-    }
-
-    const profesionalEspecialidadExiste = await ProfesionalEspecialidad.query()
-      .where({ id_asignacion })
-      .first();
-
-    if (!profesionalEspecialidadExiste) {
-      return enviarNoEncontrado(res, "Asignación de Especialidad-Profesional");
-    }
-
-    await ProfesionalEspecialidad.query().where({ id_asignacion }).delete();
-
-    return enviarExito(res, "Especialidad eliminada correctamente", 201);
-  } catch (error) {
-    return enviarError(res, "Error al eliminar la especialidad", 500);
-  }
+async function deleteAsignacionAsAdmin(req, res) {
+  const { asignacion_id } = req.params;
+  await ProfesionalEspecialidadAdminService.deleteAsignacion(asignacion_id);
+  return enviarExito(res, "Especialidad eliminada correctamente", 201);
 }
 
-// -----------------
-// EDITAR ASIGNACIÓN
-// -----------------
-async function editAsignacionEspecialidadAsAdmin(req, res) {
-  try {
-    const { id_asignacion } = req.params;
-    const { especialidad_id } = req.body;
-
-    const profesionalEspecialidadExiste = await ProfesionalEspecialidad.query()
-      .where({ id_asignacion })
-      .first();
-
-    if (!profesionalEspecialidadExiste) {
-      return enviarNoEncontrado(res, "Asignación de Especialidad-Profesional");
-    }
-
-    if (!especialidad_id) {
-      return enviarSolicitudInvalida(res, "Es necesario el id de la especialidad");
-    }
-
-    const validacionEspecialidad = await Especialidad.query()
-      .where({
-        id_especialidad: especialidad_id,
-        company_id: profesionalEspecialidadExiste.company_id,
-      })
-      .first();
-
-    if (!validacionEspecialidad) {
-      return enviarNoEncontrado(res, "Especialidad");
-    }
-
-    if (
-      !permitirAsignacionInactiva &&
-      validacionEspecialidad.estado_especialidad === 0
-    ) {
-      return enviarSolicitudInvalida(res, "Especialidad inactiva");
-    }
-
-    const validacionAsignacion = await ProfesionalEspecialidad.query()
-      .where({
-        id_especialidad: especialidad_id,
-        id_usuario: profesionalEspecialidadExiste.id_usuario,
-      })
-      .first();
-
-    if (validacionAsignacion) {
-      return enviarConflicto(res, "La especialidad ya esta asignada al profesional");
-    }
-
-    await ProfesionalEspecialidad.query()
-      .where({ id_asignacion })
-      .patch({ id_especialidad: especialidad_id });
-
-    return enviarExito(res, "Asignacion actualizada correctamente", 201);
-  } catch (error) {
-    return enviarError(res, "Error al actualizar la asignacion", 500);
-  }
+async function updateAsignacionAsAdmin(req, res) {
+  const { asignacion_id } = req.params;
+  const data = req.body;
+  await ProfesionalEspecialidadAdminService.updateAsignacion(asignacion_id, data);
+  return enviarExito(res, "Asignacion actualizada correctamente", 201);
 }
 
-// -----------------
-// CONTROLADORES PARA USUARIO COMUN (CON SUS ROLES):
-// -----------------
-
-// -----------------
-// ASIGNAR ESPECIALIDAD A PROFESIONAL
-// -----------------
-async function assignEspecialidadAsClient(req, res) {
+async function getAsignacionesAsOwner(req, res) {
   const company_id = req.user?.company_id;
-  try {
-    const { profesional_id, especialidad_id } = req.body;
-
-    if (!profesional_id || !especialidad_id) {
-      return enviarSolicitudInvalida(res, "Es necesario el id del profesional y la especialidad");
-    }
-
-    const validacionEspecialidad = await Especialidad.query()
-      .where({
-        id_especialidad: especialidad_id,
-        company_id,
-      })
-      .first();
-
-    if (!validacionEspecialidad) {
-      return enviarNoEncontrado(res, "Especialidad");
-    }
-
-    if (
-      !permitirAsignacionInactiva &&
-      validacionEspecialidad.estado_especialidad === 0
-    ) {
-      return enviarSolicitudInvalida(res, "Especialidad inactiva");
-    }
-
-    const validacionProfesional = await User.query()
-      .where({
-        user_id: profesional_id,
-        user_role: "profesional",
-        company_id,
-      })
-      .first();
-
-    if (!validacionProfesional) {
-      return enviarNoEncontrado(res, "Profesional");
-    }
-
-    const profesionalEspecialidadExiste = await ProfesionalEspecialidad.query()
-      .where({
-        id_especialidad: especialidad_id,
-        id_usuario: profesional_id,
-        company_id: company_id,
-      })
-      .first();
-
-    if (profesionalEspecialidadExiste) {
-      return enviarConflicto(res, "La especialidad ya esta asignada al profesional");
-    }
-
-    await ProfesionalEspecialidad.query().insert({
-      id_especialidad: especialidad_id,
-      id_usuario: profesional_id,
-      company_id,
-    });
-
-    return enviarExito(res, "Especialidad asignada correctamente", 201);
-  } catch (error) {
-    return enviarError(res, "Error al asignar la especialidad", 500);
+  if (!company_id) {
+    return enviarSolicitudInvalida(res, "Company ID no encontrado");
   }
+  const asignaciones = await ProfesionalEspecialidadOwnerService.getAsignaciones(company_id);
+  return enviarLista(res, asignaciones);
 }
 
-// -----------------
-// ELIMINAR ESPECIALIDAD DE UN PROFESIONAL
-// -----------------
-async function deleteEspecialidadAsClient(req, res) {
+async function assignEspecialidadAsOwner(req, res) {
   const company_id = req.user?.company_id;
-  try {
-    const { id_asignacion } = req.params;
-
-    const profesionalEspecialidadExiste = await ProfesionalEspecialidad.query()
-      .where({ id_asignacion, company_id })
-      .first();
-
-    if (!profesionalEspecialidadExiste) {
-      return enviarNoEncontrado(res, "Asignación de Especialidad-Profesional");
-    }
-
-    await ProfesionalEspecialidad.query().where({ id_asignacion }).delete();
-
-    return enviarExito(res, "Asignacion eliminada correctamente", 201);
-  } catch (error) {
-    return enviarError(res, "Error al eliminar la asignacion", 500);
-  }
+  const data = req.body;
+  await ProfesionalEspecialidadOwnerService.assignEspecialidad(data, company_id);
+  return enviarExito(res, "Especialidad asignada correctamente", 201);
 }
 
-// -----------------
-// EDITAR ASIGNACIÓN
-// -----------------
-async function editAsignacionEspecialidadAsClient(req, res) {
+async function deleteAsignacionAsOwner(req, res) {
   const company_id = req.user?.company_id;
-  try {
-    const { id_asignacion } = req.params;
-    const { especialidad_id } = req.body;
-
-    const profesionalEspecialidadExiste = await ProfesionalEspecialidad.query()
-      .where({ id_asignacion, company_id })
-      .first();
-
-    if (!profesionalEspecialidadExiste) {
-      return enviarNoEncontrado(res, "Asignación de Especialidad-Profesional");
-    }
-
-    const validacionEspecialidad = await Especialidad.query()
-      .where({
-        id_especialidad: especialidad_id,
-        company_id,
-      })
-      .first();
-
-    if (!validacionEspecialidad) {
-      return enviarNoEncontrado(res, "Especialidad");
-    }
-
-    if (
-      !permitirAsignacionInactiva &&
-      validacionEspecialidad.estado_especialidad === 0
-    ) {
-      return enviarSolicitudInvalida(res, "Especialidad inactiva");
-    }
-
-    const validacionAsignacion = await ProfesionalEspecialidad.query()
-      .where({
-        id_especialidad: especialidad_id,
-        id_usuario: profesionalEspecialidadExiste.id_usuario,
-        company_id,
-      })
-      .first();
-
-    if (validacionAsignacion) {
-      return enviarConflicto(res, "La especialidad ya esta asignada al profesional");
-    }
-
-    await ProfesionalEspecialidad.query()
-      .where({ id_asignacion })
-      .patch({ id_especialidad: especialidad_id });
-
-    return enviarExito(res, "Asignacion editada correctamente", 201);
-  } catch (error) {
-    return enviarError(res, "Error al editar la asignacion", 500);
-  }
+  const { asignacion_id } = req.params;
+  await ProfesionalEspecialidadOwnerService.deleteAsignacion(asignacion_id, company_id);
+  return enviarExito(res, "Asignacion eliminada correctamente", 201);
 }
 
-// -----------------
-// OBTENER ASIGNACIONES PROFESIONAL-ESPECIALIDAD
-// -----------------
-async function getProfesionalEspecialidadAsClient(req, res) {
+async function updateAsignacionAsOwner(req, res) {
   const company_id = req.user?.company_id;
-
-  try {
-    if (!company_id) {
-      return enviarSolicitudInvalida(res, "Company ID no encontrado");
-    }
-
-    const profesionalEspecialidad = await ProfesionalEspecialidad.query()
-      .select(
-        'profesionales_especialidad.id_usuario as profesional_id',
-        'usuario.user_complete_name as profesional_nombre',
-        'profesionales_especialidad.id_especialidad as especialidad_id',
-        'Especialidad.nombre_especialidad as especialidad_nombre'
-      )
-      .join('users as usuario', 'profesionales_especialidad.id_usuario', 'usuario.user_id')
-      .join('especialidades as Especialidad', 'profesionales_especialidad.id_especialidad', 'Especialidad.id_especialidad')
-      .where('profesionales_especialidad.company_id', company_id);
-
-    return enviarLista(res, profesionalEspecialidad);
-  } catch (error) {
-    return enviarError(res, "Error interno del servidor", 500);
-  }
+  const { asignacion_id } = req.params;
+  const data = req.body;
+  await ProfesionalEspecialidadOwnerService.updateAsignacion(asignacion_id, data, company_id);
+  return enviarExito(res, "Asignacion editada correctamente", 201);
 }
 
-module.exports = {
-  assignEspecialidadAsAdmin,
-  deleteEspecialidadAsAdmin,
-  editAsignacionEspecialidadAsAdmin,
-
-  getProfesionalEspecialidadAsClient,
-  assignEspecialidadAsClient,
-  deleteEspecialidadAsClient,
-  editAsignacionEspecialidadAsClient,
-};
+module.exports = { getAsignaciones, assignEspecialidad, deleteAsignacion, updateAsignacion, };

@@ -1,5 +1,5 @@
 const { saveToken, sendNotificationToUser, deleteToken } = require('../services/notifications/NotificationsService');
-const { enviarExito, enviarError, enviarSolicitudInvalida } = require('../helpers/responseHelpers');
+const { enviarLista, enviarExito, enviarError, enviarSolicitudInvalida } = require('../helpers/responseHelpers');
 
 function manejarError(error, res) {
   const mensajesConocidos = {
@@ -21,10 +21,6 @@ async function registerToken(req, res) {
     const userId = req.user.user_id;
     const { expoPushToken, platform } = req.body;
 
-    if (!expoPushToken) {
-      return enviarSolicitudInvalida(res, "Falta el token");
-    }
-
     await saveToken(userId, expoPushToken, platform || 'android');
 
     return enviarExito(res, "Token registrado correctamente", 201);
@@ -37,13 +33,9 @@ async function sendNotification(req, res) {
   try {
     const { userId, title, body } = req.body;
 
-    if (!userId || !title || !body) {
-      return enviarSolicitudInvalida(res, "Faltan datos");
-    }
-
     const result = await sendNotificationToUser(userId, title, body);
 
-    return res.status(200).json({
+    return enviarLista(res, {
       success: true,
       message: "Notificación enviada",
       result

@@ -7,6 +7,7 @@ const companyRoutes = require("./company/companyRoutes");
 const especialidadesRoutes = require("./especialidades/especialidadesRoutes");
 const profesionalEspecialidadRoutes = require("./profesionalEspecialidad/profesionalEspecialidadRoutes");
 const notificationsRoutes = require("./notifications/notificationsRoutes");
+const clientesRecurrentesRoutes = require("./clientesRecurrentes/clientesRecurrentesRoutes");
 
 function configureRoutes(app) {
   app.use(loginRoutes);
@@ -18,6 +19,7 @@ function configureRoutes(app) {
   app.use(especialidadesRoutes);
   app.use(profesionalEspecialidadRoutes);
   app.use(notificationsRoutes);
+  app.use(clientesRecurrentesRoutes);
 }
 
 module.exports = configureRoutes;

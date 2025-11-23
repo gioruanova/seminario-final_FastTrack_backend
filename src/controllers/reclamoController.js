@@ -10,7 +10,7 @@ const User = require("../models/User");
 const ClienteRecurrente = require("../models/ClienteRecurrente");
 const disponibilidadController = require("./disponibilidadController");
 const AgendaReclamo = require("../models/AgendaReclamo");
-const companyConfigController = require("./companyConfigController");
+const ConfigService = require("../services/companyConfig/ConfigService");
 const CompaniesConfig = require("../models/CompaniesConfig");
 const { enviarLista, enviarError, enviarErrorReclamo, enviarExitoReclamo, enviarExito, enviarNoEncontrado } = require("../helpers/responseHelpers");
 const { obtenerPorId } = require("../helpers/registroHelpers");
@@ -71,8 +71,7 @@ async function createReclamo(req, res) {
       return enviarErrorReclamo(res, "Especialidad profesional no encontrada", 400);
     }
 
-    const companyConfig =
-      await companyConfigController.fetchCompanySettingsByCompanyId(company_id);
+    const companyConfig = await ConfigService.getCompanyConfig(company_id);
 
     const { valid, error, newAgendaHoraHasta } = validarDatosObligatoriosYHora(
       data,
@@ -167,7 +166,7 @@ async function recordatorioReclamo(req, res) {
     }
 
 
-    const companyConfig = await companyConfigController.fetchCompanySettingsByCompanyId(reclamo.company_id);
+    const companyConfig = await ConfigService.getCompanyConfig(reclamo.company_id);
     const profesionalUser = await User.query().findById(reclamo.profesional_id);
 
 
@@ -258,7 +257,7 @@ async function updateReclamoAsClient(req, res) {
       }
     );
 
-    const companyConfig = await companyConfigController.fetchCompanySettingsByCompanyId(reclamoExiste.company_id);
+    const companyConfig = await ConfigService.getCompanyConfig(reclamoExiste.company_id);
 
     const profesionalUser = await User.query().findById(reclamoExiste.profesional_id);
 
@@ -357,7 +356,7 @@ async function updateReclamoAsProfesional(req, res) {
     if (reclamoActualizado) {
       const resultado = await fetchReclamosByCompanyId(companyId, user_id);
 
-      const companyConfig = await companyConfigController.fetchCompanySettingsByCompanyId(reclamoExiste.company_id);
+      const companyConfig = await ConfigService.getCompanyConfig(reclamoExiste.company_id);
       const compUsers = await User.query().select().where("user_role", "operador");
 
 

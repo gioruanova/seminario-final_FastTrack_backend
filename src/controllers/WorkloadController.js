@@ -1,4 +1,4 @@
-const { enviarExito, enviarError, enviarSolicitudInvalida, } = require("../helpers/responseHelpers");
+const { enviarLista, enviarExito, enviarError, enviarSolicitudInvalida, } = require("../helpers/responseHelpers");
 const WorkloadService = require("../services/workload/WorkloadService");
 
 function manejarError(error, res) {
@@ -21,7 +21,7 @@ async function getWorkloadState(req, res) {
   try {
     const userId = req.user.user_id;
     const state = await WorkloadService.getWorkloadState(userId);
-    return res.json(state);
+    return enviarLista(res, state);
   } catch (error) {
     return manejarError(error, res);
   }
@@ -47,5 +47,5 @@ async function disableWorkload(req, res) {
   }
 }
 
-module.exports = {  getWorkloadState,  enableWorkload, disableWorkload  };
+module.exports = { getWorkloadState, enableWorkload, disableWorkload };
 

@@ -1,4 +1,4 @@
-const { enviarLista, enviarExito, enviarError, enviarSolicitudInvalida, enviarNoEncontrado, enviarConflicto } = require("../helpers/responseHelpers");
+const { enviarLista, enviarExito, enviarError, enviarSolicitudInvalida, enviarNoEncontrado, enviarConflicto, enviarSinPermiso } = require("../helpers/responseHelpers");
 const EspecialidadAdminService = require("../services/especialidades/EspecialidadAdminService");
 const EspecialidadOwnerService = require("../services/especialidades/EspecialidadOwnerService");
 
@@ -36,7 +36,7 @@ async function getEspecialidades(req, res) {
       case "operador":
         return await getEspecialidadesAsOwner(req, res);
       default:
-        return enviarError(res, "Rol no autorizado", 403);
+        return enviarSinPermiso(res, "Rol no autorizado");
     }
   } catch (error) {
     return manejarError(error, res);
@@ -47,11 +47,12 @@ async function getEspecialidadesByCompany(req, res) {
   try {
     const role = req.user?.user_role || "superadmin";
 
-    if (role !== "superadmin") {
-      return enviarError(res, "Solo superadmin puede obtener especialidades por empresa", 403);
+    switch (role) {
+      case "superadmin":
+        return await getEspecialidadesByCompanyAsAdmin(req, res);
+      default:
+        return enviarSinPermiso(res, "Solo superadmin puede obtener especialidades por empresa");
     }
-
-    return await getEspecialidadesByCompanyAsAdmin(req, res);
   } catch (error) {
     return manejarError(error, res);
   }
@@ -68,7 +69,7 @@ async function createEspecialidad(req, res) {
       case "operador":
         return await createEspecialidadAsOwner(req, res);
       default:
-        return enviarError(res, "Rol no autorizado", 403);
+        return enviarSinPermiso(res, "Rol no autorizado");
     }
   } catch (error) {
     return manejarError(error, res);
@@ -86,7 +87,7 @@ async function updateEspecialidad(req, res) {
       case "operador":
         return await updateEspecialidadAsOwner(req, res);
       default:
-        return enviarError(res, "Rol no autorizado", 403);
+        return enviarSinPermiso(res, "Rol no autorizado");
     }
   } catch (error) {
     return manejarError(error, res);
@@ -104,7 +105,7 @@ async function blockEspecialidad(req, res) {
       case "operador":
         return await blockEspecialidadAsOwner(req, res);
       default:
-        return enviarError(res, "Rol no autorizado", 403);
+        return enviarSinPermiso(res, "Rol no autorizado");
     }
   } catch (error) {
     return manejarError(error, res);
@@ -122,7 +123,7 @@ async function unblockEspecialidad(req, res) {
       case "operador":
         return await unblockEspecialidadAsOwner(req, res);
       default:
-        return enviarError(res, "Rol no autorizado", 403);
+        return enviarSinPermiso(res, "Rol no autorizado");
     }
   } catch (error) {
     return manejarError(error, res);

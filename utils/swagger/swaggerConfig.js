@@ -7,7 +7,7 @@ const options = {
     info: {
       title: "Fast Track API",
       version: "1.0.1",
-      description: "Admin-Client-Public API documentation",
+      description: "Fast Track API documentation",
     },
     tags: [
       { name: "Login y sesiones", description: "Rutas para login y session" },
@@ -19,6 +19,7 @@ const options = {
       { name: "Profesional-Especialidad", description: "Gestion de especialidades a profesionales" },
 
 
+      { name: "Clientes Recurrentes", description: "Gestion de clientes recurrentes" },
       { name: "Notificaciones", description: "Gestion de notifications" },
       { name: "Feedbacks", description: "Gestion de feedbacks" },
 

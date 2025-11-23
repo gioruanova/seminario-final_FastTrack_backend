@@ -1,11 +1,11 @@
-const { enviarExito, enviarError, enviarSolicitudInvalida, enviarConflicto, enviarNoEncontrado, } = require("../helpers/responseHelpers");
+const { enviarLista, enviarExito, enviarError, enviarSolicitudInvalida, enviarConflicto, enviarNoEncontrado, } = require("../helpers/responseHelpers");
 const ProfileService = require("../services/profile/ProfileService");
 
 function manejarError(error, res) {
   const mensajesConocidos = {
     "El email ya está registrado": () => enviarConflicto(res, error.message),
     "El DNI ya está registrado": () => enviarConflicto(res, error.message),
-    "No existe usuario bajo ese ID": () => enviarSolicitudInvalida(res, error.message),
+    "No existe usuario bajo ese ID": () => enviarNoEncontrado(res, "Usuario"),
   };
 
   if (mensajesConocidos[error.message]) {
@@ -19,12 +19,9 @@ async function getProfile(req, res) {
   try {
     const userId = req.user.user_id;
     const profileData = await ProfileService.getProfile(userId);
-    return res.json(profileData);
+    return enviarLista(res, profileData);
   } catch (error) {
-    if (error.message === "No existe usuario bajo ese ID") {
-      return enviarNoEncontrado(res, "Usuario");
-    }
-    return enviarError(res, "Error interno del servidor", 500);
+    return manejarError(error, res);
   }
 }
 

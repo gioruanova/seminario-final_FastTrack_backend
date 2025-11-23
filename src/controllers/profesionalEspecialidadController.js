@@ -1,4 +1,4 @@
-const { enviarLista, enviarExito, enviarError, enviarSolicitudInvalida, enviarNoEncontrado, enviarConflicto } = require("../helpers/responseHelpers");
+const { enviarLista, enviarExito, enviarError, enviarSolicitudInvalida, enviarNoEncontrado, enviarConflicto, enviarSinPermiso } = require("../helpers/responseHelpers");
 const ProfesionalEspecialidadAdminService = require("../services/profesionalEspecialidad/ProfesionalEspecialidadAdminService");
 const ProfesionalEspecialidadOwnerService = require("../services/profesionalEspecialidad/ProfesionalEspecialidadOwnerService");
 
@@ -28,15 +28,15 @@ async function getAsignaciones(req, res) {
   try {
     const role = req.user?.user_role || "superadmin";
 
-    if (role === "superadmin") {
-      return enviarError(res, "Superadmin no tiene endpoint para obtener asignaciones", 403);
+    switch (role) {
+      case "superadmin":
+        return enviarSinPermiso(res, "Superadmin no tiene endpoint para obtener asignaciones");
+      case "owner":
+      case "operador":
+        return await getAsignacionesAsOwner(req, res);
+      default:
+        return enviarSinPermiso(res, "Rol no autorizado");
     }
-
-    if (role === "owner" || role === "operador") {
-      return await getAsignacionesAsOwner(req, res);
-    }
-
-    return enviarError(res, "Rol no autorizado", 403);
   } catch (error) {
     return manejarError(error, res);
   }
@@ -53,7 +53,7 @@ async function assignEspecialidad(req, res) {
       case "operador":
         return await assignEspecialidadAsOwner(req, res);
       default:
-        return enviarError(res, "Rol no autorizado", 403);
+        return enviarSinPermiso(res, "Rol no autorizado");
     }
   } catch (error) {
     return manejarError(error, res);
@@ -71,7 +71,7 @@ async function deleteAsignacion(req, res) {
       case "operador":
         return await deleteAsignacionAsOwner(req, res);
       default:
-        return enviarError(res, "Rol no autorizado", 403);
+        return enviarSinPermiso(res, "Rol no autorizado");
     }
   } catch (error) {
     return manejarError(error, res);
@@ -89,7 +89,7 @@ async function updateAsignacion(req, res) {
       case "operador":
         return await updateAsignacionAsOwner(req, res);
       default:
-        return enviarError(res, "Rol no autorizado", 403);
+        return enviarSinPermiso(res, "Rol no autorizado");
     }
   } catch (error) {
     return manejarError(error, res);
@@ -117,9 +117,6 @@ async function updateAsignacionAsAdmin(req, res) {
 
 async function getAsignacionesAsOwner(req, res) {
   const company_id = req.user?.company_id;
-  if (!company_id) {
-    return enviarSolicitudInvalida(res, "Company ID no encontrado");
-  }
   const asignaciones = await ProfesionalEspecialidadOwnerService.getAsignaciones(company_id);
   return enviarLista(res, asignaciones);
 }

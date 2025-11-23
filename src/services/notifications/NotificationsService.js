@@ -2,6 +2,10 @@ const UserPushToken = require("../../models/UserPushToken");
 const fetch = require("node-fetch");
 
 async function saveToken(userId, expoPushToken, platform = "android") {
+    if (!expoPushToken) {
+        throw new Error("Falta el token");
+    }
+
     const existing = await UserPushToken.query()
         .where({ user_id: userId, expo_push_token: expoPushToken })
         .first();
@@ -49,6 +53,10 @@ async function deleteToken(userId, expoPushToken = null) {
 }
 
 async function sendNotificationToUser(userId, title, body) {
+    if (!userId || !title || !body) {
+        throw new Error("Faltan datos");
+    }
+
     const expoPushToken = await getToken(userId);
 
     if (!expoPushToken) {

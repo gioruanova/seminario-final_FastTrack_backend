@@ -21,7 +21,7 @@ async function getAgendaReclamo(req, res) {
       )
       .join('reclamos', 'agenda_reclamo.reclamo_id', 'reclamos.reclamo_id')
       .where('agenda_reclamo.company_id', companyId);
-    
+
     return enviarLista(res, agendaReclamo);
   } catch (error) {
     return enviarError(res, "Error interno del servidor", 500);

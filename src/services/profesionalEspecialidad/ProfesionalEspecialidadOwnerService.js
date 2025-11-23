@@ -6,6 +6,10 @@ const { existeAsignacion, existeAsignacionConEspecialidad } = require("./Profesi
 const permitirAsignacionInactiva = false;
 
 async function getAsignaciones(company_id) {
+  if (!company_id) {
+    throw new Error("Company ID no encontrado");
+  }
+
   const profesionalEspecialidad = await ProfesionalEspecialidad.query()
     .select(
       'profesionales_especialidad.id_usuario as profesional_id',

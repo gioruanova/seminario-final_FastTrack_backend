@@ -2,13 +2,12 @@ const { exportToExcel } = require("./exportConfig");
 const {
   fetchReclamosByCompanyId,
 } = require("../../src/controllers/reclamoController");
-const companyConfigController = require("../../src/controllers/companyConfigController");
+const ConfigService = require("../../src/services/companyConfig/ConfigService");
 
 async function exportReclamosToExcel(req, res) {
   const companyId = req.user.company_id;
   const statusParam = req.params.status?.toLowerCase();
-  const configCompany =
-    await companyConfigController.fetchCompanySettingsByCompanyId(companyId);
+  const configCompany = await ConfigService.getCompanyConfig(companyId);
   const data = await fetchReclamosByCompanyId(companyId);
 
   let filtered;

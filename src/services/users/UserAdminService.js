@@ -164,5 +164,24 @@ async function getUsersByCompany(companyId) {
   return users;
 }
 
-module.exports = { createUser, updateUser, getAllUsers, getUsersByCompany, };
+async function restoreUser(userId, newPassword) {
+  if (!newPassword) {
+    throw new Error("Debes ingresar una nueva contraseña");
+  }
+
+  const user = await obtenerPorId(User, userId);
+  if (!user) {
+    throw new Error("No existe usuario bajo ese ID");
+  }
+
+  if (user.user_status === 1) {
+    throw new Error("El usuario ya se encuentra habilitado");
+  }
+
+  await UserService.resetPassword(userId, newPassword);
+  await UserService.enableUser(userId);
+  return true;
+}
+
+module.exports = { createUser, updateUser, getAllUsers, getUsersByCompany, restoreUser };
 

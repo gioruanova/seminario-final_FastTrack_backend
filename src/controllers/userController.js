@@ -161,228 +161,136 @@ async function restoreUser(req, res) {
 }
 
 async function getUsersAsAdmin(req, res) {
-  try {
-    const users = await UserAdminService.getAllUsers();
-    return enviarLista(res, users);
-  } catch (error) {
-    return manejarError(error, res);
-  }
+  const users = await UserAdminService.getAllUsers();
+  return enviarLista(res, users);
 }
 
 async function getUsersByCompanyAsAdmin(req, res) {
-  try {
-    const { company_id } = req.params;
-    const users = await UserAdminService.getUsersByCompany(company_id);
-    return enviarLista(res, users);
-  } catch (error) {
-    return manejarError(error, res);
-  }
+  const { company_id } = req.params;
+  const users = await UserAdminService.getUsersByCompany(company_id);
+  return enviarLista(res, users);
 }
 
 async function createUserAsAdmin(req, res) {
-  try {
-    await UserAdminService.createUser(req.body);
-    return enviarExito(res, "Usuario creado correctamente", 201);
-  } catch (error) {
-    return manejarError(error, res);
-  }
+  await UserAdminService.createUser(req.body);
+  return enviarExito(res, "Usuario creado correctamente", 201);
 }
 
 async function updateUserAsAdmin(req, res) {
-  try {
-    const { user_id } = req.params;
-    await UserAdminService.updateUser(user_id, req.body);
-    return enviarExito(res, "Usuario editado correctamente");
-  } catch (error) {
-    return manejarError(error, res);
-  }
+  const { user_id } = req.params;
+  await UserAdminService.updateUser(user_id, req.body);
+  return enviarExito(res, "Usuario editado correctamente");
 }
 
 async function blockUserAsAdmin(req, res) {
-  try {
-    const { user_id } = req.params;
-    await UserService.blockUser(user_id);
-    return enviarExito(res, "Usuario bloqueado correctamente");
-  } catch (error) {
-    return manejarError(error, res);
-  }
+  const { user_id } = req.params;
+  await UserService.blockUser(user_id);
+  return enviarExito(res, "Usuario bloqueado correctamente");
 }
 
 async function unblockUserAsAdmin(req, res) {
-  try {
-    const { user_id } = req.params;
-    await UserService.unblockUser(user_id);
-    return enviarExito(res, "Usuario desbloqueado correctamente");
-  } catch (error) {
-    return manejarError(error, res);
-  }
+  const { user_id } = req.params;
+  await UserService.unblockUser(user_id);
+  return enviarExito(res, "Usuario desbloqueado correctamente");
 }
 
 async function restoreUserAsAdmin(req, res) {
-  try {
-    const { user_id } = req.params;
-    const { new_password } = req.body;
-
-    if (!new_password) {
-      return enviarSolicitudInvalida(res, "Debes ingresar una nueva contraseña");
-    }
-
-    await UserService.resetPassword(user_id, new_password);
-    await UserService.enableUser(user_id);
-    return enviarExito(res, "Usuario restaurado correctamente");
-  } catch (error) {
-    return manejarError(error, res);
-  }
+  const { user_id } = req.params;
+  const { new_password } = req.body;
+  await UserAdminService.restoreUser(user_id, new_password);
+  return enviarExito(res, "Usuario restaurado correctamente");
 }
 
 async function getUsersAsOwner(req, res) {
-  try {
-    const companyId = req.user.company_id;
-    const users = await UserOwnerService.getUsersByCompany(companyId);
-    return enviarLista(res, users);
-  } catch (error) {
-    return manejarError(error, res);
-  }
+  const companyId = req.user.company_id;
+  const users = await UserOwnerService.getUsersByCompany(companyId);
+  return enviarLista(res, users);
 }
 
 async function createUserAsOwner(req, res) {
-  try {
-    const data = {
-      ...req.body,
-      company_id: req.user.company_id,
-      creator: req.user,
-    };
-    await UserOwnerService.createUser(data, req.user);
-    return enviarExito(res, "Usuario creado correctamente", 201);
-  } catch (error) {
-    return manejarError(error, res);
-  }
+  const data = {
+    ...req.body,
+    company_id: req.user.company_id,
+    creator: req.user,
+  };
+  await UserOwnerService.createUser(data, req.user);
+  return enviarExito(res, "Usuario creado correctamente", 201);
 }
 
 async function updateUserAsOwner(req, res) {
-  try {
-    const { user_id } = req.params;
-    const data = {
-      ...req.body,
-      company_id: req.user.company_id,
-      creator: req.user,
-    };
-    await UserOwnerService.updateUser(user_id, data, req.user);
-    return enviarExito(res, "Usuario editado correctamente");
-  } catch (error) {
-    return manejarError(error, res);
-  }
+  const { user_id } = req.params;
+  const data = {
+    ...req.body,
+    company_id: req.user.company_id,
+    creator: req.user,
+  };
+  await UserOwnerService.updateUser(user_id, data, req.user);
+  return enviarExito(res, "Usuario editado correctamente");
 }
 
 async function blockUserAsOwner(req, res) {
-  try {
-    const { user_id } = req.params;
-    await UserOwnerService.blockUser(user_id, req.user);
-    return enviarExito(res, "Usuario bloqueado correctamente");
-  } catch (error) {
-    return manejarError(error, res);
-  }
+  const { user_id } = req.params;
+  await UserOwnerService.blockUser(user_id, req.user);
+  return enviarExito(res, "Usuario bloqueado correctamente");
 }
 
 async function unblockUserAsOwner(req, res) {
-  try {
-    const { user_id } = req.params;
-    await UserOwnerService.unblockUser(user_id, req.user);
-    return enviarExito(res, "Usuario desbloqueado correctamente");
-  } catch (error) {
-    return manejarError(error, res);
-  }
+  const { user_id } = req.params;
+  await UserOwnerService.unblockUser(user_id, req.user);
+  return enviarExito(res, "Usuario desbloqueado correctamente");
 }
 
 async function restoreUserAsOwner(req, res) {
-  try {
-    const { user_id } = req.params;
-    const { new_password } = req.body;
-
-    if (!new_password) {
-      return enviarSolicitudInvalida(res, "Debes ingresar una nueva contraseña");
-    }
-
-    await UserOwnerService.restoreUser(user_id, new_password, req.user);
-    return enviarExito(res, "Usuario restaurado correctamente");
-  } catch (error) {
-    return manejarError(error, res);
-  }
+  const { user_id } = req.params;
+  const { new_password } = req.body;
+  await UserOwnerService.restoreUser(user_id, new_password, req.user);
+  return enviarExito(res, "Usuario restaurado correctamente");
 }
 
 async function getUsersAsOperador(req, res) {
-  try {
-    const companyId = req.user.company_id;
-    const users = await UserOperadorService.getUsersByCompany(companyId);
-    return enviarLista(res, users);
-  } catch (error) {
-    return manejarError(error, res);
-  }
+  const companyId = req.user.company_id;
+  const users = await UserOperadorService.getUsersByCompany(companyId);
+  return enviarLista(res, users);
 }
 
 async function createUserAsOperador(req, res) {
-  try {
-    const data = {
-      ...req.body,
-      company_id: req.user.company_id,
-      creator: req.user,
-    };
-    await UserOperadorService.createUser(data, req.user);
-    return enviarExito(res, "Usuario creado correctamente", 201);
-  } catch (error) {
-    return manejarError(error, res);
-  }
+  const data = {
+    ...req.body,
+    company_id: req.user.company_id,
+    creator: req.user,
+  };
+  await UserOperadorService.createUser(data, req.user);
+  return enviarExito(res, "Usuario creado correctamente", 201);
 }
 
 async function updateUserAsOperador(req, res) {
-  try {
-    const { user_id } = req.params;
-    const data = {
-      ...req.body,
-      company_id: req.user.company_id,
-      creator: req.user,
-    };
-    await UserOperadorService.updateUser(user_id, data, req.user);
-    return enviarExito(res, "Usuario editado correctamente");
-  } catch (error) {
-    return manejarError(error, res);
-  }
+  const { user_id } = req.params;
+  const data = {
+    ...req.body,
+    company_id: req.user.company_id,
+    creator: req.user,
+  };
+  await UserOperadorService.updateUser(user_id, data, req.user);
+  return enviarExito(res, "Usuario editado correctamente");
 }
 
 async function blockUserAsOperador(req, res) {
-  try {
-    const { user_id } = req.params;
-    await UserOperadorService.blockUser(user_id, req.user);
-    return enviarExito(res, "Usuario bloqueado correctamente");
-  } catch (error) {
-    return manejarError(error, res);
-  }
+  const { user_id } = req.params;
+  await UserOperadorService.blockUser(user_id, req.user);
+  return enviarExito(res, "Usuario bloqueado correctamente");
 }
 
 async function unblockUserAsOperador(req, res) {
-  try {
-    const { user_id } = req.params;
-    await UserOperadorService.unblockUser(user_id, req.user);
-    return enviarExito(res, "Usuario desbloqueado correctamente");
-  } catch (error) {
-    return manejarError(error, res);
-  }
+  const { user_id } = req.params;
+  await UserOperadorService.unblockUser(user_id, req.user);
+  return enviarExito(res, "Usuario desbloqueado correctamente");
 }
 
 async function restoreUserAsOperador(req, res) {
-  try {
-    const { user_id } = req.params;
-    const { new_password } = req.body;
-
-    if (!new_password) {
-      return enviarSolicitudInvalida(res, "Debes ingresar una nueva contraseña");
-    }
-
-    await UserOperadorService.restoreUser(user_id, new_password, req.user);
-    return enviarExito(res, "Usuario restaurado correctamente");
-  } catch (error) {
-    return manejarError(error, res);
-  }
+  const { user_id } = req.params;
+  const { new_password } = req.body;
+  await UserOperadorService.restoreUser(user_id, new_password, req.user);
+  return enviarExito(res, "Usuario restaurado correctamente");
 }
 
 module.exports = { getUsers, getUsersByCompany, createUser, updateUser, blockUser, unblockUser, restoreUser };

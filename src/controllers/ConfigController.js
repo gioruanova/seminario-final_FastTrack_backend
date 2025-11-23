@@ -1,4 +1,4 @@
-const { enviarExito, enviarError, enviarNoEncontrado, enviarSolicitudInvalida } = require("../helpers/responseHelpers");
+const { enviarLista, enviarExito, enviarError, enviarNoEncontrado, enviarSolicitudInvalida, enviarSinPermiso } = require("../helpers/responseHelpers");
 const ConfigService = require("../services/companyConfig/ConfigService");
 
 function manejarError(error, res) {
@@ -20,10 +20,14 @@ async function getCompanyConfig(req, res) {
     const role = req.user?.user_role || "superadmin";
     const companyId = req.user.company_id;
 
-    if (role === "owner" || role === "operador" || role === "profesional") {
-      return await getCompanyConfigAsClient(req, res, companyId);
+    switch (role) {
+      case "owner":
+      case "operador":
+      case "profesional":
+        return await getCompanyConfigAsClient(req, res, companyId);
+      default:
+        return enviarSinPermiso(res, "Rol no autorizado");
     }
-    return enviarError(res, "Rol no autorizado", 403);
   } catch (error) {
     return manejarError(error, res);
   }
@@ -32,10 +36,13 @@ async function getCompanyConfig(req, res) {
 async function updateCompanyConfig(req, res) {
   try {
     const role = req.user?.user_role || "superadmin";
-    if (role === "owner") {
-      return await updateCompanyConfigAsOwner(req, res);
+
+    switch (role) {
+      case "owner":
+        return await updateCompanyConfigAsOwner(req, res);
+      default:
+        return enviarSinPermiso(res, "Rol no autorizado para actualizar configuración");
     }
-    return enviarError(res, "Rol no autorizado", 403);
   } catch (error) {
     return manejarError(error, res);
   }
@@ -43,7 +50,7 @@ async function updateCompanyConfig(req, res) {
 
 async function getCompanyConfigAsClient(req, res, companyId) {
   const config = await ConfigService.getCompanyConfig(companyId);
-  return res.json(config);
+  return enviarLista(res, config);
 }
 
 async function updateCompanyConfigAsOwner(req, res) {

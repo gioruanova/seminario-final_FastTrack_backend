@@ -1,5 +1,25 @@
-const { enviarLista, enviarExito, enviarError, enviarSolicitudInvalida } = require("../helpers/responseHelpers");
+const { enviarLista, enviarExito, enviarError, enviarSolicitudInvalida, enviarSinPermiso } = require("../helpers/responseHelpers");
 const FeedbackService = require("../services/feedback/FeedbackService");
+
+function manejarError(error, res) {
+  const mensajesConocidos = {
+    "El usuario debe estar asociado a una empresa": () => enviarSolicitudInvalida(res, error.message),
+    "Feedback no encontrado": () => enviarSolicitudInvalida(res, error.message),
+    "No tienes permiso para ver este feedback": () => enviarSinPermiso(res, error.message),
+    "No tienes permiso para eliminar este feedback": () => enviarSinPermiso(res, error.message),
+    "El campo message_content es obligatorio y no puede estar vacío": () => enviarSolicitudInvalida(res, error.message),
+    "Usuario no encontrado": () => enviarSolicitudInvalida(res, error.message),
+    "Empresa no encontrada": () => enviarSolicitudInvalida(res, error.message),
+    "El usuario debe estar asociado a una empresa para enviar feedback": () => enviarSolicitudInvalida(res, error.message),
+  };
+
+  if (mensajesConocidos[error.message]) {
+    return mensajesConocidos[error.message]();
+  }
+
+  console.error("Error en FeedbackController:", error);
+  return enviarError(res, "Error interno del servidor", 500);
+}
 
 async function getFeedbacks(req, res) {
   try {
@@ -7,13 +27,7 @@ async function getFeedbacks(req, res) {
     const feedbacks = await FeedbackService.getFeedbacks(user_id, company_id, user_role);
     return enviarLista(res, feedbacks);
   } catch (error) {
-    console.error("Error en getFeedbacks:", error);
-
-    if (error.message === "El usuario debe estar asociado a una empresa") {
-      return enviarSolicitudInvalida(res, error.message);
-    }
-
-    return enviarError(res, "Error interno del servidor", 500);
+    return manejarError(error, res);
   }
 }
 
@@ -25,17 +39,7 @@ async function getFeedbackById(req, res) {
     const feedback = await FeedbackService.getFeedbackById(feedback_id, user_id, company_id, user_role);
     return enviarLista(res, feedback);
   } catch (error) {
-    console.error("Error en getFeedbackById:", error);
-
-    if (error.message === "Feedback no encontrado") {
-      return enviarSolicitudInvalida(res, error.message);
-    }
-
-    if (error.message === "No tienes permiso para ver este feedback") {
-      return enviarError(res, error.message, 403);
-    }
-
-    return enviarError(res, "Error interno del servidor", 500);
+    return manejarError(error, res);
   }
 }
 
@@ -47,18 +51,7 @@ async function createFeedback(req, res) {
     await FeedbackService.createFeedback(user_id, company_id, message_content, user_role, user_email);
     return enviarExito(res, "Feedback creado correctamente", 201);
   } catch (error) {
-    console.error("Error en createFeedback:", error);
-
-    if (
-      error.message === "El campo message_content es obligatorio y no puede estar vacío" ||
-      error.message === "Usuario no encontrado" ||
-      error.message === "Empresa no encontrada" ||
-      error.message === "El usuario debe estar asociado a una empresa para enviar feedback"
-    ) {
-      return enviarSolicitudInvalida(res, error.message);
-    }
-
-    return enviarError(res, "Error interno del servidor", 500);
+    return manejarError(error, res);
   }
 }
 
@@ -70,17 +63,7 @@ async function deleteFeedback(req, res) {
     await FeedbackService.deleteFeedbackById(feedback_id, user_role);
     return enviarExito(res, "Feedback eliminado correctamente");
   } catch (error) {
-    console.error("Error en deleteFeedback:", error);
-
-    if (error.message === "Feedback no encontrado") {
-      return enviarSolicitudInvalida(res, error.message);
-    }
-
-    if (error.message === "No tienes permiso para eliminar este feedback") {
-      return enviarError(res, error.message, 403);
-    }
-
-    return enviarError(res, "Error interno del servidor", 500);
+    return manejarError(error, res);
   }
 }
 

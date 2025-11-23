@@ -1,244 +1,186 @@
-// -----------------
-// CONTROLADOR DE CLIENTES RECURRENTES
-// -----------------
+const { enviarLista, enviarExito, enviarError, enviarNoEncontrado, enviarSolicitudInvalida, enviarConflicto, enviarSinPermiso } = require("../helpers/responseHelpers");
+const ClienteRecurrenteAdminService = require("../services/clientesRecurrentes/ClienteRecurrenteAdminService");
+const ClienteRecurrenteOwnerService = require("../services/clientesRecurrentes/ClienteRecurrenteOwnerService");
 
-const companyConfigController = require("./companyConfigController");
-const Company = require("../models/Company");
-const ClienteRecurrente = require("../models/ClienteRecurrente");
-const { enviarLista, enviarExito, enviarError, enviarNoEncontrado, enviarSolicitudInvalida, enviarConflicto } = require("../helpers/responseHelpers");
-const { obtenerPorId } = require("../helpers/registroHelpers");
+function manejarError(error, res) {
+  const mensajesConocidos = {
+    "No existe empresa bajo ese ID": () => enviarSolicitudInvalida(res, error.message),
+    "El campo domicilio es obligatorio.": () => enviarSolicitudInvalida(res, error.message),
+    "Ya existe un cliente recurrente con ese DNI o email": () => enviarConflicto(res, error.message),
+    "Cliente no encontrado": () => enviarNoEncontrado(res, "Cliente"),
+    "No se enviaron campos para actualizar.": () => enviarSolicitudInvalida(res, error.message),
+    "El campo no puede estar vacío": () => enviarSolicitudInvalida(res, error.message),
+  };
 
-// -----------------
-// CONTROLADORES PARA ADMIN:
-// -----------------
+  if (mensajesConocidos[error.message]) {
+    return mensajesConocidos[error.message]();
+  }
 
-// -----------------
-// OBTENER TODOS LOS CLIENTES RECURRENTES
-// -----------------
-async function getAllClientesRecurrentesAsAdmin(req, res) {
+  return enviarError(res, "Error interno del servidor", 500);
+}
+
+async function getAllClientesRecurrentes(req, res) {
   try {
-    const clientesRecurrentes = await ClienteRecurrente.query();
-    return enviarLista(res, clientesRecurrentes);
+    const role = req.user?.user_role || "superadmin";
+
+    switch (role) {
+      case "superadmin":
+        return await getAllClientesRecurrentesAsAdmin(req, res);
+      case "owner":
+      case "operador":
+        return await getAllClientesRecurrentesAsClient(req, res);
+      default:
+        return enviarSinPermiso(res, "Rol no autorizado");
+    }
   } catch (error) {
-    return enviarError(res, "Error interno del servidor", 500);
+    return manejarError(error, res);
   }
 }
 
-// -----------------
-// CONTROLADORES PARA USUARIO COMUN (CON SUS ROLES)E:
-// -----------------
+async function createClienteRecurrente(req, res) {
+  try {
+    const role = req.user?.user_role || "superadmin";
 
-// -----------------
-// OBTENER CLIENTES RECURRENTES DE LA EMPRESA
-// -----------------
+    switch (role) {
+      case "superadmin":
+        return await createClienteRecurrenteAsAdmin(req, res);
+      case "owner":
+      case "operador":
+        return await createClienteRecurrenteAsClient(req, res);
+      default:
+        return enviarSinPermiso(res, "Rol no autorizado para crear clientes recurrentes");
+    }
+  } catch (error) {
+    return manejarError(error, res);
+  }
+}
+
+async function updateClienteRecurrente(req, res) {
+  try {
+    const role = req.user?.user_role || "superadmin";
+
+    switch (role) {
+      case "superadmin":
+        return await updateClienteRecurrenteAsAdmin(req, res);
+      case "owner":
+      case "operador":
+        return await editarClienteAsClient(req, res);
+      default:
+        return enviarSinPermiso(res, "Rol no autorizado para editar clientes recurrentes");
+    }
+  } catch (error) {
+    return manejarError(error, res);
+  }
+}
+
+async function blockClienteRecurrente(req, res) {
+  try {
+    const role = req.user?.user_role || "superadmin";
+
+    switch (role) {
+      case "superadmin":
+        return await blockClienteRecurrenteAsAdmin(req, res);
+      case "owner":
+      case "operador":
+        return await desactivarClienteAsClient(req, res);
+      default:
+        return enviarSinPermiso(res, "Rol no autorizado para bloquear clientes recurrentes");
+    }
+  } catch (error) {
+    return manejarError(error, res);
+  }
+}
+
+async function unblockClienteRecurrente(req, res) {
+  try {
+    const role = req.user?.user_role || "superadmin";
+
+    switch (role) {
+      case "superadmin":
+        return await unblockClienteRecurrenteAsAdmin(req, res);
+      case "owner":
+      case "operador":
+        return await activarClienteAsClient(req, res);
+      default:
+        return enviarSinPermiso(res, "Rol no autorizado para desbloquear clientes recurrentes");
+    }
+  } catch (error) {
+    return manejarError(error, res);
+  }
+}
+
+async function getAllClientesRecurrentesAsAdmin(req, res) {
+  const clientesRecurrentes = await ClienteRecurrenteAdminService.getAllClientesRecurrentes();
+  return enviarLista(res, clientesRecurrentes);
+}
+
 async function getAllClientesRecurrentesAsClient(req, res) {
   const company_id = req.user.company_id;
-  try {
-    const clientesRecurrentes = await ClienteRecurrente.query().where({
-      company_id,
-    });
-    return enviarLista(res, clientesRecurrentes);
-  } catch (error) {
-    return enviarError(res, "Error interno del servidor", 500);
-  }
+  const clientesRecurrentes = await ClienteRecurrenteOwnerService.getClientesRecurrentesByCompany(company_id);
+  return enviarLista(res, clientesRecurrentes);
 }
 
-// -----------------
-// CREAR CLIENTE RECURRENTE
-// -----------------
+async function createClienteRecurrenteAsAdmin(req, res) {
+  const data = { ...req.body };
+  await ClienteRecurrenteAdminService.createClienteRecurrente(data);
+  return enviarExito(res, "Cliente recurrente creado correctamente");
+}
+
 async function createClienteRecurrenteAsClient(req, res) {
   const company_id = req.user.company_id;
-  const {
-    cliente_complete_name,
-    cliente_dni,
-    cliente_phone,
-    cliente_email,
-    cliente_direccion,
-    cliente_lat,
-    cliente_lng,
-  } = req.body;
-
-  try {
-    const company = await obtenerPorId(Company, company_id);
-    if (!company) {
-      return enviarSolicitudInvalida(res, "No existe empresa bajo ese ID");
-    }
-
-    const requiereDomicilio =
-      await companyConfigController.fetchCompanySettingsByCompanyId(company_id);
-
-    if (requiereDomicilio.requiere_domicilio && !cliente_direccion) {
-      return enviarSolicitudInvalida(res, "El campo domicilio es obligatorio.");
-    }
-    if (
-      !cliente_complete_name ||
-      !cliente_dni ||
-      !cliente_phone ||
-      !cliente_email ||
-      (requiereDomicilio.requiere_domicilio && !cliente_direccion)
-    ) {
-      return enviarSolicitudInvalida(res, "Los campos cliente_complete_name, cliente_dni, cliente_phone, cliente_email y cliente_direccion (si requiere domicilio) son obligatorios.");
-    }
-
-    const clienteExiste = await ClienteRecurrente.query()
-      .where("company_id", company_id)
-      .andWhere((builder) => {
-        builder
-          .where("cliente_dni", cliente_dni)
-          .orWhere("cliente_email", cliente_email);
-      })
-      .first();
-
-    if (clienteExiste) {
-      return enviarConflicto(res, "Ya existe un cliente recurrente con ese DNI o email");
-    }
-
-    await ClienteRecurrente.query().insertAndFetch({
-      company_id,
-      cliente_complete_name,
-      cliente_dni,
-      cliente_phone,
-      cliente_email,
-      cliente_direccion,
-      cliente_lat,
-      cliente_lng,
-    });
-
-    return enviarExito(res, "Cliente recurrente creado correctamente");
-  } catch (error) {
-    console.error(error);
-    return enviarError(res, "Error interno del servidor", 500);
-  }
+  await ClienteRecurrenteOwnerService.createClienteRecurrente(req.body, company_id);
+  return enviarExito(res, "Cliente recurrente creado correctamente");
 }
 
-// -----------------
-// ACTUALIZAR CLIENTE RECURRENTE
-// -----------------
+async function updateClienteRecurrenteAsAdmin(req, res) {
+  const { cliente_id } = req.params;
+  await ClienteRecurrenteAdminService.updateClienteRecurrente(cliente_id, req.body);
+  return enviarExito(res, "Cliente recurrente actualizado correctamente");
+}
+
 async function editarClienteAsClient(req, res) {
   const company_id = req.user.company_id;
   const { cliente_id } = req.params;
-
-  const camposEditables = [
-    "cliente_complete_name",
-    "cliente_dni",
-    "cliente_phone",
-    "cliente_email",
-    "cliente_direccion",
-    "cliente_lat",
-    "cliente_lng",
-  ];
-
-  try {
-    // Buscar si el cliente existe y pertenece a la empresa
-    const cliente = await ClienteRecurrente.query()
-      .where({ cliente_id, company_id })
-      .first();
-
-    if (!cliente) {
-      return enviarNoEncontrado(res, "Cliente");
-    }
-
-    const datosActualizables = {};
-    const camposOpcionales = ["cliente_lat", "cliente_lng"];
-    
-    if (!req.body || typeof req.body !== 'object') {
-      return enviarSolicitudInvalida(res, "El cuerpo de la solicitud debe ser un objeto válido.");
-    }
-    
-    for (const campo of camposEditables) {
-      if (req.body[campo] !== undefined) {
-        const valor = req.body[campo];
-        const esOpcional = camposOpcionales.includes(campo);
-
-        if (esOpcional) {
-          if (valor === "" || (typeof valor === "string" && valor.trim() === "")) {
-            return enviarSolicitudInvalida(res, `El campo '${campo}' no puede ser un string vacío. Use null para eliminarlo.`);
-          }
-          datosActualizables[campo] = (valor === null || valor === undefined) ? null : valor;
-        } else {
-          if (valor === null || valor === undefined || valor === "") {
-            return enviarSolicitudInvalida(res, `El campo '${campo}' no puede estar vacío si se envía.`);
-          }
-          datosActualizables[campo] = valor;
-        }
-      }
-    }
-
-    if (Object.keys(datosActualizables).length === 0) {
-      return enviarSolicitudInvalida(res, "No se enviaron campos para actualizar.");
-    }
-
-    await ClienteRecurrente.query()
-      .patch(datosActualizables)
-      .where({ cliente_id, company_id });
-
-    return enviarExito(res, "Cliente actualizado correctamente");
-  } catch (error) {
-    console.error("editarCliente error:", error);
-    return enviarError(res, "Error interno del servidor", 500);
-  }
+  await ClienteRecurrenteOwnerService.updateClienteRecurrente(cliente_id, req.body, company_id);
+  return enviarExito(res, "Cliente actualizado correctamente");
 }
 
-// -----------------
-// DESACTIVAR CLIENTE RECURRENTE
-// -----------------
+async function blockClienteRecurrenteAsAdmin(req, res) {
+  const { cliente_id } = req.params;
+  await ClienteRecurrenteAdminService.disableClienteRecurrente(cliente_id);
+  return enviarExito(res, "Cliente recurrente bloqueado correctamente");
+}
+
 async function desactivarClienteAsClient(req, res) {
   const company_id = req.user.company_id;
   const { cliente_id } = req.params;
-
-  try {
-    const cliente = await ClienteRecurrente.query()
-      .where({ cliente_id, company_id })
-      .first();
-
-    if (!cliente) {
-      return enviarNoEncontrado(res, "Cliente");
-    }
-
-    await ClienteRecurrente.query()
-      .patch({ cliente_active: false })
-      .where({ cliente_id, company_id });
-
-    return enviarExito(res, "Cliente desactivado correctamente");
-  } catch (error) {
-    console.error("desactivarCliente error:", error);
-    return enviarError(res, "Error interno del servidor", 500);
-  }
+  await ClienteRecurrenteOwnerService.disableClienteRecurrente(cliente_id, company_id);
+  return enviarExito(res, "Cliente desactivado correctamente");
 }
 
-// -----------------
-// ACTIVAR CLIENTE RECURRENTE
-// -----------------
+async function unblockClienteRecurrenteAsAdmin(req, res) {
+  const { cliente_id } = req.params;
+  await ClienteRecurrenteAdminService.enableClienteRecurrente(cliente_id);
+  return enviarExito(res, "Cliente recurrente desbloqueado correctamente");
+}
+
 async function activarClienteAsClient(req, res) {
   const company_id = req.user.company_id;
   const { cliente_id } = req.params;
-
-  try {
-    const cliente = await ClienteRecurrente.query()
-      .where({ cliente_id, company_id })
-      .first();
-
-    if (!cliente) {
-      return enviarNoEncontrado(res, "Cliente");
-    }
-
-    await ClienteRecurrente.query()
-      .patch({ cliente_active: true })
-      .where({ cliente_id, company_id });
-
-    return enviarExito(res, "Cliente activado correctamente");
-  } catch (error) {
-    console.error("activarCliente error:", error);
-    return enviarError(res, "Error interno del servidor", 500);
-  }
+  await ClienteRecurrenteOwnerService.enableClienteRecurrente(cliente_id, company_id);
+  return enviarExito(res, "Cliente activado correctamente");
 }
 
 module.exports = {
   getAllClientesRecurrentesAsAdmin,
-
   getAllClientesRecurrentesAsClient,
   createClienteRecurrenteAsClient,
   editarClienteAsClient,
   activarClienteAsClient,
   desactivarClienteAsClient,
+  getAllClientesRecurrentes,
+  createClienteRecurrente,
+  updateClienteRecurrente,
+  blockClienteRecurrente,
+  unblockClienteRecurrente,
 };

@@ -1,4 +1,4 @@
-const { enviarLista, enviarExito, enviarError, enviarSolicitudInvalida, enviarNoEncontrado, enviarConflicto } = require("../helpers/responseHelpers");
+const { enviarLista, enviarExito, enviarError, enviarSolicitudInvalida, enviarNoEncontrado, enviarConflicto, enviarSinPermiso } = require("../helpers/responseHelpers");
 const CompanyAdminService = require("../services/company/CompanyAdminService");
 const CompanyOwnerService = require("../services/company/CompanyOwnerService");
 
@@ -21,12 +21,15 @@ function manejarError(error, res) {
 async function getCompanies(req, res) {
   try {
     const role = req.user?.user_role || "superadmin";
-    if (role === "superadmin") {
-      return await getCompaniesAsAdmin(req, res);
-    } else if (role === "owner") {
-      return await getCompanyInfoAsOwner(req, res);
+
+    switch (role) {
+      case "superadmin":
+        return await getCompaniesAsAdmin(req, res);
+      case "owner":
+        return await getCompanyInfoAsOwner(req, res);
+      default:
+        return enviarSinPermiso(res, "Rol no autorizado");
     }
-    return enviarError(res, "Rol no autorizado", 403);
   } catch (error) {
     return manejarError(error, res);
   }
@@ -35,10 +38,13 @@ async function getCompanies(req, res) {
 async function getCompanyById(req, res) {
   try {
     const role = req.user?.user_role || "superadmin";
-    if (role === "superadmin") {
-      return await getCompanyByIdAsAdmin(req, res);
+
+    switch (role) {
+      case "superadmin":
+        return await getCompanyByIdAsAdmin(req, res);
+      default:
+        return enviarSinPermiso(res, "Rol no autorizado");
     }
-    return enviarError(res, "Rol no autorizado", 403);
   } catch (error) {
     return manejarError(error, res);
   }
@@ -47,10 +53,13 @@ async function getCompanyById(req, res) {
 async function createCompany(req, res) {
   try {
     const role = req.user?.user_role || "superadmin";
-    if (role === "superadmin") {
-      return await createCompanyAsAdmin(req, res);
+
+    switch (role) {
+      case "superadmin":
+        return await createCompanyAsAdmin(req, res);
+      default:
+        return enviarSinPermiso(res, "Rol no autorizado para crear empresas");
     }
-    return enviarError(res, "Rol no autorizado", 403);
   } catch (error) {
     return manejarError(error, res);
   }
@@ -59,13 +68,15 @@ async function createCompany(req, res) {
 async function updateCompany(req, res) {
   try {
     const role = req.user?.user_role || "superadmin";
-    
-    if (role === "superadmin") {
-      return await updateCompanyAsAdmin(req, res);
-    } else if (role === "owner") {
-      return await updateCompanyAsOwner(req, res);
+
+    switch (role) {
+      case "superadmin":
+        return await updateCompanyAsAdmin(req, res);
+      case "owner":
+        return await updateCompanyAsOwner(req, res);
+      default:
+        return enviarSinPermiso(res, "Rol no autorizado para actualizar empresas");
     }
-    return enviarError(res, "Rol no autorizado", 403);
   } catch (error) {
     return manejarError(error, res);
   }
@@ -79,7 +90,7 @@ async function getCompaniesAsAdmin(req, res) {
 async function getCompanyByIdAsAdmin(req, res) {
   const { company_id } = req.params;
   const company = await CompanyAdminService.getCompanyById(company_id);
-  return res.status(200).json(company);
+  return enviarLista(res, company);
 }
 
 async function createCompanyAsAdmin(req, res) {
@@ -96,7 +107,7 @@ async function updateCompanyAsAdmin(req, res) {
 async function getCompanyInfoAsOwner(req, res) {
   const companyId = req.user.company_id;
   const company = await CompanyOwnerService.getCompanyInfo(companyId);
-  return res.json(company);
+  return enviarLista(res, company);
 }
 
 async function updateCompanyAsOwner(req, res) {

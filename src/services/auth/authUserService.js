@@ -3,7 +3,10 @@ const User = require("../../models/User");
 const { generateTokens, refreshAccessToken } = require("./tokenService");
 
 async function loginUser(email, password) {
-  
+  if (!email || !password) {
+    throw new Error("Email y password son requeridos");
+  }
+
   const user = await User.query().findOne({ user_email: email });
 
   if (!user) return null;

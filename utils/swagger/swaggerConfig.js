@@ -19,7 +19,7 @@ const options = {
       { name: "Profesional-Especialidad", description: "Gestion de especialidades a profesionales" },
 
 
-      
+      { name: "Notificaciones", description: "Gestion de notifications" },
       { name: "Feedbacks", description: "Gestion de feedbacks" },
 
     ],

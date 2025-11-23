@@ -6,6 +6,7 @@ const feedbackRoutes = require("./feedback/feedbackRoutes");
 const companyRoutes = require("./company/companyRoutes");
 const especialidadesRoutes = require("./especialidades/especialidadesRoutes");
 const profesionalEspecialidadRoutes = require("./profesionalEspecialidad/profesionalEspecialidadRoutes");
+const notificationsRoutes = require("./notifications/notificationsRoutes");
 
 function configureRoutes(app) {
   app.use(loginRoutes);
@@ -16,6 +17,7 @@ function configureRoutes(app) {
   app.use(companyRoutes);
   app.use(especialidadesRoutes);
   app.use(profesionalEspecialidadRoutes);
+  app.use(notificationsRoutes);
 }
 
 module.exports = configureRoutes;

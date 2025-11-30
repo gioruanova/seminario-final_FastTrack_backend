@@ -30,7 +30,7 @@ if (missingEnvVars.length > 0) {
   process.exit(1);
 }
 
-// =====================================================================
+// ====================================================================
 const corsOptions = {
   origin: [
     process.env.BACK_TEST_SITE,

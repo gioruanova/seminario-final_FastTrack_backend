@@ -60,7 +60,7 @@ async function sendNotificationToUser(userId, title, body) {
     const expoPushToken = await getToken(userId);
 
     if (!expoPushToken) {
-        throw new Error("Usuario no tiene token registrado");
+        return null;
     }
 
     const message = {

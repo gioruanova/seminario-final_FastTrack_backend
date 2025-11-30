@@ -1,18 +1,10 @@
-// HELPERS PARA ENVIAR RESPUESTAS AL FRONT
-// ----------------------------------------------------------
-// ----------------------------------------------------------
+// helpers varios
 
-
-// -----------------
-// ENVIAR LISTA DE DATOS
-// -----------------
 function enviarLista(res, datos, codigo = 200) {
   return res.status(codigo).json(datos);
 }
 
-// -----------------
-// ENVIAR MENSAJE DE ÉXITO
-// -----------------
+
 function enviarExito(res, mensaje, codigo = 200) {
   return res.status(codigo).json({
     success: true,
@@ -20,9 +12,8 @@ function enviarExito(res, mensaje, codigo = 200) {
   });
 }
 
-// -----------------
+
 // ENVIAR ÉXITO CON DATOS DEL USUARIO (PARA LOGIN)
-// -----------------
 function enviarExitoConDatos(res, datos = {}, mensaje, codigo = 200) {
   return res.json({
     ...datos,
@@ -32,9 +23,6 @@ function enviarExitoConDatos(res, datos = {}, mensaje, codigo = 200) {
   });
 }
 
-// -----------------
-// ENVIAR ÉXITO PARA RECLAMOS
-// -----------------
 function enviarExitoReclamo(res, mensaje, codigo = 200) {
   return res.json({
     status: codigo,
@@ -42,9 +30,6 @@ function enviarExitoReclamo(res, mensaje, codigo = 200) {
   });
 }
 
-// -----------------
-// ENVIAR VALOR SIMPLE (BOOLEANO, NÚMERO, ETC)
-// -----------------
 function enviarValor(res, valor) {
   return res.json(valor);
 }

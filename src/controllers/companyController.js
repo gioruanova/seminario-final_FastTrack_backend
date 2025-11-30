@@ -1,261 +1,120 @@
-// -----------------
-// CONTROLADOR DE EMPRESAS
-// -----------------
-const Company = require("../models/Company");
-const companyConfigController = require("./companyConfigController");
-const { enviarLista, enviarExito, enviarError, enviarNoEncontrado, enviarSolicitudInvalida } = require("../helpers/responseHelpers");
-const { obtenerPorId } = require("../helpers/registroHelpers");
-const { validarCamposObligatorios } = require("../helpers/validationHelpers");
+const { enviarLista, enviarExito, enviarError, enviarSolicitudInvalida, enviarNoEncontrado, enviarConflicto, enviarSinPermiso } = require("../helpers/responseHelpers");
+const CompanyAdminService = require("../services/company/CompanyAdminService");
+const CompanyOwnerService = require("../services/company/CompanyOwnerService");
 
-// -----------------
-// CONTROLADORES PARA ADMIN:
-// -----------------
+function manejarError(error, res) {
+  const mensajesConocidos = {
+    "No existe empresa bajo ese ID": () => enviarNoEncontrado(res, "Empresa"),
+    "El email ya está registrado": () => enviarConflicto(res, error.message),
+    "El company_unique_id ya existe": () => enviarConflicto(res, error.message),
+    "No se proporcionaron campos para actualizar": () => enviarSolicitudInvalida(res, error.message),
+    "El campo no puede estar vacío": () => enviarSolicitudInvalida(res, error.message),
+  };
 
-// -----------------
-// OBTENER TODAS LAS EMPRESAS
-// -----------------
-async function getAllCompanies(req, res) {
+  if (mensajesConocidos[error.message]) {
+    return mensajesConocidos[error.message]();
+  }
+
+  return enviarError(res, "Error interno del servidor", 500);
+}
+
+async function getCompanies(req, res) {
   try {
-    const companies = await Company.query()
-      .withGraphJoined("users")
-      .withGraphFetched("users.especialidades.Especialidad");
+    const role = req.user?.user_role || "superadmin";
 
-    return enviarLista(res, companies);
+    switch (role) {
+      case "superadmin":
+        return await getCompaniesAsAdmin(req, res);
+      case "owner":
+        return await getCompanyInfoAsOwner(req, res);
+      default:
+        return enviarSinPermiso(res, "Rol no autorizado");
+    }
   } catch (error) {
-    return enviarError(res, "Error interno del servidor", 500);
+    return manejarError(error, res);
   }
 }
 
-// -----------------
-// OBTENER EMPRESA POR ID
-// -----------------
 async function getCompanyById(req, res) {
   try {
-    const { company_id } = req.params;
-    const company = await Company.query()
-      .findById(company_id)
-      .withGraphFetched("users");
+    const role = req.user?.user_role || "superadmin";
 
-    if (!company) {
-      return enviarNoEncontrado(res, "Empresa");
+    switch (role) {
+      case "superadmin":
+        return await getCompanyByIdAsAdmin(req, res);
+      default:
+        return enviarSinPermiso(res, "Rol no autorizado");
     }
-
-    return res.status(200).json(company);
   } catch (error) {
-    return enviarError(res, "Error interno del servidor", 500);
+    return manejarError(error, res);
   }
 }
 
-// -----------------
-// ACTUALIZAR EMPRESA
-// -----------------
-async function updateCompanyAsAdmin(req, res) {
-  try {
-    const { company_id } = req.params;
-    const updateData = req.body;
-
-    const company = await obtenerPorId(Company, company_id);
-    if (!company) {
-      return enviarNoEncontrado(res, "Empresa");
-    }
-
-    await Company.query().patchAndFetchById(company_id, updateData);
-
-
-    return enviarExito(res, "Empresa actualizada exitosamente");
-  } catch (error) {
-    return enviarError(res, "Error interno del servidor", 500);
-  }
-}
-
-// -----------------
-// CREAR EMPRESA
-// -----------------
 async function createCompany(req, res) {
   try {
-    const {
-      company_unique_id,
-      company_nombre,
-      company_phone,
-      company_email,
-      limite_operadores,
-      limite_profesionales,
-      reminder_manual,
-    } = req.body;
+    const role = req.user?.user_role || "superadmin";
 
-    const camposRequeridos = [
-      "company_unique_id",
-      "company_nombre",
-      "company_phone",
-      "company_email",
-    ];
-
-    const validacion = validarCamposObligatorios(req.body, camposRequeridos);
-    if (!validacion.valid) {
-      return res.status(400).json({ success: false, error: validacion.error });
+    switch (role) {
+      case "superadmin":
+        return await createCompanyAsAdmin(req, res);
+      default:
+        return enviarSinPermiso(res, "Rol no autorizado para crear empresas");
     }
-
-    if (
-      limite_operadores === undefined ||
-      limite_profesionales === undefined ||
-      reminder_manual === undefined
-    ) {
-      return res.status(400).json({ success: false, error: "Todos los campos son requeridos" });
-    }
-
-    const existingById = await Company.query().findOne({ company_unique_id });
-    if (existingById) {
-      return res.status(409).json({ success: false, error: "El company_unique_id ya existe" });
-    }
-
-    const existingByEmail = await Company.query().findOne({ company_email });
-    if (existingByEmail) {
-      return res.status(409).json({ success: false, error: "El email ya está registrado" });
-    }
-
-    const newCompany = await Company.query().insert({
-      company_unique_id,
-      company_nombre,
-      company_phone,
-      company_email,
-      limite_operadores: 3,
-      limite_especialidades: 10,
-      limite_profesionales: 10,
-      reminder_manual: false, // funcionalidad a evaluar si se cobra o no
-      company_estado: false, // inactiva por defecto
-    });
-
-    const newConfigData = {
-      company_id: newCompany.company_id,
-    };
-
-    await companyConfigController.createCompanyConfigAsAdmin(newConfigData);
-
-
-    return enviarExito(res, "Empresa creada exitosamente", 201);
   } catch (error) {
-    return enviarError(res, "Error interno del servidor", 500);
+    return manejarError(error, res);
   }
 }
 
-// -----------------
-// CONTROLADORES PARA USUARIO COMUN (CON SUS ROLES):
-// -----------------
-
-// -----------------
-// OBTENER INFORMACIÓN DE EMPRESA
-// -----------------
-async function getCompanyInfoAsClientForOnwer(req, res) {
+async function updateCompany(req, res) {
   try {
-    const company_id = req.user.company_id;
-    const company = await obtenerPorId(Company, company_id);
-    if (!company) {
-      return enviarNoEncontrado(res, "Empresa");
+    const role = req.user?.user_role || "superadmin";
+
+    switch (role) {
+      case "superadmin":
+        return await updateCompanyAsAdmin(req, res);
+      case "owner":
+        return await updateCompanyAsOwner(req, res);
+      default:
+        return enviarSinPermiso(res, "Rol no autorizado para actualizar empresas");
     }
-    return res.json(company);
   } catch (error) {
-    return enviarError(res, "Error interno del servidor", 500);
+    return manejarError(error, res);
   }
 }
 
-// -----------------
-// ACTUALIZAR EMPRESA
-// -----------------
-async function updateCompanyAsClient(req, res) {
-  try {
-    const company_id = req.user.company_id;
-    const allowedFields = [
-      "company_phone",
-      "company_email",
-      "company_whatsapp",
-      "company_telegram",
-    ];
-
-    const updateData = {};
-    for (const field of allowedFields) {
-      if (req.body.hasOwnProperty(field)) {
-        const value = req.body[field];
-
-        if (value === null || value === undefined || value === "") {
-          return enviarSolicitudInvalida(res, `El campo ${field} no puede estar vacío`);
-        }
-
-        updateData[field] = value;
-      }
-    }
-
-    if (Object.keys(updateData).length === 0) {
-      return enviarSolicitudInvalida(res, "No se proporcionó ningún campo válido para actualizar");
-    }
-
-    const company = await obtenerPorId(Company, company_id);
-    if (!company) {
-      return enviarNoEncontrado(res, "Empresa");
-    }
-
-    const updatedCompany = await Company.query().patchAndFetchById(
-      company_id,
-      updateData
-    );
-
-
-    return enviarExito(res, "Empresa actualizada exitosamente");
-  } catch (error) {
-    return enviarError(res, "Error interno del servidor", 500);
-  }
+async function getCompaniesAsAdmin(req, res) {
+  const companies = await CompanyAdminService.getAllCompanies();
+  return enviarLista(res, companies);
 }
 
-// -----------------
-// HELPERS
-// -----------------
-
-// -----------------
-// OBTENER LÍMITE DE OPERADORES
-// -----------------
-async function getLimitOperator(company_id) {
-  try {
-    const company = await obtenerPorId(Company, company_id);
-    return company?.limite_operadores || 0;
-  } catch (error) {
-    throw error;
-  }
+async function getCompanyByIdAsAdmin(req, res) {
+  const { company_id } = req.params;
+  const company = await CompanyAdminService.getCompanyById(company_id);
+  return enviarLista(res, company);
 }
 
-// -----------------
-// OBTENER LÍMITE DE PROFESIONALES
-// -----------------
-async function getLimitProfesionales(company_id) {
-  try {
-    const company = await obtenerPorId(Company, company_id);
-    return company?.limite_profesionales || 0;
-  } catch (error) {
-    throw error;
-  }
+async function createCompanyAsAdmin(req, res) {
+  await CompanyAdminService.createCompany(req.body);
+  return enviarExito(res, "Empresa creada exitosamente", 201);
 }
 
-// -----------------
-// OBTENER LÍMITE DE ESPECIALIDADES
-// -----------------
-async function getLimitEspecialidades(company_id) {
-  try {
-    const company = await obtenerPorId(Company, company_id);
-    return company?.limite_especialidades || 0;
-  } catch (error) {
-    throw error;
-  }
+async function updateCompanyAsAdmin(req, res) {
+  const { company_id } = req.params;
+  await CompanyAdminService.updateCompany(company_id, req.body);
+  return enviarExito(res, "Empresa actualizada exitosamente");
 }
 
-module.exports = {
-  getAllCompanies,
-  getCompanyById,
-  updateCompanyAsAdmin,
-  createCompany,
+async function getCompanyInfoAsOwner(req, res) {
+  const companyId = req.user.company_id;
+  const company = await CompanyOwnerService.getCompanyInfo(companyId);
+  return enviarLista(res, company);
+}
 
-  getCompanyInfoAsClientForOnwer,
-  updateCompanyAsClient,
+async function updateCompanyAsOwner(req, res) {
+  const companyId = req.user.company_id;
+  await CompanyOwnerService.updateCompany(companyId, req.body);
+  return enviarExito(res, "Empresa actualizada exitosamente");
+}
 
-  // Helpers
-  getLimitProfesionales,
-  getLimitOperator,
-  getLimitEspecialidades,
-};
+module.exports = { getCompanies, getCompanyById, createCompany, updateCompany };
+

@@ -7,26 +7,22 @@ const options = {
     info: {
       title: "Fast Track API",
       version: "1.0.1",
-      description: "Admin-Client-Public API documentation",
+      description: "Fast Track API documentation",
     },
     tags: [
-      { name: "Public API - LOGIN", description: "Endpoints públicos sin autenticación" },
-      
-      { name: "SuperAdmin API - EMPRESAS", description: "Gestión de empresas del sistema" },
-      { name: "SuperAdmin API - USUARIOS", description: "Gestión global de usuarios" },
-      { name: "SuperAdmin API - ESPECIALIDADES", description: "Gestión global de especialidades y asignaciones" },
-      { name: "SuperAdmin API - CLIENTES RECURRENTES", description: "Gestión de clientes recurrentes" },
-      { name: "SuperAdmin API - RECLAMOS", description: "Gestión global de reclamos" },
+      { name: "Login y sesiones", description: "Rutas para login y session" },
+      { name: "User Profile", description: "Rutas para autogestion de perfil" },
+      { name: "Users", description: "Rutas para Users" },
+      { name: "Company", description: "Gestion de company" },
+      { name: "Company Config", description: "Gestion de la configuracion de la empresa" },
+      { name: "Especialidades", description: "Gestion de especialidades" },
+      { name: "Profesional-Especialidad", description: "Gestion de especialidades a profesionales" },
 
-      { name: "Customer API - EMPRESA", description: "Gestión de información y configuración de la empresa" },
-      { name: "Customer API - USUARIOS", description: "Gestión de usuarios de la empresa" },
-      { name: "Customer API - ESPECIALIDADES", description: "Gestión de especialidades y asignaciones" },
-      { name: "Customer API - CLIENTES RECURRENTES", description: "Gestión de clientes recurrentes" },
-      { name: "Customer API - AGENDA", description: "Gestión de agenda y bloqueos" },
-      { name: "Customer API - RECLAMOS", description: "Gestión de reclamos" },
-      { name: "Customer API - WORKLOAD", description: "Fila de trabajo de profesionales" },
-      { name: "Customer API - FEEDBACK", description: "Envío de feedback a la plataforma" },
-      { name: "Customer API - EXPORTACIONES", description: "Exportación de datos a Excel" },
+
+      { name: "Clientes Recurrentes", description: "Gestion de clientes recurrentes" },
+      { name: "Notificaciones", description: "Gestion de notifications" },
+      { name: "Feedbacks", description: "Gestion de feedbacks" },
+
     ],
     servers: [
       {
@@ -38,7 +34,10 @@ const options = {
 
     ],
   },
-  apis: ["./src/routes/*.js"],
+  apis: [
+    "./src/routes/*.js",
+    "./src/routes/**/*.js"
+  ],
 };
 
 const swaggerSpec = swaggerJSDoc(options);

@@ -2,7 +2,14 @@ const UserPushToken = require("../../models/UserPushToken");
 const fetch = require("node-fetch");
 
 async function saveToken(userId, expoPushToken, platform = "android") {
+    console.log("[saveToken] Iniciando guardado:", {
+        userId,
+        expoPushToken: expoPushToken ? expoPushToken.substring(0, 30) + "..." : null,
+        platform,
+    });
+
     if (!expoPushToken) {
+        console.error("[saveToken] Error: expoPushToken es null o undefined");
         throw new Error("Falta el token");
     }
 
@@ -11,15 +18,19 @@ async function saveToken(userId, expoPushToken, platform = "android") {
         .first();
 
     if (existing) {
+        console.log("[saveToken] Token existente encontrado, actualizando. ID:", existing.id);
         await UserPushToken.query()
             .findById(existing.id)
             .patch({ updated_at: new Date().toISOString(), platform });
+        console.log("[saveToken] Token actualizado exitosamente");
     } else {
-        await UserPushToken.query().insert({
+        console.log("[saveToken] Token nuevo, insertando en BD");
+        const inserted = await UserPushToken.query().insert({
             user_id: userId,
             expo_push_token: expoPushToken,
             platform,
         });
+        console.log("[saveToken] Token insertado exitosamente. ID:", inserted.id);
     }
 
     return true;

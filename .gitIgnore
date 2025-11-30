@@ -1,9 +1,14 @@
+# Node modules
 /node_modules
+
+# Environment
 .env
+
+# Keys
 /keys
+
+# Automation seeds
 /utils/automation/seeds
 
-docs
-/docs
-
+# Documentation
 /docs

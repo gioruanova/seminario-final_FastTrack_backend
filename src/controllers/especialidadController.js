@@ -21,7 +21,7 @@ function manejarError(error, res) {
     return mensajesConocidos[error.message]();
   }
 
-  console.error("Error en especialidadController:", error);
+  console.error("Error en EspecialidadController:", error);
   return enviarError(res, "Error interno del servidor", 500);
 }
 
@@ -202,3 +202,4 @@ async function unblockEspecialidadAsOwner(req, res) {
 }
 
 module.exports = { getEspecialidades, getEspecialidadesByCompany, createEspecialidad, updateEspecialidad, blockEspecialidad, unblockEspecialidad, };
+

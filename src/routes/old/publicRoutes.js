@@ -1,6 +1,6 @@
 // const express = require("express");
 // const router = express.Router();
-// const authUserController = require("../controllers/authUserController");
+// const authUserController = require("../controllers/AuthUserController");
 
 // // Proceso de login a portal clientes
 // router.post("/login", authUserController.login);

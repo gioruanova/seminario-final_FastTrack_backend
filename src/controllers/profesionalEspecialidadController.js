@@ -20,7 +20,7 @@ function manejarError(error, res) {
     return mensajesConocidos[error.message]();
   }
 
-  console.error("Error en profesionalEspecialidadController:", error);
+  console.error("Error en ProfesionalEspecialidadController:", error);
   return enviarError(res, "Error interno del servidor", 500);
 }
 
@@ -144,3 +144,4 @@ async function updateAsignacionAsOwner(req, res) {
 }
 
 module.exports = { getAsignaciones, assignEspecialidad, deleteAsignacion, updateAsignacion, };
+

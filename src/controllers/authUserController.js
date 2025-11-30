@@ -1,4 +1,3 @@
-
 const { enviarExito, enviarExitoConDatos, enviarError, enviarNoAutenticado, enviarSolicitudInvalida, enviarSinPermiso, } = require("../helpers/responseHelpers");
 const { loginUser, refreshUserToken } = require("../services/auth/authUserService");
 const ms = require("ms");
@@ -77,11 +76,7 @@ function refreshToken(req, res) {
   }
 }
 
-// -----------------
-// LOGOUT
-// -----------------
 function logout(req, res) {
-  // Borrar cookies HTTP-only
   res.clearCookie("accessToken", {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
@@ -100,3 +95,4 @@ function logout(req, res) {
 }
 
 module.exports = { login, refreshToken, logout };
+

@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const profesionalEspecialidadController = require("../../controllers/profesionalEspecialidadController");
+const profesionalEspecialidadController = require("../../controllers/ProfesionalEspecialidadController");
 const authUsers = require("../../middlewares/authUsers");
 
 router.get("/profesional-especialidad", authUsers({ roles: ["owner", "operador"] }), profesionalEspecialidadController.getAsignaciones);

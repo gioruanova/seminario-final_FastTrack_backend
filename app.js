@@ -11,7 +11,6 @@ const app = express();
 const port = process.env.PORT || 8888;
 
 // =====================================================================
-// Validate critical env vars
 const requiredEnvVars = [
   'DB_HOST',
   'DB_NAME',
@@ -22,7 +21,7 @@ const requiredEnvVars = [
 
 const missingEnvVars = requiredEnvVars.filter(varName => {
   const value = process.env[varName];
-  return !value || value.trim() === ''; // ← Validar que no esté vacío
+  return !value || value.trim() === '';
 });
 
 if (missingEnvVars.length > 0) {
@@ -32,7 +31,6 @@ if (missingEnvVars.length > 0) {
 }
 
 // =====================================================================
-// CORS Configuration
 const corsOptions = {
   origin: [
     process.env.BACK_TEST_SITE,
@@ -49,14 +47,12 @@ const corsOptions = {
 };
 
 // =====================================================================
-// Middleware
 app.use(cors(corsOptions));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(cookieParser());
 
 // =====================================================================
-// Health Check
 app.get("/", (req, res) => {
   res.status(200).json({
     status: "OK",
@@ -64,15 +60,12 @@ app.get("/", (req, res) => {
     version: "2.0.5",
     endpoints: {
       docs: `http://localhost:${port}/api-docs`,
-      public: `http://localhost:${port}/publicApi`,
-      super: `http://localhost:${port}/superApi`,
-      customers: `http://localhost:${port}/customersApi`
+      public: `http://localhost:${port}/publicApi`
     }
   });
 });
 
 // =====================================================================
-// API Routes
 app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(swaggerSpec, {
   swaggerOptions: {
     docExpansion: 'none',
@@ -83,19 +76,11 @@ app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(swaggerSpec, {
 
 
 // =====================================================================
-// Rutas NUEVAS (Por entidad con consolidadores - Comentar si hay problemas)
-// =====================================================================
 const configureRoutes = require("./src/routes");
 configureRoutes(app);
 
-// =====================================================================
-// Rutas ANTIGUAS
-// =====================================================================
-app.use("/superApi", require("./src/routes/superRoutes"));
-app.use("/customersApi", require("./src/routes/userRoutes"));
 
 // =====================================================================
-// 404 fallback
 app.use((req, res) => {
   res.status(404).send(`
     <div style="width: 100%;height: 100%;display: flex;justify-content: center;align-items: center;background: #1a1a1a;flex-direction: column;color: white;">
@@ -106,7 +91,6 @@ app.use((req, res) => {
 });
 
 // =====================================================================
-// Error Handler Global
 app.use((err, req, res, next) => {
   console.error('❌ Error:', err.stack);
   res.status(err.status || 500).json({
@@ -116,14 +100,12 @@ app.use((err, req, res, next) => {
 });
 
 // =====================================================================
-// Running
 app.listen(port, "0.0.0.0", () => {
   console.log(`✅ Server running on http://localhost:${port}`);
   console.log(`✅ API Docs running on http://localhost:${port}/api-docs`);
 });
 
 // =====================================================================
-// Graceful Shutdown
 process.on('SIGTERM', () => {
   console.log('⚠️  SIGTERM received. Closing HTTP server gracefully...');
   process.exit(0);

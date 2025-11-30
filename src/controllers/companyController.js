@@ -117,3 +117,4 @@ async function updateCompanyAsOwner(req, res) {
 }
 
 module.exports = { getCompanies, getCompanyById, createCompany, updateCompany };
+

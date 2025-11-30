@@ -1,7 +1,10 @@
 const express = require("express");
 const router = express.Router();
-const clientesRecurrentesController = require("../../controllers/clientesRecurrentesController");
+const clientesRecurrentesController = require("../../controllers/ClientesRecurrentesController");
 const authUsers = require("../../middlewares/authUsers");
+
+
+
 router.get("/clientes-recurrentes", authUsers({ roles: ["superadmin", "owner", "operador"] }), clientesRecurrentesController.getAllClientesRecurrentes);
 router.post("/clientes-recurrentes", authUsers({ roles: ["superadmin", "owner", "operador"] }), clientesRecurrentesController.createClienteRecurrente);
 router.put("/clientes-recurrentes/:cliente_id", authUsers({ roles: ["superadmin", "owner", "operador"] }), clientesRecurrentesController.updateClienteRecurrente);

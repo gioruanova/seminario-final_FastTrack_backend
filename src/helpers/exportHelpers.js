@@ -1,15 +1,6 @@
 const ExcelJS = require("exceljs");
 
-
-async function exportToExcel(
-  res,
-  fileName,
-  sheetName,
-  columns,
-  data,
-  comp,
-  user
-) {
+async function exportToExcel(res, fileName, sheetName, columns, data, comp, user) {
   const workbook = new ExcelJS.Workbook();
   const worksheet = workbook.addWorksheet(sheetName);
   if (sheetName != "Reporte de Reclamos") {
@@ -52,8 +43,6 @@ async function exportToExcel(
   const cell = worksheet.getCell("A1");
   cell.font = { bold: true };
 
-  // worksheet.insertRow(2, []);
-
   data.forEach((row) => {
     worksheet.addRow(row);
   });
@@ -76,10 +65,10 @@ async function exportToExcel(
   try {
     await workbook.xlsx.write(res);
     res.end();
-
   } catch (error) {
     res.status(500).json({ error: "Error al generar el archivo Excel" });
   }
 }
 
 module.exports = { exportToExcel };
+

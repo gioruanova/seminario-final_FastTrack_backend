@@ -1,9 +1,6 @@
 /node_modules
 .env
 /keys
-/src/docs
 /utils/automation/seeds
 
-
-/old
-/refactor
+docs

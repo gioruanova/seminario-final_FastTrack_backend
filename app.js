@@ -60,7 +60,7 @@ app.get("/", (req, res) => {
     version: "2.0.5",
     endpoints: {
       docs: `http://localhost:${port}/api-docs`,
-      public: `http://localhost:${port}/publicApi`
+      public: `http://localhost:${port}/`
     }
   });
 });

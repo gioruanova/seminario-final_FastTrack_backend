@@ -3,23 +3,6 @@ const router = express.Router();
 const notificationsController = require("../../controllers/NotificationsController");
 const authUsers = require("../../middlewares/authUsers");
 
-// Endpoint de prueba para verificar logs (sin autenticación)
-router.get("/notifications/test-logs", (req, res) => {
-  console.log("========================================");
-  console.log("[TEST-LOGS] Endpoint de prueba llamado");
-  console.log("[TEST-LOGS] Timestamp:", new Date().toISOString());
-  console.log("[TEST-LOGS] Request method:", req.method);
-  console.log("[TEST-LOGS] Request path:", req.path);
-  console.log("[TEST-LOGS] Request headers:", JSON.stringify(req.headers, null, 2));
-  console.log("========================================");
-  
-  res.status(200).json({
-    success: true,
-    message: "Logs de prueba enviados. Revisa Railway logs.",
-    timestamp: new Date().toISOString()
-  });
-});
-
 router.post("/notifications", authUsers({ roles: ["profesional"] }), notificationsController.registerToken);
 router.delete("/notifications", authUsers({ roles: ["profesional"] }), notificationsController.unregisterToken);
 router.post("/send-notifications", authUsers({ roles: ["profesional"] }), notificationsController.sendNotification);

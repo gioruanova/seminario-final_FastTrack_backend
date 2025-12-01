@@ -18,42 +18,17 @@ function manejarError(error, res) {
 
 async function registerToken(req, res) {
   try {
-    console.log("[registerToken] Request recibido:", {
-      method: req.method,
-      path: req.path,
-      hasUser: !!req.user,
-      userId: req.user?.user_id,
-      userRole: req.user?.user_role,
-      hasBody: !!req.body,
-      bodyKeys: req.body ? Object.keys(req.body) : [],
-      expoPushToken: req.body?.expoPushToken ? req.body.expoPushToken.substring(0, 30) + "..." : null,
-      platform: req.body?.platform,
-      cookies: req.cookies ? Object.keys(req.cookies) : [],
-      headers: {
-        'content-type': req.headers['content-type'],
-        'origin': req.headers.origin,
-        'user-agent': req.headers['user-agent']?.substring(0, 50),
-      }
-    });
-
     const userId = req.user.user_id;
     const { expoPushToken, platform } = req.body;
 
     if (!expoPushToken) {
-      console.error("[registerToken] Error: expoPushToken no proporcionado");
       throw new Error("Falta el token");
     }
 
-    console.log("[registerToken] Guardando token para userId:", userId);
     await saveToken(userId, expoPushToken, platform || 'android');
-    console.log("[registerToken] Token guardado exitosamente");
 
     return enviarExito(res, "Token registrado correctamente", 201);
   } catch (error) {
-    console.error("[registerToken] Error capturado:", {
-      message: error.message,
-      stack: error.stack?.substring(0, 200),
-    });
     return manejarError(error, res);
   }
 }

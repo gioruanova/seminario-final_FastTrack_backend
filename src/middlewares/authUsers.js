@@ -8,28 +8,8 @@ const User = require("../models/User");
 
 function authUsers({ roles = [], skipCompanyCheck = false } = {}) {
   return async function (req, res, next) {
-    // Log para diagnóstico en producción
-    if (req.path.includes('/notifications')) {
-      console.log("[authUsers] Request a /notifications:", {
-        method: req.method,
-        path: req.path,
-        hasCookies: !!req.cookies,
-        cookieKeys: req.cookies ? Object.keys(req.cookies) : [],
-        hasAccessToken: !!req.cookies?.accessToken,
-        headers: {
-          'cookie': req.headers.cookie ? 'presente' : 'ausente',
-          'authorization': req.headers.authorization ? 'presente' : 'ausente',
-          'origin': req.headers.origin,
-        },
-        rolesRequired: roles,
-      });
-    }
-
     const token = req.cookies?.accessToken;
     if (!token) {
-      if (req.path.includes('/notifications')) {
-        console.error("[authUsers] Error: Token no provisto en cookies para /notifications");
-      }
       return res.status(401).json({ error: "Token no provisto" });
     }
 
@@ -37,19 +17,7 @@ function authUsers({ roles = [], skipCompanyCheck = false } = {}) {
       const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
       req.user = decoded;
 
-      if (req.path.includes('/notifications')) {
-        console.log("[authUsers] Token decodificado:", {
-          userId: decoded.user_id,
-          userRole: decoded.user_role,
-          rolesRequired: roles,
-          roleMatch: roles.length ? roles.includes(decoded.user_role) : 'N/A',
-        });
-      }
-
       if (roles.length && !roles.includes(req.user.user_role)) {
-        if (req.path.includes('/notifications')) {
-          console.error("[authUsers] Error: Rol no autorizado. Rol:", req.user.user_role, "Requerido:", roles);
-        }
         return res.status(403).json({ error: "No autorizado" });
       }
 
@@ -79,12 +47,6 @@ function authUsers({ roles = [], skipCompanyCheck = false } = {}) {
 
       next();
     } catch (error) {
-      if (req.path.includes('/notifications')) {
-        console.error("[authUsers] Error al verificar token:", {
-          message: error.message,
-          name: error.name,
-        });
-      }
       return res.status(401).json({ error: "Token inválido o expirado" });
     }
   };
